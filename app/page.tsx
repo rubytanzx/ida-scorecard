@@ -102,7 +102,7 @@ export default function HomePage() {
             {/* Topics Trending */}
             <section aria-label="Topics Trending">
               <FadeIn delay={50}>
-                <SectionHeader title="Topics Trending" variant="hero" />
+                <SectionHeader title="Topics Trending" />
               </FadeIn>
               <FadeIn delay={100}>
                 <FeaturedStoryCard story={featuredStory} />
