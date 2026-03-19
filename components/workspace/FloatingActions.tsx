@@ -24,7 +24,11 @@ const GENERATE_OPTIONS = [
   { icon: IconMicrophone,    label: "Podcast" },
 ];
 
-export default function FloatingActions() {
+interface Props {
+  mode?: "edit" | "view";
+}
+
+export default function FloatingActions({ mode = "edit" }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,27 +62,29 @@ export default function FloatingActions() {
         }}
       >
         {/* Share and Access */}
-        <button
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "12px 16px",
-            borderRadius: 999,
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            fontFamily: F,
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#0b6fd3",
-            whiteSpace: "nowrap",
-            lineHeight: 1.4,
-          }}
-        >
-          <IconLock size={20} stroke={1.5} />
-          Share and Access
-        </button>
+        {mode === "edit" && (
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 16px",
+              borderRadius: 999,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              fontFamily: F,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#0b6fd3",
+              whiteSpace: "nowrap",
+              lineHeight: 1.4,
+            }}
+          >
+            <IconLock size={20} stroke={1.5} />
+            Share and Access
+          </button>
+        )}
 
         {/* Generate — opens dropdown */}
         <button
@@ -106,27 +112,29 @@ export default function FloatingActions() {
         </button>
 
         {/* Publish */}
-        <button
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "12px 16px",
-            borderRadius: 999,
-            border: "1px solid #0b6fd3",
-            background: "#0b6fd3",
-            cursor: "pointer",
-            fontFamily: F,
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#FFFFFF",
-            whiteSpace: "nowrap",
-            lineHeight: 1.4,
-          }}
-        >
-          <IconPlayerPlay size={20} stroke={1.5} />
-          Publish
-        </button>
+        {mode === "edit" && (
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 16px",
+              borderRadius: 999,
+              border: "1px solid #0b6fd3",
+              background: "#0b6fd3",
+              cursor: "pointer",
+              fontFamily: F,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#FFFFFF",
+              whiteSpace: "nowrap",
+              lineHeight: 1.4,
+            }}
+          >
+            <IconPlayerPlay size={20} stroke={1.5} />
+            Publish
+          </button>
+        )}
 
         {/* Close */}
         <button
