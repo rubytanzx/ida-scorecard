@@ -26,7 +26,11 @@ const CARD_TYPES = [
 
 const F = "'Open Sans', sans-serif";
 
-export default function FloatingControls() {
+interface Props {
+  mode?: "edit" | "view";
+}
+
+export default function FloatingControls({ mode = "edit" }: Props) {
   const [activeMode, setActiveMode] = useState<Mode>("cursor");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -102,7 +106,7 @@ export default function FloatingControls() {
       }}
     >
       {/* Add Component button + dropdown */}
-      <div ref={dropdownRef} style={{ position: "relative" }}>
+      {mode === "edit" && <div ref={dropdownRef} style={{ position: "relative" }}>
         <button
           aria-label="Add Component"
           onClick={() => setDropdownOpen((v) => !v)}
@@ -173,7 +177,7 @@ export default function FloatingControls() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       {iconBtn("cursor", <IconPointer size={20} stroke={1.5} />, "Cursor")}
       {iconBtn("pan", <IconArrowsMove size={20} stroke={1.5} />, "Pan viewport")}
