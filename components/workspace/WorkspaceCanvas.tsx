@@ -25,6 +25,8 @@ const nodeTypes = {
 
 interface Props {
   nodes: Node[];
+  orderedNodes: Node[];
+  playActive: boolean;
   fitViewTrigger: number;
   loading?: boolean;
   onCardSelect?: (id: string | null) => void;
@@ -40,7 +42,7 @@ function FitViewTrigger({ trigger }: { trigger: number }) {
   return null;
 }
 
-export default function WorkspaceCanvas({ nodes: externalNodes, fitViewTrigger, loading, onCardSelect }: Props) {
+export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, playActive, fitViewTrigger, loading, onCardSelect }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
   // Add new nodes from external without resetting drag positions
@@ -52,6 +54,56 @@ export default function WorkspaceCanvas({ nodes: externalNodes, fitViewTrigger, 
       return [...prev, ...newNodes];
     });
   }, [externalNodes, setNodes]);
+
+  // Masonry grid — rendered during play mode instead of ReactFlow
+  if (playActive) {
+    const SPAN_TWO = new Set(["narrative", "overview"]);
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflowY: "auto",
+          paddingTop: 24,
+          paddingRight: 24,
+          paddingBottom: 24,
+          paddingLeft: 96 + 24, // 96px sidebar + 24px inner gap
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: 16,
+          alignItems: "start",
+          opacity: 0.4,
+          pointerEvents: "none",
+        }}
+      >
+        {orderedNodes.map((node) => {
+          const CardComponent = nodeTypes[node.type as keyof typeof nodeTypes];
+          if (!CardComponent) return null;
+          return (
+            <div
+              key={node.id}
+              style={{ gridColumn: SPAN_TWO.has(node.type ?? "") ? "span 2" : "span 1" }}
+            >
+              <CardComponent
+                id={node.id}
+                type={node.type ?? ""}
+                data={node.data}
+                selected={false}
+                isConnectable={false}
+                zIndex={0}
+                xPos={0}
+                yPos={0}
+                dragging={false}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div
