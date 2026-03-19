@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import type { Node } from "reactflow";
 import CanvasLoader from "./CanvasLoader";
 import FloatingSidebar from "./FloatingSidebar";
@@ -199,6 +199,12 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [outcomeCardsShown, setOutcomeCardsShown] = useState(prebuilt);
   const [dataCardsShown, setDataCardsShown] = useState(prebuilt);
+  const orderedNodes = useMemo(
+    () => [...canvasNodes].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x),
+    [canvasNodes]
+  );
+  const [playActive, setPlayActive] = useState(false);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const ran = useRef(prebuilt);
 
   const handleCardSelect = (nodeId: string | null) => {
@@ -335,14 +341,37 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         background: "#FFFFFF",
       }}
     >
-      <CanvasLoader nodes={canvasNodes} fitViewTrigger={fitViewTrigger} loading={canvasLoading} onCardSelect={handleCardSelect} />
+      <CanvasLoader nodes={canvasNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} loading={canvasLoading} onCardSelect={handleCardSelect} />
       <FloatingSidebar />
-      <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} />
-      <FloatingActions mode={mode} />
-      <FloatingControls mode={mode} />
-      <RightNavDots />
-      <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />
-      <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} />
+      {!playActive && <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} />}
+      {!playActive && <FloatingActions mode={mode} onPlay={() => { setPlayActive(true); setCurrentCardIndex(0); }} />}
+      {!playActive && <FloatingControls mode={mode} />}
+      {!playActive && <RightNavDots />}
+      {!playActive && <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />}
+      {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} />}
+
+      {/* Play mode HUD */}
+      {playActive && (
+        <>
+          {/* Backdrop */}
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 45 }} />
+
+          {/* HUD */}
+          <div style={{ position: "fixed", top: 16, right: 16, zIndex: 50, display: "flex", alignItems: "center", gap: 12, background: "white", border: "1px solid #e5e5e5", borderRadius: 16, boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)", padding: "8px 16px", height: 64 }}>
+            <span style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 13, color: "#616161" }}>
+              {currentCardIndex + 1} / {canvasNodes.length || 1}
+            </span>
+            <button
+              onClick={() => setPlayActive(false)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 999, border: "none", background: "transparent", cursor: "pointer", fontFamily: "'Open Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "#616161" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#f5f5f5"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            >
+              ✕ End
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
