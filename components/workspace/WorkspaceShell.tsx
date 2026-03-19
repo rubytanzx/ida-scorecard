@@ -8,16 +8,27 @@ import FloatingTitle from "./FloatingTitle";
 import FloatingActions from "./FloatingActions";
 import FloatingControls from "./FloatingControls";
 import RightNavDots from "./RightNavDots";
-import PromptBar from "./PromptBar";
+import PromptBar, { PROMPT_BOTTOM, PILLS_GAP_BOTTOM, PILLS_GAP_TOP, PILLS_H } from "./PromptBar";
 import PlayModeCard from "./PlayModeCard";
 import AIChatPanel from "./AIChatPanel";
-import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE } from "@/data/mockInteraction";
+import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE, GREETING_MESSAGE, OUTCOME_AREAS_MESSAGE, DATA_CARDS_MESSAGE } from "@/data/mockInteraction";
 import type { Message } from "@/data/mockInteraction";
 
 const CARD_NAME_MAP: Record<string, string> = {
   "card-overview": "Overview",
   "card-narrative": "AI Narrative Assistant",
   "card-news": "News",
+  "outcome-1": "Protection of the Poorest",
+  "outcome-2": "No Learning Poverty",
+  "outcome-3": "Healthier Lives",
+  "outcome-4": "Climate / Green Planet",
+  "outcome-5": "Digital / Financial Services",
+  "data-social-protection": "Social Protection Coverage",
+  "data-financial-accounts": "Financial Account Ownership",
+  "data-safety-net": "Safety Net Programs",
+  "data-financial-services": "Financial Services",
+  "data-gender-equality": "Gender Equality",
+  "data-private-capital": "Private Capital",
 };
 
 // Outcome area cards — placed in a column to the right of the OverviewCard (x:80, w:1200)
@@ -185,14 +196,16 @@ function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => v
       ...(item.id === "outcome-1" ? { onNavDown: onShowDataCards } : {}),
     },
     draggable: true,
-    selectable: false,
+    selectable: true,
   }));
   return [overviewNode, narrativeNode, newsNode, ...outcomeNodes];
 }
 
 export default function WorkspaceShell({ empty = false, prebuilt = false, mode = "edit" }: Props) {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(prebuilt ? [USER_MESSAGE, AI_MESSAGE] : []);
+  const [chatOpen, setChatOpen] = useState(empty);
+  const [messages, setMessages] = useState<Message[]>(
+    empty ? [GREETING_MESSAGE] : prebuilt ? [USER_MESSAGE, AI_MESSAGE] : []
+  );
   const [canvasNodes, setCanvasNodes] = useState<Node[]>([]);
   const [fitViewTrigger, setFitViewTrigger] = useState(0);
   const [canvasLoading, setCanvasLoading] = useState(false);
@@ -204,11 +217,35 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     () => [...canvasNodes].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x),
     [canvasNodes]
   );
-  const [playActive, setPlayActive] = useState(false);
+
+  // Play sequence: narrative first, news excluded
+  const playOrderedNodes = useMemo(() => {
+    const withoutNews = orderedNodes.filter((n) => n.type !== "news");
+    const narrativeIdx = withoutNews.findIndex((n) => n.type === "narrative");
+    if (narrativeIdx <= 0) return withoutNews;
+    const narrative = withoutNews[narrativeIdx];
+    return [narrative, ...withoutNews.filter((_, i) => i !== narrativeIdx)];
+  }, [orderedNodes]);
+
+  const [panMode, setPanMode] = useState(false);
+  const [playActive, setPlayActive] = useState(mode === "view");
+
+  // Inject viewMode into node data; draggability is controlled via nodesDraggable prop
+  const processedNodes = useMemo(
+    () =>
+      canvasNodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          ...(mode === "view" ? { viewMode: true } : {}),
+        },
+      })),
+    [canvasNodes, mode]
+  );
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const handleAdvance = () => {
-    if (currentCardIndex < orderedNodes.length - 1) {
+    if (currentCardIndex < playOrderedNodes.length - 1) {
       setCurrentCardIndex((i) => i + 1);
     } else {
       setPlayActive(false);
@@ -216,7 +253,14 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     }
   };
 
-  const ran = useRef(prebuilt);
+  const handlePrev = () => {
+    if (currentCardIndex > 0) {
+      setCurrentCardIndex((i) => i - 1);
+    }
+  };
+
+  // submissionPhase: 0=awaiting first prompt, 1=board created (card chat available), 2=done
+  const submissionPhase = useRef<number>(prebuilt ? 2 : 0);
 
   const handleCardSelect = (nodeId: string | null) => {
     setSelectedCard(nodeId ? (CARD_NAME_MAP[nodeId] ?? null) : null);
@@ -224,10 +268,19 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
 
   const handleShowOutcomeAreas = useCallback(() => {
     setOutcomeCardsShown(true);
+    setMessages((m) => [...m, TYPING_MESSAGE]);
+    setTimeout(() => {
+      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), OUTCOME_AREAS_MESSAGE]);
+    }, 1800);
   }, []);
 
   const handleShowDataCards = useCallback(() => {
     setDataCardsShown(true);
+    setChatOpen(true);
+    setMessages((m) => [...m, TYPING_MESSAGE]);
+    setTimeout(() => {
+      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), DATA_CARDS_MESSAGE]);
+    }, 1800);
   }, []);
 
   // Seed all nodes immediately when prebuilt
@@ -257,7 +310,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         ...(item.id === "outcome-1" ? { onNavDown: handleShowDataCards } : {}),
       },
       draggable: true,
-      selectable: false,
+      selectable: true,
     }));
     setCanvasNodes((prev) => {
       const existingIds = new Set(prev.map((n) => n.id));
@@ -281,7 +334,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         portfolioText: card.portfolioText,
       },
       draggable: true,
-      selectable: false,
+      selectable: true,
     }));
     setCanvasNodes((prev) => {
       const existingIds = new Set(prev.map((n) => n.id));
@@ -290,54 +343,72 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     });
   }, [dataCardsShown]);
 
-  // chatBottom = PROMPT_BOTTOM(22) + promptBarHeight + PILLS_GAP(30) + pills_h(34) + PILLS_GAP(30)
-  // Equal 30px gaps above and below pills. Add BANNER_H(48) when a card is selected.
-  const chatBottom = promptBarHeight + 116 + (selectedCard ? 48 : 0);
+  // chatBottom = PROMPT_BOTTOM + promptBarHeight + PILLS_GAP_BOTTOM + PILLS_H + PILLS_GAP_TOP
+  // Asymmetric gaps: bottom gap is larger to visually clear the prompt bar shadow.
+  const chatBottom = PROMPT_BOTTOM + promptBarHeight + PILLS_GAP_BOTTOM + PILLS_H + PILLS_GAP_TOP + (selectedCard ? 48 : 0);
 
   const handleUserSubmit = (text: string) => {
-    if (ran.current) return;
-    ran.current = true;
+    // Phase 0: First submission — create the board with reasoning animation
+    if (submissionPhase.current === 0) {
+      submissionPhase.current = 1;
 
-    const userMsg: Message = { ...USER_MESSAGE, content: text };
+      const userMsg: Message = { ...USER_MESSAGE, content: text };
+      setChatOpen(true);
+      setMessages([userMsg, TYPING_MESSAGE]);
+      setCanvasLoading(true);
 
-    setChatOpen(true);
-    setMessages([userMsg]);
+      const overviewNode: Node = {
+        id: "card-overview", type: "overview", position: { x: 80, y: 40 },
+        data: { onShowOutcomeAreas: handleShowOutcomeAreas }, draggable: true, selectable: true,
+      };
+      const narrativeNode: Node = {
+        id: "card-narrative", type: "narrative", position: { x: 80, y: 760 },
+        data: {}, draggable: true, selectable: true,
+      };
+      const newsNode: Node = {
+        id: "card-news", type: "news", position: { x: 540, y: 760 },
+        data: {}, draggable: true, selectable: true,
+      };
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
+      // Cards appear after reasoning completes (~2200ms into ReasoningAnimation)
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      timers.push(setTimeout(() => setCanvasNodes([overviewNode]),                           2300));
+      timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode]),            2600));
+      timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode, newsNode]),  2900));
+      timers.push(setTimeout(() => {
+        setFitViewTrigger((t) => t + 1);
+        setCanvasLoading(false);
+      }, 3200));
+      timers.push(setTimeout(() => {
+        setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), AI_MESSAGE]);
+      }, 3800));
 
-    // Typing/reasoning starts immediately
-    setMessages((m) => [...m, TYPING_MESSAGE]);
-    setCanvasLoading(true);
+      return () => timers.forEach(clearTimeout);
+    }
 
-    const overviewNode: Node = {
-      id: "card-overview", type: "overview", position: { x: 80, y: 40 },
-      data: { onShowOutcomeAreas: handleShowOutcomeAreas }, draggable: true, selectable: true,
-    };
-    const narrativeNode: Node = {
-      id: "card-narrative", type: "narrative", position: { x: 80, y: 760 },
-      data: {}, draggable: true, selectable: true,
-    };
-    const newsNode: Node = {
-      id: "card-news", type: "news", position: { x: 540, y: 760 },
-      data: {}, draggable: true, selectable: true,
-    };
+    // Phase 1: Card-chat submission — show data cards + AI narrative
+    if (submissionPhase.current === 1) {
+      submissionPhase.current = 2;
 
-    // Cards appear after reasoning completes (~2200ms into ReasoningAnimation)
-    timers.push(setTimeout(() => setCanvasNodes([overviewNode]),                              2300));
-    timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode]),              2600));
-    timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode, newsNode]),    2900));
+      const userMsg: Message = {
+        id: `msg-user-${Date.now()}`,
+        role: "user",
+        content: text,
+        timestamp: "Just now",
+      };
+      setSelectedCard(null);
+      setMessages((m) => [...m, userMsg, TYPING_MESSAGE]);
 
-    timers.push(setTimeout(() => {
-      setFitViewTrigger((t) => t + 1);
-      setCanvasLoading(false);
-    }, 3200));
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      timers.push(setTimeout(() => {
+        setDataCardsShown(true);
+      }, 1200));
+      timers.push(setTimeout(() => {
+        setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), DATA_CARDS_MESSAGE]);
+      }, 2000));
 
-    // AI response replaces reasoning
-    timers.push(setTimeout(() => {
-      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), AI_MESSAGE]);
-    }, 3800));
-
-    return () => timers.forEach(clearTimeout);
+      return () => timers.forEach(clearTimeout);
+    }
   };
 
   return (
@@ -352,11 +423,11 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         background: "#FFFFFF",
       }}
     >
-      <CanvasLoader nodes={canvasNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} loading={canvasLoading} onCardSelect={handleCardSelect} />
+      <CanvasLoader nodes={processedNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} loading={canvasLoading} nodesDraggable={!panMode} onCardSelect={handleCardSelect} />
       <FloatingSidebar />
       {!playActive && <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} />}
       {!playActive && <FloatingActions mode={mode} onPlay={() => { setPlayActive(true); setCurrentCardIndex(0); }} />}
-      {!playActive && <FloatingControls mode={mode} />}
+      {!playActive && <FloatingControls mode={mode} onModeChange={(m) => setPanMode(m === "pan")} />}
       {!playActive && <RightNavDots />}
       {!playActive && <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />}
       {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} />}
@@ -368,19 +439,20 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 45 }} />
 
           {/* Spotlight card */}
-          {orderedNodes[currentCardIndex] && (
+          {playOrderedNodes[currentCardIndex] && (
             <PlayModeCard
-              node={orderedNodes[currentCardIndex]}
+              node={playOrderedNodes[currentCardIndex]}
               index={currentCardIndex}
-              total={orderedNodes.length}
+              total={playOrderedNodes.length}
               onAdvance={handleAdvance}
+              onPrev={handlePrev}
             />
           )}
 
           {/* HUD */}
           <div style={{ position: "fixed", top: 16, right: 16, zIndex: 50, display: "flex", alignItems: "center", gap: 12, background: "white", border: "1px solid #e5e5e5", borderRadius: 16, boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)", padding: "8px 16px", height: 64 }}>
             <span style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 13, color: "#616161" }}>
-              {currentCardIndex + 1} / {orderedNodes.length || 1}
+              {currentCardIndex + 1} / {playOrderedNodes.length || 1}
             </span>
             <button
               onClick={() => setPlayActive(false)}

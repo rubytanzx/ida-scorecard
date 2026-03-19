@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import type { NodeProps } from "reactflow";
 import {
   IconThumbUp,
@@ -309,7 +310,7 @@ interface DataCardData {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function DataCard({ data }: NodeProps<any>) {
+export function DataCard({ data, selected }: NodeProps<any>) {
   const {
     label = "DATA",
     title,
@@ -320,25 +321,31 @@ export function DataCard({ data }: NodeProps<any>) {
     unit = "People",
     category,
     chartType,
-  } = data as DataCardData;
+    viewMode = false,
+    playMode = false,
+  } = data as DataCardData & { viewMode?: boolean; playMode?: boolean };
 
   const chart = CHARTS[chartType];
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
       className="card-enter"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        width: 710,
+        width: playMode ? "100%" : 710,
         background: "#FFFFFF",
-        border: "1px solid #E5E5E5",
-        borderRadius: 8,
-        boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.05), 0px 2px 4px -1px rgba(0,0,0,0.03)",
+        border: playMode ? "none" : selected ? "1px solid #0b6fd3" : hovered ? "1px solid #BDBDBD" : "1px solid #E5E5E5",
+        borderRadius: playMode ? 0 : 8,
+        boxShadow: playMode ? "none" : selected ? "0px 0px 0px 3px rgba(11,111,211,0.12)" : hovered ? "0px 4px 12px rgba(0,0,0,0.08)" : "0px 4px 6px -1px rgba(0,0,0,0.05), 0px 2px 4px -1px rgba(0,0,0,0.03)",
         padding: 25,
         display: "flex",
         flexDirection: "column",
         gap: 16,
         fontFamily: F,
-        cursor: "grab",
+        cursor: playMode ? "default" : "grab",
+        transition: "border-color 0.15s, box-shadow 0.15s",
       }}
     >
       {/* Label + Title */}
@@ -346,7 +353,9 @@ export function DataCard({ data }: NodeProps<any>) {
         <span style={{ fontSize: 12, color: "#9E9E9E", textTransform: "uppercase", letterSpacing: "0.5px", lineHeight: "1.4" }}>
           {label}
         </span>
-        <span style={{ fontSize: 20, fontWeight: 600, color: "#000", lineHeight: "1.4" }}>
+        <span
+          style={{ fontSize: 20, fontWeight: 600, color: "#000", lineHeight: "1.4" }}
+        >
           {title}
         </span>
 
@@ -377,7 +386,9 @@ export function DataCard({ data }: NodeProps<any>) {
       <div style={{ height: 1, background: "#E5E5E5", width: "100%", flexShrink: 0 }} />
 
       {/* Description */}
-      <p style={{ margin: 0, fontSize: 16, color: "rgba(0,13,26,0.57)", lineHeight: "24px" }}>
+      <p
+        style={{ margin: 0, fontSize: 16, color: "rgba(0,13,26,0.57)", lineHeight: "24px" }}
+      >
         {description}
       </p>
 
@@ -488,19 +499,21 @@ export function DataCard({ data }: NodeProps<any>) {
         </div>
       </div>
 
-      {/* Push cards */}
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-        <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
-          <IconPlus size={14} stroke={2} style={{ color: BLUE, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: F, lineHeight: "18px" }}>Add New Card</span>
-        </button>
-        <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 6, flex: 1 }}>
-          <IconArrowBarRight size={14} stroke={2} style={{ color: BLUE, flexShrink: 0, marginTop: 2 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: F, lineHeight: "18px", textAlign: "left" }}>
-            Give me a breakdown of the data within this outcome area
-          </span>
-        </button>
-      </div>
+      {/* Push cards — hidden in view/play mode */}
+      {!viewMode && !playMode && (
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+            <IconPlus size={14} stroke={2} style={{ color: BLUE, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: F, lineHeight: "18px" }}>Add New Card</span>
+          </button>
+          <button style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 6, flex: 1 }}>
+            <IconArrowBarRight size={14} stroke={2} style={{ color: BLUE, flexShrink: 0, marginTop: 2 }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: BLUE, fontFamily: F, lineHeight: "18px", textAlign: "left" }}>
+              Give me a breakdown of the data within this outcome area
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,13 +20,15 @@ const pillStyle: React.CSSProperties = {
   boxShadow: "0px 1px 3px 0px rgba(12,35,60,0.06)",
 };
 
-// Layout constants (keep in sync with WorkspaceShell)
-const PROMPT_BOTTOM = 22;
-const PADDING_V = 16;        // top + bottom padding on prompt bar
-const LINE_H = 24;           // px per textarea line
+// Layout constants — exported so WorkspaceShell can derive chatBottom accurately
+export const PROMPT_BOTTOM = 22;
+export const PILLS_GAP_BOTTOM = 20; // pills→prompt gap: larger to visually clear the prompt bar shadow
+export const PILLS_GAP_TOP = 12;    // chat→pills gap: no shadow, so smaller
+export const PILLS_H = 30;          // rendered pill height: 13px font + 12px padding + 2px border
+const PADDING_V = 16;          // top + bottom padding on prompt bar
+const LINE_H = 24;             // px per textarea line
 const MAX_LINES = 3;
-const PILLS_GAP = 30;        // gap between prompt bar top edge and pills bottom
-const BANNER_H = 48;         // blue context banner height (14px padding × 2 + 20px text)
+const BANNER_H = 48;           // blue context banner height
 
 interface Props {
   onSubmit?: (text: string) => void;
@@ -58,7 +60,7 @@ export default function PromptBar({ onSubmit, onHeightChange, selectedCard, onCl
   const promptBarHeight = taHeight + PADDING_V * 2;
   const bannerVisible = !!selectedCard;
   // Pills sit above the banner (if visible) then the prompt bar
-  const pillsBottom = PROMPT_BOTTOM + promptBarHeight + (bannerVisible ? BANNER_H : 0) + PILLS_GAP;
+  const pillsBottom = PROMPT_BOTTOM + promptBarHeight + (bannerVisible ? BANNER_H : 0) + PILLS_GAP_BOTTOM;
 
   // Notify parent when prompt bar changes height
   useEffect(() => {

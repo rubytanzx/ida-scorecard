@@ -18,12 +18,10 @@ interface Props {
 }
 
 export default function AIChatPanel({ open: externalOpen, messages = [], chatBottom = 150 }: Props) {
-  // null = not explicitly set by user; defer to externalOpen
   const [userOverride, setUserOverride] = useState<boolean | null>(null);
   const open = userOverride !== null ? userOverride : !!externalOpen;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -31,30 +29,32 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
   return (
     <>
       {/* AI Chat floating button (hidden when panel is open) */}
-      {!open && <button
-        aria-label="AI Chat"
-        onClick={() => setUserOverride(!open)}
-        style={{
-          position: "fixed",
-          bottom: 166,
-          right: 18,
-          width: 66,
-          height: 66,
-          borderRadius: "50%",
-          border: `1px solid ${open ? "#0b6fd3" : "#E5E5E5"}`,
-          background: open ? "#EBF3FC" : "#FFFFFF",
-          boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          zIndex: 50,
-          color: open ? "#0b6fd3" : "#616161",
-          transition: "background 0.15s, border-color 0.15s, color 0.15s",
-        }}
-      >
-        <IconSparkles size={24} stroke={1.5} />
-      </button>}
+      {!open && (
+        <button
+          aria-label="AI Chat"
+          onClick={() => setUserOverride(!open)}
+          style={{
+            position: "fixed",
+            bottom: chatBottom,
+            right: 18,
+            width: 66,
+            height: 66,
+            borderRadius: "50%",
+            border: "1px solid #E5E5E5",
+            background: "#FFFFFF",
+            boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 50,
+            color: "#616161",
+            transition: "background 0.15s, border-color 0.15s, color 0.15s",
+          }}
+        >
+          <IconSparkles size={24} stroke={1.5} />
+        </button>
+      )}
 
       {/* AI Co-pilot Panel */}
       {open && (
@@ -66,42 +66,47 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
             right: 18,
             transition: "bottom 0.15s ease",
             width: 468,
-            background: "#FFFFFF",
-            border: "1px solid #E5E5E5",
+            background: "rgba(255, 255, 255, 0.97)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(11, 111, 211, 0.2)",
             borderRadius: 16,
-            boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)",
+            boxShadow:
+              "0 0 0 1px rgba(11, 111, 211, 0.06), 0 8px 32px rgba(11, 111, 211, 0.15), 0 2px 8px rgba(12, 35, 60, 0.08)",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             zIndex: 49,
           }}
         >
-          {/* Header */}
+          {/* ── Colored Header ───────────────────────────────── */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "16px 20px",
-              borderBottom: "1px solid #E5E5E5",
+              padding: "14px 16px",
+              background: "linear-gradient(135deg, #0D52A2 0%, #0b6fd3 60%, #2196F3 100%)",
               flexShrink: 0,
             }}
           >
-            <IconSparkles size={24} stroke={1.5} color="#616161" />
+            <IconSparkles size={19} stroke={1.9} color="rgba(255,255,255,0.9)" />
             <span
               style={{
                 flex: 1,
                 fontFamily: "'Open Sans', sans-serif",
-                fontSize: 18,
-                fontWeight: 600,
-                color: "#616161",
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#FFFFFF",
                 lineHeight: "140%",
+                letterSpacing: "-0.15px",
               }}
             >
               Ask AI
             </span>
             <button
               onClick={() => setUserOverride(false)}
+              aria-label="Close"
               style={{
                 width: 24,
                 height: 24,
@@ -111,7 +116,7 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#616161",
+                color: "rgba(255,255,255,0.85)",
                 padding: 0,
                 flexShrink: 0,
               }}
@@ -120,7 +125,7 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
             </button>
           </div>
 
-          {/* Conversation */}
+          {/* ── Conversation ─────────────────────────────────── */}
           <div
             style={{
               flex: 1,
@@ -133,9 +138,19 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
           >
             {messages.length > 0 ? (
               <>
-                {messages.map((msg) => (
-                  <ChatMessage key={msg.id} message={msg} />
-                ))}
+                {(() => {
+                  // Find the index of the last assistant message so only it shows actions
+                  const lastAssistantIdx = messages.reduce(
+                    (last, msg, i) => (msg.role === "assistant" ? i : last),
+                    -1
+                  );
+                  return messages.map((msg, i) => (
+                    <ChatMessage
+                      key={msg.id}
+                      message={i === lastAssistantIdx ? msg : { ...msg, actions: undefined }}
+                    />
+                  ));
+                })()}
                 <div ref={messagesEndRef} />
               </>
             ) : (
@@ -154,9 +169,9 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
                       I am an Operations Officer writing the new CPF for Mexico. Using FY25 scorecard
                       data, give me a ranked list of 3–5 priority Outcome Areas where Mexico has the
                       biggest gaps compared to Chile, Brazil, Colombia and Peru. For each gap, show me
-                      which projects in the current portfolio are contributing to that indicator, how much,
-                      and whether that contribution is growing or stalling. Flag where evidence is limited.
-                      I need this as a brief I can take into a decision meeting
+                      which projects in the current portfolio are contributing to that indicator, how
+                      much, and whether that contribution is growing or stalling. Flag where evidence
+                      is limited. I need this as a brief I can take into a decision meeting
                     </p>
                   </div>
                 </div>
@@ -180,7 +195,12 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
                           {["Indicator", "Mexico", "Chile", "Brazil"].map((h) => (
                             <th
                               key={h}
-                              style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, color: "#374151" }}
+                              style={{
+                                padding: "10px 12px",
+                                textAlign: "left",
+                                fontWeight: 600,
+                                color: "#374151",
+                              }}
                             >
                               {h}
                             </th>
@@ -197,7 +217,11 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
                             {row.map((cell, i) => (
                               <td
                                 key={i}
-                                style={{ padding: "10px 12px", color: "#374151", fontWeight: i === 0 ? 500 : 400 }}
+                                style={{
+                                  padding: "10px 12px",
+                                  color: "#374151",
+                                  fontWeight: i === 0 ? 500 : 400,
+                                }}
                               >
                                 {cell}
                               </td>

@@ -566,6 +566,7 @@ export default function ProjectsShell() {
 
               {/* New board */}
               <button
+                onClick={() => router.push("/workspace/new")}
                 style={{
                   height: 36,
                   display: "flex",
@@ -634,6 +635,7 @@ export default function ProjectsShell() {
             >
               {/* New board placeholder card */}
               <button
+                onClick={() => router.push("/workspace/new")}
                 style={{
                   background: "transparent",
                   border: "2px dashed #E5E5E5",

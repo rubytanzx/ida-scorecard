@@ -32,9 +32,11 @@ const NEWS_ITEMS = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function NewsCard({ selected }: NodeProps<any>) {
+export function NewsCard({ selected, data }: NodeProps<any>) {
   const [cardHovered, setCardHovered] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const viewMode = data?.viewMode ?? false;
+  const playMode = data?.playMode ?? false;
 
   return (
     <div
@@ -42,28 +44,28 @@ export function NewsCard({ selected }: NodeProps<any>) {
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
       style={{
-        width: 411,
+        width: playMode ? "100%" : 411,
         fontFamily: F,
-        cursor: "grab",
-        borderRadius: 8,
-        boxShadow: selected ? "0 0 0 2px #0B6FD3" : undefined,
-        transition: "box-shadow 0.2s",
+        cursor: playMode ? "default" : "grab",
+        borderRadius: playMode ? 0 : 8,
+        boxShadow: (!playMode && selected) ? "0 0 0 2px #0B6FD3" : undefined,
+        transition: playMode ? undefined : "box-shadow 0.2s",
       }}
     >
       {/* Header */}
       <div
         style={{
           background: "#FFFFFF",
-          borderTop: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRight: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderTop: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRight: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
           borderBottom: "none",
-          borderLeft: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRadius: "8px 8px 0 0",
+          borderLeft: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRadius: playMode ? 0 : "8px 8px 0 0",
           padding: "16px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          transition: "border-color 0.2s",
+          transition: playMode ? undefined : "border-color 0.2s",
         }}
       >
         <span style={{ fontSize: 20, fontWeight: 600, color: "#1E293B" }}>News</span>
@@ -87,13 +89,13 @@ export function NewsCard({ selected }: NodeProps<any>) {
         style={{
           background: "#FFFFFF",
           borderTop: "none",
-          borderRight: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRight: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
           borderBottom: "none",
-          borderLeft: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          boxShadow: cardHovered
+          borderLeft: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          boxShadow: playMode ? "none" : cardHovered
             ? "0px 6px 16px 0px rgba(12,35,60,0.14)"
             : "0px 2px 4px 0px rgba(12,35,60,0.08)",
-          transition: "box-shadow 0.2s, border-color 0.2s",
+          transition: playMode ? undefined : "box-shadow 0.2s, border-color 0.2s",
         }}
       >
         {/* Country Tabs */}
@@ -143,7 +145,11 @@ export function NewsCard({ selected }: NodeProps<any>) {
             <span style={{ fontSize: 14, color: item.typeColor, textTransform: "uppercase", fontWeight: 400 }}>
               {item.type}
             </span>
-            <p style={{ margin: 0, fontSize: 14, color: "#475569", lineHeight: "22.75px" }}>{item.text}</p>
+            <p
+              style={{ margin: 0, fontSize: 14, color: "#475569", lineHeight: "22.75px" }}
+            >
+              {item.text}
+            </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {item.tags.map((tag) => (
                 <span key={tag} style={{ fontSize: 14, color: "#0B6FD3" }}>
@@ -161,16 +167,16 @@ export function NewsCard({ selected }: NodeProps<any>) {
         style={{
           background: "#FFFFFF",
           borderTop: "none",
-          borderRight: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderBottom: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderLeft: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRadius: "0 0 8px 8px",
+          borderRight: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderBottom: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderLeft: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRadius: playMode ? 0 : "0 0 8px 8px",
           padding: "12px 16px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 8,
-          transition: "border-color 0.2s",
+          transition: playMode ? undefined : "border-color 0.2s",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>

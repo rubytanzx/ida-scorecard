@@ -26,9 +26,10 @@ const GENERATE_OPTIONS = [
 
 interface Props {
   mode?: "edit" | "view";
+  onPlay?: () => void;
 }
 
-export default function FloatingActions({ mode = "edit" }: Props) {
+export default function FloatingActions({ mode = "edit", onPlay }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +62,7 @@ export default function FloatingActions({ mode = "edit" }: Props) {
           height: 64,
         }}
       >
-        {/* Share and Access */}
+        {/* Share and Access (edit only) */}
         {mode === "edit" && (
           <button
             style={{
@@ -83,6 +84,40 @@ export default function FloatingActions({ mode = "edit" }: Props) {
           >
             <IconLock size={20} stroke={1.5} />
             Share and Access
+          </button>
+        )}
+
+        {/* Remix (view only) */}
+        {mode === "view" && (
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 16px",
+              borderRadius: 999,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              lineHeight: 1.4,
+            }}
+          >
+            <IconSparkles size={20} stroke={1.5} color="#ae5ded" style={{ flexShrink: 0 }} />
+            <span
+              style={{
+                fontFamily: F,
+                fontSize: 14,
+                fontWeight: 600,
+                background: "linear-gradient(to left, #68c5ea 19%, #ae5ded 123%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              Remix
+            </span>
           </button>
         )}
 
@@ -111,9 +146,10 @@ export default function FloatingActions({ mode = "edit" }: Props) {
           Generate
         </button>
 
-        {/* Publish */}
+        {/* Play (edit mode) */}
         {mode === "edit" && (
           <button
+            onClick={onPlay}
             style={{
               display: "flex",
               alignItems: "center",
@@ -132,7 +168,33 @@ export default function FloatingActions({ mode = "edit" }: Props) {
             }}
           >
             <IconPlayerPlay size={20} stroke={1.5} />
-            Publish
+            Play
+          </button>
+        )}
+
+        {/* Play (view only) */}
+        {mode === "view" && (
+          <button
+            onClick={onPlay}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 16px",
+              borderRadius: 999,
+              border: "1px solid #0b6fd3",
+              background: "#0b6fd3",
+              cursor: "pointer",
+              fontFamily: F,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#FFFFFF",
+              whiteSpace: "nowrap",
+              lineHeight: 1.4,
+            }}
+          >
+            <IconPlayerPlay size={20} stroke={1.5} />
+            Play
           </button>
         )}
 

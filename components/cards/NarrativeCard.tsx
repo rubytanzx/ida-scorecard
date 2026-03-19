@@ -39,9 +39,11 @@ const INSIGHTS = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function NarrativeCard({ selected }: NodeProps<any>) {
+export function NarrativeCard({ selected, data }: NodeProps<any>) {
   const [cardHovered, setCardHovered] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const viewMode = data?.viewMode ?? false;
+  const playMode = data?.playMode ?? false;
 
   return (
     <div
@@ -49,32 +51,32 @@ export function NarrativeCard({ selected }: NodeProps<any>) {
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
       style={{
-        width: 411,
+        width: playMode ? "100%" : 411,
         fontFamily: F,
-        cursor: "grab",
-        borderRadius: 8,
-        boxShadow: selected ? "0 0 0 2px #0B6FD3" : undefined,
-        transition: "box-shadow 0.2s",
+        cursor: playMode ? "default" : "grab",
+        borderRadius: playMode ? 0 : 8,
+        boxShadow: (!playMode && selected) ? "0 0 0 2px #0B6FD3" : undefined,
+        transition: playMode ? undefined : "box-shadow 0.2s",
       }}
     >
       {/* Gradient Header */}
       <div
         style={{
-          background: "linear-gradient(to left, rgba(104,197,234,0.15), rgba(174,93,237,0.15))",
-          borderTop: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRight: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          background: playMode ? "transparent" : "linear-gradient(to left, rgba(104,197,234,0.15), rgba(174,93,237,0.15))",
+          borderTop: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRight: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
           borderBottom: "none",
-          borderLeft: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRadius: "8px 8px 0 0",
-          padding: "16px 24px",
-          transition: "border-color 0.2s",
+          borderLeft: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRadius: playMode ? 0 : "8px 8px 0 0",
+          padding: playMode ? "24px 24px 8px" : "16px 24px",
+          transition: playMode ? undefined : "border-color 0.2s",
         }}
       >
         <h3
           style={{
             margin: 0,
-            fontSize: 20,
-            fontWeight: 600,
+            fontSize: playMode ? 24 : 20,
+            fontWeight: 700,
             lineHeight: "1.4",
             background: "linear-gradient(to left, #68C5EA, #AE5DED)",
             WebkitBackgroundClip: "text",
@@ -82,7 +84,7 @@ export function NarrativeCard({ selected }: NodeProps<any>) {
             backgroundClip: "text",
           }}
         >
-          AI Narrative Assistant
+          {playMode ? "AI Overview" : "AI Narrative Assistant"}
         </h3>
       </div>
 
@@ -91,14 +93,14 @@ export function NarrativeCard({ selected }: NodeProps<any>) {
         style={{
           background: "#FFFFFF",
           borderTop: "none",
-          borderRight: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderBottom: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderLeft: cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-          borderRadius: "0 0 8px 8px",
-          boxShadow: cardHovered
+          borderRight: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderBottom: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderLeft: playMode ? "none" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+          borderRadius: playMode ? 0 : "0 0 8px 8px",
+          boxShadow: playMode ? "none" : cardHovered
             ? "0px 6px 16px 0px rgba(12,35,60,0.14)"
             : "0px 2px 4px 0px rgba(12,35,60,0.08)",
-          transition: "box-shadow 0.2s, border-color 0.2s",
+          transition: playMode ? undefined : "box-shadow 0.2s, border-color 0.2s",
         }}
       >
         {INSIGHTS.map((insight, i) => (

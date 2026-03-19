@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconSparkles } from "@tabler/icons-react";
 import type { Message } from "@/data/mockInteraction";
 
 const F = "'Open Sans', sans-serif";
@@ -178,20 +178,43 @@ export default function ChatMessage({ message }: { message: Message }) {
         {renderContent(message.content)}
       </div>
       {message.actions && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {/* "Would you like to:" header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <IconSparkles size={14} stroke={1.5} style={{ color: "#ae5ded", flexShrink: 0 }} />
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                fontFamily: F,
+                background: "linear-gradient(to left, #68c5ea 19%, #ae5ded 123%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                lineHeight: "16px",
+              }}
+            >
+              Would you like to:
+            </span>
+          </div>
+
+          {/* Suggestion buttons */}
           {message.actions.map((action) => (
             <button
               key={action.label}
               style={{
-                height: 28,
-                padding: "0 12px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontFamily: F,
+                width: "100%",
+                textAlign: "left",
+                padding: 9,
+                border: "1px solid #68c5ea",
+                borderRadius: 4,
+                background: "linear-gradient(to left, rgba(104,197,234,0.1) 19%, rgba(174,93,237,0.1) 123%)",
                 cursor: "pointer",
-                ...(action.variant === "outlined"
-                  ? { background: "transparent", border: "1px solid #4A9EFF", color: "#4A9EFF" }
-                  : { background: "#1565C0", border: "none", color: "#FFFFFF" }),
+                fontFamily: F,
+                fontSize: 12,
+                fontWeight: 400,
+                color: "#202020",
+                lineHeight: "16px",
               }}
             >
               {action.label}

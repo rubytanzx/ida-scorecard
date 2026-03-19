@@ -61,27 +61,31 @@ function useStreamingText(fullText: string, delay: number): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function OutcomeAreaCard({ data }: NodeProps<any>) {
-  const { title, body, streamDelay = 0, index = 0, totalCards = 5, navLabels, onNavDown } = data as OutcomeAreaData;
+export function OutcomeAreaCard({ data, selected }: NodeProps<any>) {
+  const { title, body, streamDelay = 0, index = 0, totalCards = 5, navLabels, onNavDown, viewMode = false, playMode = false } = data as OutcomeAreaData & { viewMode?: boolean; playMode?: boolean };
   const displayed = useStreamingText(body, streamDelay + 150);
   const showCursor = displayed.length > 0 && displayed.length < body.length;
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
       className="card-enter"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         animationDelay: `${streamDelay}ms`,
-        width: 411,
+        width: playMode ? "100%" : 411,
         background: "#FFFFFF",
-        border: "1px solid #E5E5E5",
-        borderRadius: 8,
-        boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.05), 0px 2px 4px -1px rgba(0,0,0,0.03)",
+        border: playMode ? "none" : selected ? "1px solid #0b6fd3" : hovered ? "1px solid #BDBDBD" : "1px solid #E5E5E5",
+        borderRadius: playMode ? 0 : 8,
+        boxShadow: playMode ? "none" : selected ? "0px 0px 0px 3px rgba(11,111,211,0.12)" : hovered ? "0px 4px 12px rgba(0,0,0,0.08)" : "0px 4px 6px -1px rgba(0,0,0,0.05), 0px 2px 4px -1px rgba(0,0,0,0.03)",
         padding: 25,
         display: "flex",
         flexDirection: "column",
         gap: 16,
         fontFamily: F,
-        cursor: "grab",
+        cursor: playMode ? "default" : "grab",
+        transition: "border-color 0.15s, box-shadow 0.15s",
       }}
     >
       {/* Label + Title + AI badge */}
@@ -167,40 +171,42 @@ export function OutcomeAreaCard({ data }: NodeProps<any>) {
         )}
       </p>
 
-      {/* Navigation arrow-bar buttons */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-        {(
-          [
-            { Icon: IconArrowBarLeft,  show: true,                    label: navLabels?.left  ?? "Back to overview",         onClick: undefined },
-            { Icon: IconArrowBarUp,    show: index > 0,               label: navLabels?.up    ?? "Previous outcome area",     onClick: undefined },
-            { Icon: IconArrowBarDown,  show: index < totalCards - 1,  label: navLabels?.down  ?? "Next outcome area",         onClick: onNavDown },
-            { Icon: IconArrowBarRight, show: true,                    label: navLabels?.right ?? "Explore deeper",            onClick: undefined },
-          ] as const
-        )
-          .filter((b) => b.show)
-          .map(({ Icon, label, onClick }) => (
-            <button
-              key={label}
-              onClick={onClick}
-              style={{
-                background: "none",
-                border: "none",
-                fontFamily: F,
-                fontSize: 12,
-                color: "#086ED3",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: 0,
-              }}
-            >
-              <Icon size={13} stroke={2} />
-              {label}
-            </button>
-          ))}
-      </div>
+      {/* Navigation arrow-bar buttons — hidden in view/play mode */}
+      {!viewMode && !playMode && (
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          {(
+            [
+              { Icon: IconArrowBarLeft,  show: true,                    label: navLabels?.left  ?? "Back to overview",         onClick: undefined },
+              { Icon: IconArrowBarUp,    show: index > 0,               label: navLabels?.up    ?? "Previous outcome area",     onClick: undefined },
+              { Icon: IconArrowBarDown,  show: index < totalCards - 1,  label: navLabels?.down  ?? "Next outcome area",         onClick: onNavDown },
+              { Icon: IconArrowBarRight, show: true,                    label: navLabels?.right ?? "Explore deeper",            onClick: undefined },
+            ] as const
+          )
+            .filter((b) => b.show)
+            .map(({ Icon, label, onClick }) => (
+              <button
+                key={label}
+                onClick={onClick}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontFamily: F,
+                  fontSize: 12,
+                  color: "#086ED3",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: 0,
+                }}
+              >
+                <Icon size={13} stroke={2} />
+                {label}
+              </button>
+            ))}
+        </div>
+      )}
 
       {/* Footer */}
       <div

@@ -11,10 +11,11 @@ interface Props {
   playActive: boolean;
   fitViewTrigger: number;
   loading?: boolean;
+  nodesDraggable?: boolean;
   onCardSelect?: (id: string | null) => void;
 }
 
-export default function CanvasLoader({ nodes, orderedNodes, playActive, fitViewTrigger, loading, onCardSelect }: Props) {
+export default function CanvasLoader({ nodes, orderedNodes, playActive, fitViewTrigger, loading, nodesDraggable = true, onCardSelect }: Props) {
   return (
     <WorkspaceCanvas
       nodes={nodes}
@@ -22,6 +23,7 @@ export default function CanvasLoader({ nodes, orderedNodes, playActive, fitViewT
       playActive={playActive}
       fitViewTrigger={fitViewTrigger}
       loading={loading}
+      nodesDraggable={nodesDraggable}
       onCardSelect={onCardSelect}
     />
   );

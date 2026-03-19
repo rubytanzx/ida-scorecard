@@ -8,7 +8,6 @@ export interface Message {
 
 export interface MessageAction {
   label: string;
-  variant: 'outlined' | 'filled';
 }
 
 export const USER_MESSAGE: Message = {
@@ -33,7 +32,41 @@ export const AI_MESSAGE: Message = {
     "I've added 3 priority gap cards to your canvas based on FY25 data.\n\nMexico's biggest gaps vs its peer group are in **Learning Poverty**, **Social Protection Coverage**, and **Financial Account Ownership**.\n\nFor each, I've shown the current portfolio contribution and whether it's growing or stalling. The education gap has limited evidence — flagged on the card.\n\nScroll right on the canvas to see all three.",
   timestamp: 'Just now',
   actions: [
-    { label: 'Add remaining gaps →', variant: 'outlined' },
-    { label: 'Generate brief', variant: 'filled' },
+    { label: 'Show me the underlying data for each gap' },
+    { label: 'Compare Mexico\'s portfolio against Brazil\'s education projects' },
+    { label: 'Generate a CPF brief from this analysis' },
+  ],
+};
+
+export const GREETING_MESSAGE: Message = {
+  id: 'msg-greeting',
+  role: 'assistant',
+  content: 'What would you like to create?',
+  timestamp: '',
+};
+
+export const OUTCOME_AREAS_MESSAGE: Message = {
+  id: 'msg-outcome-areas',
+  role: 'assistant',
+  content:
+    "I've added **5 Outcome Area cards** to your canvas — one per priority gap.\n\nEach card shows Mexico's current indicator value, the gap vs the peer group, which WB projects are contributing, and whether progress is growing or stalling. Use the navigation arrows on each card to move between them or drill deeper into the data.",
+  timestamp: 'Just now',
+  actions: [
+    { label: 'Take me deeper into Learning Poverty' },
+    { label: 'Compare Protection for the Poorest against peer benchmarks' },
+    { label: 'Show which projects are contributing to each area' },
+  ],
+};
+
+export const DATA_CARDS_MESSAGE: Message = {
+  id: 'msg-data-cards',
+  role: 'assistant',
+  content:
+    "**Learning poverty in Mexico is driven by systemic under-investment, not data gaps.**\n\nThe 47.6% rate reflects pre-pandemic 2019 figures — post-COVID deterioration likely pushes this higher. The structural issue: the WB has **zero active operations** contributing to education outcomes in Mexico, while Brazil alone has 6 education projects covering 48 million students.\n\nI've added the underlying data cards showing social protection coverage, financial account ownership, and safety net beneficiaries — these feed directly into the Protection for the Poorest outcome area.",
+  timestamp: 'Just now',
+  actions: [
+    { label: 'Show comparable education projects in Brazil' },
+    { label: 'Flag this gap for the CPF brief' },
+    { label: 'Show me the full portfolio gap for Protection of the Poorest' },
   ],
 };

@@ -102,6 +102,8 @@ function TrendCell({ trend, type }: { trend: string; type: "stalling" | "warning
 export function OverviewCard({ selected, data }: NodeProps<any>) {
   const [cardHovered, setCardHovered] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const viewMode = data?.viewMode ?? false;
+  const playMode = data?.playMode ?? false;
 
   return (
     <div
@@ -109,19 +111,19 @@ export function OverviewCard({ selected, data }: NodeProps<any>) {
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
       style={{
-        width: 1200,
+        width: playMode ? "100%" : 1200,
         background: "#FFFFFF",
-        border: selected ? "1px solid #0B6FD3" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
-        borderRadius: 8,
-        boxShadow: selected
+        border: playMode ? "none" : selected ? "1px solid #0B6FD3" : cardHovered ? "1px solid #C8C8C8" : "1px solid #E5E5E5",
+        borderRadius: playMode ? 0 : 8,
+        boxShadow: playMode ? "none" : selected
           ? "0 0 0 2px #0B6FD3, 0px 6px 16px 0px rgba(12,35,60,0.14)"
           : cardHovered
           ? "0px 6px 16px 0px rgba(12,35,60,0.14)"
           : "0px 2px 4px 0px rgba(12,35,60,0.08)",
         fontFamily: F,
         overflow: "hidden",
-        cursor: "grab",
-        transition: "box-shadow 0.2s, border-color 0.2s",
+        cursor: playMode ? "default" : "grab",
+        transition: playMode ? undefined : "box-shadow 0.2s, border-color 0.2s",
       }}
     >
       {/* Title */}
@@ -236,39 +238,43 @@ export function OverviewCard({ selected, data }: NodeProps<any>) {
           ))}
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <button
-            style={{
-              background: "none",
-              border: "none",
-              fontFamily: F,
-              fontSize: 12,
-              color: "#086ED3",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            ↓ Down
-          </button>
-          <button
-            onClick={() => data?.onShowOutcomeAreas?.()}
-            style={{
-              background: "none",
-              border: "none",
-              fontFamily: F,
-              fontSize: 12,
-              color: "#086ED3",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            |→ Show me how each individual outcome areas are derived
-          </button>
+          {!viewMode && !playMode && (
+            <>
+              <button
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontFamily: F,
+                  fontSize: 12,
+                  color: "#086ED3",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                ↓ Down
+              </button>
+              <button
+                onClick={() => data?.onShowOutcomeAreas?.()}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontFamily: F,
+                  fontSize: 12,
+                  color: "#086ED3",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                |→ Show me how each individual outcome areas are derived
+              </button>
+            </>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
             <button
               style={{

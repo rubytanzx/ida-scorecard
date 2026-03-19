@@ -29,6 +29,7 @@ interface Props {
   playActive: boolean;
   fitViewTrigger: number;
   loading?: boolean;
+  nodesDraggable?: boolean;
   onCardSelect?: (id: string | null) => void;
 }
 
@@ -42,16 +43,24 @@ function FitViewTrigger({ trigger }: { trigger: number }) {
   return null;
 }
 
-export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, playActive, fitViewTrigger, loading, onCardSelect }: Props) {
+export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, playActive, fitViewTrigger, loading, nodesDraggable = true, onCardSelect }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
-  // Add new nodes from external without resetting drag positions
+  // Sync external node changes: add new nodes and update data/draggable on existing ones.
+  // Position is preserved from internal state (user may have moved cards).
   useEffect(() => {
     setNodes((prev) => {
+      const extMap = new Map(externalNodes.map((n) => [n.id, n]));
       const prevIds = new Set(prev.map((n) => n.id));
+
+      const updated = prev.map((n) => {
+        const ext = extMap.get(n.id);
+        if (!ext) return n;
+        return { ...n, data: ext.data, draggable: ext.draggable, selectable: ext.selectable };
+      });
+
       const newNodes = externalNodes.filter((n) => !prevIds.has(n.id));
-      if (newNodes.length === 0) return prev;
-      return [...prev, ...newNodes];
+      return newNodes.length > 0 ? [...updated, ...newNodes] : updated;
     });
   }, [externalNodes, setNodes]);
 
@@ -79,7 +88,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
           pointerEvents: "none",
         }}
       >
-        {orderedNodes.map((node) => {
+        {orderedNodes.filter((node) => node.type !== "news").map((node) => {
           const CardComponent = nodeTypes[node.type as keyof typeof nodeTypes];
           if (!CardComponent) return null;
           return (
@@ -90,7 +99,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
               <CardComponent
                 id={node.id}
                 type={node.type ?? ""}
-                data={node.data}
+                data={{ ...node.data, viewMode: true }}
                 selected={false}
                 isConnectable={false}
                 zIndex={0}
@@ -141,7 +150,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
         zoomOnScroll={true}
         zoomOnPinch={true}
         selectionOnDrag={false}
-        nodesDraggable={true}
+        nodesDraggable={nodesDraggable}
         nodesConnectable={false}
         elementsSelectable={true}
         style={{ background: "#FFFFFF", width: "100%", height: "100%" }}
@@ -149,7 +158,9 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
           const hit = selected.find((n) => n.selected);
           onCardSelect?.(hit?.id ?? null);
         }}
-        onPaneClick={() => onCardSelect?.(null)}
+        onPaneClick={() => {
+          onCardSelect?.(null);
+        }}
       >
         <Background
           variant={BackgroundVariant.Dots}
