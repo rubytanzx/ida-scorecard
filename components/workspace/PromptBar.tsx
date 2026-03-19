@@ -5,7 +5,6 @@ import { IconArrowUp, IconX } from "@tabler/icons-react";
 
 const F = "'Open Sans', sans-serif";
 
-const PILLS = ["Compare regions", "Continue Analysis via MCP", "Create a notebook"];
 
 const pillStyle: React.CSSProperties = {
   fontFamily: F,
@@ -34,9 +33,14 @@ interface Props {
   onHeightChange?: (height: number) => void;
   selectedCard?: string | null;
   onClearSelection?: () => void;
+  mode?: "edit" | "view";
 }
 
-export default function PromptBar({ onSubmit, onHeightChange, selectedCard, onClearSelection }: Props) {
+export default function PromptBar({ onSubmit, onHeightChange, selectedCard, onClearSelection, mode = "edit" }: Props) {
+  const PILLS =
+    mode === "view"
+      ? ["Compare regions", "Continue Analysis via MCP"]
+      : ["Compare regions", "Continue Analysis via MCP", "Create a notebook"];
   const [value, setValue] = useState("");
   const [taHeight, setTaHeight] = useState(LINE_H); // textarea content height in px
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -173,7 +177,7 @@ export default function PromptBar({ onSubmit, onHeightChange, selectedCard, onCl
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Give me more insights"
+          placeholder={mode === "view" ? "Ask about this notebook" : "Give me more insights"}
           rows={1}
           style={{
             flex: 1,
