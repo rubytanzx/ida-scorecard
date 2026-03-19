@@ -153,6 +153,7 @@ const OUTCOME_DATA = [
 interface Props {
   empty?: boolean;
   prebuilt?: boolean;
+  mode?: "edit" | "view";
 }
 
 function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => void): Node[] {
@@ -188,7 +189,7 @@ function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => v
   return [overviewNode, narrativeNode, newsNode, ...outcomeNodes];
 }
 
-export default function WorkspaceShell({ empty = false, prebuilt = false }: Props) {
+export default function WorkspaceShell({ empty = false, prebuilt = false, mode = "edit" }: Props) {
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(prebuilt ? [USER_MESSAGE, AI_MESSAGE] : []);
   const [canvasNodes, setCanvasNodes] = useState<Node[]>([]);
@@ -336,11 +337,11 @@ export default function WorkspaceShell({ empty = false, prebuilt = false }: Prop
     >
       <CanvasLoader nodes={canvasNodes} fitViewTrigger={fitViewTrigger} loading={canvasLoading} onCardSelect={handleCardSelect} />
       <FloatingSidebar />
-      <FloatingTitle initialTitle={empty ? "" : undefined} />
-      <FloatingActions />
-      <FloatingControls />
+      <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} />
+      <FloatingActions mode={mode} />
+      <FloatingControls mode={mode} />
       <RightNavDots />
-      <PromptBar onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />
+      <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />
       <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} />
     </div>
   );
