@@ -28,6 +28,10 @@ export interface Story {
   href?: string;
   imageSrc?: string;
   imageAlt?: string;
+  lastUpdated?: string;
+  upvotes?: number;
+  downvotes?: number;
+  connectors?: number;
 }
 
 export interface FeaturedStory extends Story {
@@ -46,10 +50,14 @@ export const featuredStory: FeaturedStory = {
   workspaceIcon: "chart-line",
   institutions: ["IFC", "MIGA"],
   author: { initials: "AO", name: "Amara Osei", color: "#2563eb" },
-  ctaLabel: "",
+  ctaLabel: "View ECA vs EAP PCE Reform Analysis",
   ctaHref: "#",
   imageSrc: "/images/story-featured.jpg",
   imageAlt: "Collapsed bridge infrastructure",
+  lastUpdated: "Mar 19, 2025",
+  upvotes: 312,
+  downvotes: 11,
+  connectors: 9,
 };
 
 export const secondaryStories: Story[] = [
@@ -65,6 +73,8 @@ export const secondaryStories: Story[] = [
     ctaHref: "#",
     imageSrc: "/images/story-1.jpg",
     imageAlt: "Collapsed bridge infrastructure",
+    lastUpdated: "Mar 14, 2025",
+    upvotes: 94, downvotes: 7, connectors: 4,
   },
   {
     id: "story-2",
@@ -78,6 +88,8 @@ export const secondaryStories: Story[] = [
     ctaHref: "#",
     imageSrc: "/images/story-2.jpg",
     imageAlt: "Global network connectivity from space",
+    lastUpdated: "Mar 9, 2025",
+    upvotes: 156, downvotes: 23, connectors: 6,
   },
   {
     id: "story-3",
@@ -92,6 +104,8 @@ export const secondaryStories: Story[] = [
     href: "/story/story-3",
     imageSrc: "/images/story-3.jpg",
     imageAlt: "Healthcare worker with patients",
+    lastUpdated: "Mar 17, 2025",
+    upvotes: 231, downvotes: 5, connectors: 7,
   },
 ];
 
@@ -306,6 +320,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/mexico-fy25",
     imageSrc: "/images/nb-1.jpg",
     imageAlt: "Mexico Country Scorecard",
+    lastUpdated: "Mar 12, 2025",
+    upvotes: 142, downvotes: 8, connectors: 5,
   },
   {
     id: "nb-2",
@@ -320,6 +336,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/mexico-fy25",
     imageSrc: "/images/nb-2.jpg",
     imageAlt: "Mexico DPF Results Analysis",
+    lastUpdated: "Feb 28, 2025",
+    upvotes: 87, downvotes: 21, connectors: 3,
   },
   {
     id: "nb-3",
@@ -334,6 +352,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/mexico-fy25",
     imageSrc: "/images/nb-3.jpg",
     imageAlt: "Education & Safety Net Gap — Mexico",
+    lastUpdated: "Mar 5, 2025",
+    upvotes: 113, downvotes: 14, connectors: 7,
   },
   {
     id: "nb-4",
@@ -348,6 +368,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/lac-regional-fy25",
     imageSrc: "/images/nb-4.jpg",
     imageAlt: "LAC social protection recipients in a community setting",
+    lastUpdated: "Mar 1, 2025",
+    upvotes: 64, downvotes: 31, connectors: 2,
   },
   {
     id: "nb-5",
@@ -362,6 +384,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/mexico-fy25",
     imageSrc: "/images/nb-5.jpg",
     imageAlt: "Woman using mobile banking in Latin America",
+    lastUpdated: "Feb 14, 2025",
+    upvotes: 113, downvotes: 14, connectors: 4,
   },
   {
     id: "nb-6",
@@ -376,6 +400,8 @@ export const story3Notebooks: Story[] = [
     href: "/workspace/chile-education",
     imageSrc: "/images/nb-6.jpg",
     imageAlt: "Primary school children in a Latin American classroom",
+    lastUpdated: "Mar 18, 2025",
+    upvotes: 198, downvotes: 3, connectors: 6,
   },
 ];
 
@@ -393,6 +419,8 @@ export const story3PeerBoards: Story[] = [
     href: "/workspace/brazil-lac-fy25",
     imageSrc: "/images/pb-1.jpg",
     imageAlt: "Schoolchildren in a Brazilian classroom",
+    lastUpdated: "Mar 10, 2025",
+    upvotes: 113, downvotes: 14, connectors: 8,
   },
   {
     id: "pb-2",
@@ -407,6 +435,8 @@ export const story3PeerBoards: Story[] = [
     href: "/workspace/chile-education",
     imageSrc: "/images/pb-2.jpg",
     imageAlt: "Students reading in a Chilean school",
+    lastUpdated: "Mar 3, 2025",
+    upvotes: 87, downvotes: 21, connectors: 3,
   },
   {
     id: "pb-3",
@@ -421,6 +451,8 @@ export const story3PeerBoards: Story[] = [
     href: "/workspace/colombia-uhc",
     imageSrc: "/images/pb-3.jpg",
     imageAlt: "Healthcare worker with patients in Colombia",
+    lastUpdated: "Feb 20, 2025",
+    upvotes: 142, downvotes: 8, connectors: 5,
   },
   {
     id: "pb-4",
@@ -435,6 +467,8 @@ export const story3PeerBoards: Story[] = [
     href: "/workspace/peru-climate",
     imageSrc: "/images/pb-4.jpg",
     imageAlt: "Andean forest and renewable energy infrastructure in Peru",
+    lastUpdated: "Mar 15, 2025",
+    upvotes: 64, downvotes: 31, connectors: 4,
   },
 ];
 

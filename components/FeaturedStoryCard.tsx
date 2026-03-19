@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { IconChartLine } from "@tabler/icons-react";
+import { IconChartLine, IconArrowRight } from "@tabler/icons-react";
 import { type FeaturedStory } from "@/lib/mockData";
 import AuthorChip from "./AuthorChip";
 import InstitutionLogos from "./InstitutionLogos";
@@ -28,10 +28,20 @@ export default function FeaturedStoryCard({ story }: Props) {
           </div>
         </div>
 
-        {/* Footer row */}
-        <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+        {/* Sources + author */}
+        <div className="flex items-center justify-between mt-4">
           <InstitutionLogos institutions={story.institutions} />
           <AuthorChip author={story.author} />
+        </div>
+
+        {/* Divider + CTA */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          {story.ctaLabel && (
+            <span className="group/cta flex items-center gap-1 text-[12px] text-blue-600 font-semibold hover:text-blue-700 transition-colors w-fit">
+              {story.ctaLabel}
+              <IconArrowRight size={12} className="group-hover/cta:translate-x-0.5 transition-transform" />
+            </span>
+          )}
         </div>
       </div>
 
