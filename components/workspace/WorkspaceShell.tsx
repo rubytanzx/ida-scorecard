@@ -9,6 +9,7 @@ import FloatingActions from "./FloatingActions";
 import FloatingControls from "./FloatingControls";
 import RightNavDots from "./RightNavDots";
 import PromptBar from "./PromptBar";
+import PlayModeCard from "./PlayModeCard";
 import AIChatPanel from "./AIChatPanel";
 import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE } from "@/data/mockInteraction";
 import type { Message } from "@/data/mockInteraction";
@@ -205,6 +206,16 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
   );
   const [playActive, setPlayActive] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+
+  const handleAdvance = () => {
+    if (currentCardIndex < orderedNodes.length - 1) {
+      setCurrentCardIndex((i) => i + 1);
+    } else {
+      setPlayActive(false);
+      setCurrentCardIndex(0);
+    }
+  };
+
   const ran = useRef(prebuilt);
 
   const handleCardSelect = (nodeId: string | null) => {
@@ -356,10 +367,20 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
           {/* Backdrop */}
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 45 }} />
 
+          {/* Spotlight card */}
+          {orderedNodes[currentCardIndex] && (
+            <PlayModeCard
+              node={orderedNodes[currentCardIndex]}
+              index={currentCardIndex}
+              total={orderedNodes.length}
+              onAdvance={handleAdvance}
+            />
+          )}
+
           {/* HUD */}
           <div style={{ position: "fixed", top: 16, right: 16, zIndex: 50, display: "flex", alignItems: "center", gap: 12, background: "white", border: "1px solid #e5e5e5", borderRadius: 16, boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)", padding: "8px 16px", height: 64 }}>
             <span style={{ fontFamily: "'Open Sans', sans-serif", fontSize: 13, color: "#616161" }}>
-              {currentCardIndex + 1} / {canvasNodes.length || 1}
+              {currentCardIndex + 1} / {orderedNodes.length || 1}
             </span>
             <button
               onClick={() => setPlayActive(false)}
