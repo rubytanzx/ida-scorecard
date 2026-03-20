@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IconCheck, IconSparkles } from "@tabler/icons-react";
-import type { Message } from "@/data/mockInteraction";
+import type { Message, ConnectorItem } from "@/data/mockInteraction";
 
 const F = "'Open Sans', sans-serif";
 
@@ -132,9 +132,81 @@ function renderContent(text: string) {
   );
 }
 
+// ─── Connector checklist ──────────────────────────────────────────────────────
+
+function ConnectorChecklist({
+  connectors,
+  checkedIds,
+  onToggle,
+}: {
+  connectors: ConnectorItem[];
+  checkedIds: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <div
+      style={{
+        border: "1px solid #E5E7EB",
+        borderRadius: 8,
+        overflow: "hidden",
+        marginTop: 8,
+      }}
+    >
+      {connectors.map((c, i) => (
+        <label
+          key={c.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "9px 12px",
+            borderBottom: i < connectors.length - 1 ? "1px solid #F3F4F6" : "none",
+            cursor: "pointer",
+            background: checkedIds.has(c.id) ? "#F8FBFF" : "#FFFFFF",
+            transition: "background 0.1s",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={checkedIds.has(c.id)}
+            onChange={() => onToggle(c.id)}
+            style={{ width: 15, height: 15, accentColor: "#0b6fd3", flexShrink: 0, cursor: "pointer" }}
+          />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "#1F2937", lineHeight: "18px" }}>
+              {c.name}
+            </div>
+            <div style={{ fontFamily: F, fontSize: 11, color: "#9CA3AF", lineHeight: "15px", marginTop: 1 }}>
+              {c.description}
+            </div>
+          </div>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ChatMessage({ message }: { message: Message }) {
+export default function ChatMessage({
+  message,
+  onAction,
+}: {
+  message: Message;
+  onAction?: (label: string) => void;
+}) {
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(
+    () => new Set((message.connectors ?? []).map((c) => c.id))
+  );
+
+  const toggleConnector = (id: string) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   if (message.role === "user") {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
@@ -164,6 +236,8 @@ export default function ChatMessage({ message }: { message: Message }) {
   }
 
   // assistant
+  const isConfirmAction = (label: string) => label === "Confirm connectors";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div
@@ -177,49 +251,85 @@ export default function ChatMessage({ message }: { message: Message }) {
       >
         {renderContent(message.content)}
       </div>
+
+      {message.connectors && (
+        <ConnectorChecklist
+          connectors={message.connectors}
+          checkedIds={checkedIds}
+          onToggle={toggleConnector}
+        />
+      )}
+
       {message.actions && (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {/* "Would you like to:" header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <IconSparkles size={14} stroke={1.5} style={{ color: "#ae5ded", flexShrink: 0 }} />
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                fontFamily: F,
-                background: "linear-gradient(to left, #68c5ea 19%, #ae5ded 123%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                lineHeight: "16px",
-              }}
-            >
-              Would you like to:
-            </span>
-          </div>
+          {/* Header — "Confirm connectors" gets its own CTA style; others get the AI suggestion style */}
+          {message.actions.some((a) => !isConfirmAction(a.label)) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <IconSparkles size={14} stroke={1.5} style={{ color: "#ae5ded", flexShrink: 0 }} />
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  fontFamily: F,
+                  background: "linear-gradient(to left, #68c5ea 19%, #ae5ded 123%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  lineHeight: "16px",
+                }}
+              >
+                Would you like to:
+              </span>
+            </div>
+          )}
 
-          {/* Suggestion buttons */}
-          {message.actions.map((action) => (
-            <button
-              key={action.label}
-              style={{
-                width: "100%",
-                textAlign: "left",
-                padding: 9,
-                border: "1px solid #68c5ea",
-                borderRadius: 4,
-                background: "linear-gradient(to left, rgba(104,197,234,0.1) 19%, rgba(174,93,237,0.1) 123%)",
-                cursor: "pointer",
-                fontFamily: F,
-                fontSize: 12,
-                fontWeight: 400,
-                color: "#202020",
-                lineHeight: "16px",
-              }}
-            >
-              {action.label}
-            </button>
-          ))}
+          {message.actions.map((action) =>
+            isConfirmAction(action.label) ? (
+              <button
+                key={action.label}
+                onClick={() => onAction?.(action.label)}
+                style={{
+                  width: "100%",
+                  textAlign: "center",
+                  padding: "10px 16px",
+                  border: "none",
+                  borderRadius: 8,
+                  background: checkedIds.size > 0 ? "#0b6fd3" : "#BDBDBD",
+                  cursor: checkedIds.size > 0 ? "pointer" : "default",
+                  fontFamily: F,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  lineHeight: "18px",
+                  marginTop: 4,
+                  transition: "background 0.15s",
+                }}
+              >
+                {action.label} {checkedIds.size > 0 ? `(${checkedIds.size})` : ""}
+              </button>
+            ) : (
+              <button
+                key={action.label}
+                onClick={() => onAction?.(action.label)}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  padding: 9,
+                  border: "1px solid #68c5ea",
+                  borderRadius: 4,
+                  background: "linear-gradient(to left, rgba(104,197,234,0.1) 19%, rgba(174,93,237,0.1) 123%)",
+                  cursor: "pointer",
+                  fontFamily: F,
+                  fontSize: 12,
+                  fontWeight: 400,
+                  color: "#202020",
+                  lineHeight: "16px",
+                }}
+              >
+                {action.label}
+              </button>
+            )
+          )}
         </div>
       )}
       {message.timestamp && (

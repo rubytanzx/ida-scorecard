@@ -56,10 +56,14 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
       const updated = prev.map((n) => {
         const ext = extMap.get(n.id);
         if (!ext) return n;
-        return { ...n, data: ext.data, draggable: ext.draggable, selectable: ext.selectable };
+        return { ...n, data: ext.data, selectable: ext.selectable };
       });
 
-      const newNodes = externalNodes.filter((n) => !prevIds.has(n.id));
+      // Strip explicit `draggable` so the global `nodesDraggable` prop is authoritative
+      const newNodes = externalNodes
+        .filter((n) => !prevIds.has(n.id))
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(({ draggable: _d, ...rest }) => rest);
       return newNodes.length > 0 ? [...updated, ...newNodes] : updated;
     });
   }, [externalNodes, setNodes]);

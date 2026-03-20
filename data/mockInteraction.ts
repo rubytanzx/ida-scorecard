@@ -1,14 +1,31 @@
+export interface ConnectorItem {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface MessageAction {
+  label: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'typing';
   content: string;
   timestamp: string;
   actions?: MessageAction[];
+  connectors?: ConnectorItem[];
 }
 
-export interface MessageAction {
-  label: string;
-}
+export const MCP_CONNECTORS: ConnectorItem[] = [
+  { id: 'wbg-scorecard',  name: 'WBG Scorecard',              description: 'FY25 results framework, country scorecards & outcome indicators' },
+  { id: 'ifc',            name: 'IFC',                         description: 'Private sector investment data, advisory services & portfolio results' },
+  { id: 'miga',           name: 'MIGA',                        description: 'Guarantee portfolio, political risk insurance & investment facilitation' },
+  { id: 'wb-operations',  name: 'WB Operations Portal',        description: 'Active & pipeline project data, financial commitments & supervision ratings' },
+  { id: 'wdi',            name: 'WDI',                         description: 'World Development Indicators — country-level statistical database' },
+  { id: 'cpf',            name: 'Country Partnership Frameworks', description: 'CPF objectives, results matrices & completion and learning reviews' },
+  { id: 'open-data',      name: 'WB Open Data',                description: 'Public datasets covering economy, population, climate & governance' },
+];
 
 export const USER_MESSAGE: Message = {
   id: 'msg-1',
@@ -36,6 +53,22 @@ export const AI_MESSAGE: Message = {
     { label: 'Compare Mexico\'s portfolio against Brazil\'s education projects' },
     { label: 'Generate a CPF brief from this analysis' },
   ],
+};
+
+export const CONNECTOR_MESSAGE: Message = {
+  id: 'msg-connectors',
+  role: 'assistant',
+  content: 'Before we begin, select the data connections you want to include in this workspace. I\'ll use these to pull live data as we work.',
+  timestamp: '',
+  connectors: MCP_CONNECTORS,
+  actions: [{ label: 'Confirm connectors' }],
+};
+
+export const CONNECTOR_CONFIRMED_AI_MESSAGE: Message = {
+  id: 'msg-connectors-confirmed',
+  role: 'assistant',
+  content: 'Connected to **WBG Scorecard FY25**, **IFC**, **MIGA**, **WB Operations Portal**, **WDI**, **Country Partnership Frameworks**, and **WB Open Data**.\n\nWhat would you like to create?',
+  timestamp: 'Just now',
 };
 
 export const GREETING_MESSAGE: Message = {

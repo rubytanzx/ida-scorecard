@@ -11,7 +11,7 @@ import RightNavDots from "./RightNavDots";
 import PromptBar, { PROMPT_BOTTOM, PILLS_GAP_BOTTOM, PILLS_GAP_TOP, PILLS_H } from "./PromptBar";
 import PlayModeCard from "./PlayModeCard";
 import AIChatPanel from "./AIChatPanel";
-import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE, GREETING_MESSAGE, OUTCOME_AREAS_MESSAGE, DATA_CARDS_MESSAGE } from "@/data/mockInteraction";
+import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE, GREETING_MESSAGE, OUTCOME_AREAS_MESSAGE, DATA_CARDS_MESSAGE, CONNECTOR_MESSAGE, CONNECTOR_CONFIRMED_AI_MESSAGE } from "@/data/mockInteraction";
 import type { Message } from "@/data/mockInteraction";
 
 const CARD_NAME_MAP: Record<string, string> = {
@@ -259,7 +259,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     }
   };
 
-  // submissionPhase: 0=awaiting first prompt, 1=board created (card chat available), 2=done
+  // submissionPhase: 0=awaiting prompt, 1=awaiting connector confirm, 2=board created (card chat), 3=done
   const submissionPhase = useRef<number>(prebuilt ? 2 : 0);
 
   const handleCardSelect = (nodeId: string | null) => {
@@ -347,14 +347,18 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
   // Asymmetric gaps: bottom gap is larger to visually clear the prompt bar shadow.
   const chatBottom = PROMPT_BOTTOM + promptBarHeight + PILLS_GAP_BOTTOM + PILLS_H + PILLS_GAP_TOP + (selectedCard ? 48 : 0);
 
-  const handleUserSubmit = (text: string) => {
-    // Phase 0: First submission — create the board with reasoning animation
-    if (submissionPhase.current === 0) {
-      submissionPhase.current = 1;
+  // Phase 1: "Confirm connectors" button — triggers reasoning + canvas build
+  const handleAction = (label: string) => {
+    if (submissionPhase.current === 1 && label === "Confirm connectors") {
+      submissionPhase.current = 2;
 
-      const userMsg: Message = { ...USER_MESSAGE, content: text };
-      setChatOpen(true);
-      setMessages([userMsg, TYPING_MESSAGE]);
+      const confirmMsg: Message = {
+        id: `msg-confirm-${Date.now()}`,
+        role: "user",
+        content: "Confirm connectors",
+        timestamp: "Just now",
+      };
+      setMessages((m) => [...m, confirmMsg, TYPING_MESSAGE]);
       setCanvasLoading(true);
 
       const overviewNode: Node = {
@@ -370,7 +374,6 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         data: {}, draggable: true, selectable: true,
       };
 
-      // Cards appear after reasoning completes (~2200ms into ReasoningAnimation)
       const timers: ReturnType<typeof setTimeout>[] = [];
       timers.push(setTimeout(() => setCanvasNodes([overviewNode]),                           2300));
       timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode]),            2600));
@@ -385,10 +388,22 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
 
       return () => timers.forEach(clearTimeout);
     }
+  };
 
-    // Phase 1: Card-chat submission — show data cards + AI narrative
-    if (submissionPhase.current === 1) {
-      submissionPhase.current = 2;
+  const handleUserSubmit = (text: string) => {
+    // Phase 0: First submission — show user prompt + ask for connectors
+    if (submissionPhase.current === 0) {
+      submissionPhase.current = 1;
+
+      const userMsg: Message = { ...USER_MESSAGE, content: text };
+      setChatOpen(true);
+      setMessages([userMsg, CONNECTOR_MESSAGE]);
+      return;
+    }
+
+    // Phase 2: Card-chat submission — show data cards + AI narrative
+    if (submissionPhase.current === 2) {
+      submissionPhase.current = 3;
 
       const userMsg: Message = {
         id: `msg-user-${Date.now()}`,
@@ -430,7 +445,8 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       {!playActive && <FloatingControls mode={mode} onModeChange={(m) => setPanMode(m === "pan")} />}
       {!playActive && <RightNavDots />}
       {!playActive && <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />}
-      {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} />}
+      {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} onAction={handleAction} />}
+
 
       {/* Play mode HUD */}
       {playActive && (
