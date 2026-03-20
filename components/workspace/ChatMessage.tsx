@@ -191,9 +191,11 @@ function ConnectorChecklist({
 export default function ChatMessage({
   message,
   onAction,
+  onConfirmConnectors,
 }: {
   message: Message;
   onAction?: (label: string) => void;
+  onConfirmConnectors?: (ids: Set<string>) => void;
 }) {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(
     () => new Set((message.connectors ?? []).map((c) => c.id))
@@ -287,7 +289,10 @@ export default function ChatMessage({
             isConfirmAction(action.label) ? (
               <button
                 key={action.label}
-                onClick={() => onAction?.(action.label)}
+                onClick={() => {
+                  onAction?.(action.label);
+                  onConfirmConnectors?.(new Set(checkedIds));
+                }}
                 style={{
                   width: "100%",
                   textAlign: "center",

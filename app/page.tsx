@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconSparkles, IconX, IconSend } from "@tabler/icons-react";
+import {
+  IconSparkles, IconX, IconArrowUp, IconPlus,
+  IconPaperclip, IconPhoto, IconPlugConnected,
+  IconChevronRight, IconSettings, IconTool,
+} from "@tabler/icons-react";
+import { MCP_CONNECTORS } from "@/data/mockInteraction";
 import AppHeader from "@/components/AppHeader";
 import SearchHero from "@/components/SearchHero";
 import SectionHeader from "@/components/SectionHeader";
@@ -21,6 +26,69 @@ import {
   counterIntuitiveCards,
   patternCards,
 } from "@/lib/mockData";
+
+// ─── Chat menu helpers ────────────────────────────────────────────────────────
+
+const F = "'Open Sans', sans-serif";
+
+const CONNECTOR_META: Record<string, { color: string; initial: string }> = {
+  "wbg-scorecard": { color: "#003366", initial: "WB"  },
+  "ifc":           { color: "#F5A623", initial: "IFC" },
+  "miga":          { color: "#1565C0", initial: "M"   },
+  "wb-operations": { color: "#0288D1", initial: "OP"  },
+  "wdi":           { color: "#2E7D32", initial: "WD"  },
+  "cpf":           { color: "#6A1B9A", initial: "CP"  },
+  "open-data":     { color: "#C62828", initial: "OD"  },
+};
+
+const menuShell: React.CSSProperties = {
+  background: "#FFFFFF",
+  border: "1px solid #E8E8E8",
+  borderRadius: 12,
+  boxShadow: "0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)",
+  overflow: "hidden",
+};
+
+const menuRow: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 10,
+  padding: "9px 14px", cursor: "pointer",
+  transition: "background 0.1s", userSelect: "none",
+};
+
+function ChatToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <div
+      onClick={(e) => { e.stopPropagation(); onToggle(); }}
+      style={{
+        width: 40, height: 22, borderRadius: 11,
+        background: on ? "#0b6fd3" : "#D1D5DB",
+        position: "relative", cursor: "pointer", flexShrink: 0,
+        transition: "background 0.18s",
+      }}
+    >
+      <div style={{
+        position: "absolute", top: 2, left: on ? 20 : 2,
+        width: 18, height: 18, borderRadius: "50%",
+        background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+        transition: "left 0.18s",
+      }} />
+    </div>
+  );
+}
+
+function ChatConnectorIcon({ id }: { id: string }) {
+  const meta = CONNECTOR_META[id] ?? { color: "#616161", initial: "?" };
+  return (
+    <div style={{
+      width: 28, height: 28, borderRadius: 7, background: meta.color,
+      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+    }}>
+      <span style={{ fontFamily: F, fontSize: 8, fontWeight: 700, color: "#FFFFFF", letterSpacing: 0.2 }}>
+        {meta.initial}
+      </span>
+    </div>
+  );
+}
 
 // ─── Fade-in on scroll ────────────────────────────────────────────────────────
 
@@ -80,6 +148,46 @@ export default function HomePage() {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const story3 = secondaryStories.find((s) => s.id === "story-3") ?? null;
+
+  // + button menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [subOpen, setSubOpen] = useState(false);
+  const [mainMenuLeft, setMainMenuLeft] = useState<number | undefined>(0);
+  const [enabledIds, setEnabledIds] = useState<Set<string>>(() => new Set(MCP_CONNECTORS.map((c) => c.id)));
+  const menuRef = useRef<HTMLDivElement>(null);
+  const subCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [subMenuLeft, setSubMenuLeft] = useState(230);
+
+  const openSub = () => {
+    if (subCloseTimer.current) clearTimeout(subCloseTimer.current);
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      // Would the submenu (290px) fit to the right of the main menu (230px)?
+      const rightEdge = rect.left + 230 + 290;
+      if (rightEdge > window.innerWidth - 8) {
+        // Flip: open to the left of the main menu
+        setSubMenuLeft(-290);
+      } else {
+        setSubMenuLeft(230);
+      }
+    }
+    setSubOpen(true);
+  };
+  const closeSub = () => { subCloseTimer.current = setTimeout(() => setSubOpen(false), 120); };
+  const toggleConnector = (id: string) => setEnabledIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false); setSubOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  useEffect(() => { if (!menuOpen) setSubOpen(false); }, [menuOpen]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">
@@ -183,9 +291,15 @@ export default function HomePage() {
           style={{ width: 420, height: "100vh" }}
         >
           {/* Header */}
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100 shrink-0">
-            <IconSparkles size={20} stroke={1.5} className="text-gray-400" />
-            <span className="flex-1 text-[15px] font-semibold text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div
+            className="flex items-center gap-2 px-5 py-4 shrink-0"
+            style={{ background: "linear-gradient(135deg, #0D52A2 0%, #0b6fd3 60%, #2196F3 100%)" }}
+          >
+            <IconSparkles size={20} stroke={1.9} style={{ color: "rgba(255,255,255,0.9)", flexShrink: 0 }} />
+            <span
+              className="flex-1 text-[15px] font-bold"
+              style={{ fontFamily: "'Open Sans', sans-serif", color: "#FFFFFF", letterSpacing: "-0.15px" }}
+            >
               Ask AI
             </span>
             <button
@@ -197,11 +311,11 @@ export default function HomePage() {
           </div>
 
           {/* Body — empty state */}
-          <div className="flex-1 overflow-y-auto flex flex-col gap-3 px-5 py-6">
-            <p className="text-[13px] text-gray-400 text-center mt-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+          <div className="flex-1 overflow-y-auto flex flex-col justify-center gap-3 px-5 py-6">
+            <p className="text-[13px] text-gray-400 text-center" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Ask anything about the scorecard data, country performance, or portfolio gaps.
             </p>
-            <div className="flex flex-col gap-2 mt-4">
+            <div className="flex flex-col gap-2">
               {AI_SUGGESTIONS.map((s) => (
                 <button
                   key={s}
@@ -216,26 +330,170 @@ export default function HomePage() {
           </div>
 
           {/* Input */}
-          <div className="shrink-0 border-t border-gray-100 px-4 py-3">
-            <div className="flex items-end gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-blue-400 focus-within:bg-white transition-colors">
+          <div className="shrink-0 px-4 py-4">
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #E0E0E0",
+                borderRadius: 16,
+                boxShadow: "0px 8px 20px 0px rgba(0,0,0,0.05)",
+                padding: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              {/* + button + menus */}
+              <div ref={menuRef} style={{ position: "relative", flexShrink: 0 }}>
+                <button
+                  aria-label="Add"
+                  onClick={() => {
+                    if (!menuOpen && menuRef.current) {
+                      const rect = menuRef.current.getBoundingClientRect();
+                      // If 230px main menu would overflow right, anchor it right-aligned to button
+                      if (rect.left + 230 > window.innerWidth - 8) {
+                        setMainMenuLeft(undefined); // will use right:0 below
+                      } else {
+                        setMainMenuLeft(0);
+                      }
+                    }
+                    setMenuOpen((v) => !v);
+                  }}
+                  style={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    border: "none", background: "#FFFFFF",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", color: "#616161", flexShrink: 0,
+                  }}
+                >
+                  <IconPlus size={15} stroke={2} />
+                </button>
+
+                {/* Main menu — opens upward */}
+                {menuOpen && (
+                  <div style={{ position: "absolute", bottom: "calc(100% + 8px)", left: mainMenuLeft, right: mainMenuLeft === undefined ? 0 : undefined, width: 230, zIndex: 200, ...menuShell }}>
+                    <div
+                      style={{ ...menuRow }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; closeSub(); }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    >
+                      <IconPaperclip size={16} stroke={1.5} color="#616161" />
+                      <span style={{ fontFamily: F, fontSize: 14, color: "#212121" }}>Add files or photos</span>
+                    </div>
+                    <div
+                      style={{ ...menuRow, borderBottom: "1px solid #F3F4F6" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; closeSub(); }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    >
+                      <IconPhoto size={16} stroke={1.5} color="#616161" />
+                      <span style={{ fontFamily: F, fontSize: 14, color: "#212121" }}>Add images</span>
+                    </div>
+                    <div
+                      style={{ ...menuRow, background: subOpen ? "#F5F5F5" : "transparent", justifyContent: "space-between" }}
+                      onMouseEnter={openSub}
+                      onMouseLeave={closeSub}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <IconPlugConnected size={16} stroke={1.5} color="#616161" />
+                        <span style={{ fontFamily: F, fontSize: 14, color: "#212121" }}>Connectors</span>
+                      </div>
+                      <IconChevronRight size={14} stroke={1.5} color="#9E9E9E" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Connectors submenu */}
+                {menuOpen && subOpen && (
+                  <div
+                    style={{ position: "absolute", bottom: "calc(100% + 8px)", left: subMenuLeft, width: 290, zIndex: 201, ...menuShell }}
+                    onMouseEnter={openSub}
+                    onMouseLeave={closeSub}
+                  >
+                    {MCP_CONNECTORS.map((c, i) => {
+                      const on = enabledIds.has(c.id);
+                      return (
+                        <div
+                          key={c.id}
+                          onClick={() => toggleConnector(c.id)}
+                          style={{ ...menuRow, borderBottom: i < MCP_CONNECTORS.length - 1 ? "1px solid #F3F4F6" : "none" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                        >
+                          <ChatConnectorIcon id={c.id} />
+                          <span style={{ fontFamily: F, fontSize: 13, color: "#212121", flex: 1, lineHeight: "18px" }}>{c.name}</span>
+                          <ChatToggle on={on} onToggle={() => toggleConnector(c.id)} />
+                        </div>
+                      );
+                    })}
+                    <div style={{ borderTop: "1px solid #F3F4F6" }}>
+                      <div
+                        style={{ ...menuRow, borderBottom: "1px solid #F3F4F6" }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                      >
+                        <div style={{ width: 28, height: 28, borderRadius: 7, background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <IconSettings size={14} stroke={1.5} color="#616161" />
+                        </div>
+                        <span style={{ fontFamily: F, fontSize: 13, color: "#212121" }}>Manage connectors</span>
+                      </div>
+                      <div
+                        style={{ ...menuRow }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                      >
+                        <div style={{ width: 28, height: 28, borderRadius: 7, background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <IconTool size={14} stroke={1.5} color="#616161" />
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: F, fontSize: 13, color: "#212121" }}>Tool access</div>
+                          <div style={{ fontFamily: F, fontSize: 11, color: "#9E9E9E", marginTop: 1 }}>Load tools when needed</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Textarea */}
               <textarea
                 rows={1}
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
-                placeholder="Ask about country data…"
-                className="flex-1 resize-none bg-transparent text-[13px] text-gray-800 placeholder-gray-400 focus:outline-none"
-                style={{ fontFamily: "'Open Sans', sans-serif", lineHeight: "1.5", maxHeight: 120 }}
+                placeholder="Give me more insights"
+                className="flex-1 resize-none focus:outline-none"
+                style={{
+                  fontFamily: "'Open Sans', sans-serif",
+                  fontSize: 16,
+                  color: "#212121",
+                  background: "transparent",
+                  border: "none",
+                  lineHeight: "24px",
+                  height: 24,
+                  overflowY: "hidden",
+                  minWidth: 0,
+                  padding: 0,
+                }}
                 onInput={(e) => {
                   const el = e.currentTarget;
                   el.style.height = "auto";
-                  el.style.height = el.scrollHeight + "px";
+                  el.style.height = Math.min(el.scrollHeight, 72) + "px";
                 }}
               />
+
+              {/* Send button */}
               <button
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shrink-0 disabled:opacity-40"
                 disabled={!aiInput.trim()}
+                aria-label="Send"
+                style={{
+                  width: 32, height: 32, borderRadius: "50%", border: "none",
+                  background: aiInput.trim() ? "#0b6fd3" : "#BDBDBD",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                  cursor: aiInput.trim() ? "pointer" : "default",
+                  transition: "background 0.15s",
+                }}
               >
-                <IconSend size={13} stroke={2} />
+                <IconArrowUp size={16} stroke={2} color="#FFFFFF" />
               </button>
             </div>
           </div>

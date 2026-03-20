@@ -130,11 +130,12 @@ interface Props {
   onClearSelection?: () => void;
   mode?: "edit" | "view";
   locked?: boolean;
+  confirmedConnectorIds?: Set<string>;
 }
 
 export default function PromptBar({
   onSubmit, onHeightChange, selectedCard, onClearSelection,
-  mode = "edit", locked = false,
+  mode = "edit", locked = false, confirmedConnectorIds,
 }: Props) {
   const PILLS =
     mode === "view"
@@ -150,6 +151,14 @@ export default function PromptBar({
   const [enabledIds, setEnabledIds] = useState<Set<string>>(
     () => new Set(MCP_CONNECTORS.map((c) => c.id))
   );
+
+  // Sync with whatever the user confirmed in the chat connector widget
+  useEffect(() => {
+    if (confirmedConnectorIds !== undefined) {
+      setEnabledIds(new Set(confirmedConnectorIds));
+    }
+  }, [confirmedConnectorIds]);
+
   const menuRef = useRef<HTMLDivElement>(null);
   const subCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -277,14 +286,14 @@ export default function PromptBar({
             onClick={() => setMenuOpen((v) => !v)}
             style={{
               width: 32, height: 32, borderRadius: "50%",
-              border: menuOpen ? "1.5px solid #0b6fd3" : "1.5px solid #E0E0E0",
+              border: "none",
               background: menuOpen ? "#EBF3FC" : "#FFFFFF",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", color: menuOpen ? "#0b6fd3" : "#616161", flexShrink: 0,
               transition: "background 0.15s, border-color 0.15s, color 0.15s",
             }}
-            onMouseEnter={(e) => { if (!menuOpen) { e.currentTarget.style.borderColor = "#BDBDBD"; e.currentTarget.style.color = "#212121"; } }}
-            onMouseLeave={(e) => { if (!menuOpen) { e.currentTarget.style.borderColor = "#E0E0E0"; e.currentTarget.style.color = "#616161"; } }}
+            onMouseEnter={(e) => { if (!menuOpen) { e.currentTarget.style.color = "#212121"; } }}
+            onMouseLeave={(e) => { if (!menuOpen) { e.currentTarget.style.color = "#616161"; } }}
           >
             <IconPlus size={15} stroke={2} />
           </button>

@@ -214,6 +214,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
   const [canvasLoading, setCanvasLoading] = useState(false);
   const [promptBarHeight, setPromptBarHeight] = useState(56); // single-line default
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [confirmedConnectorIds, setConfirmedConnectorIds] = useState<Set<string> | undefined>(undefined);
   const [outcomeCardsShown, setOutcomeCardsShown] = useState(prebuilt);
   const [dataCardsShown, setDataCardsShown] = useState(prebuilt);
   const orderedNodes = useMemo(
@@ -492,8 +493,8 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       {!playActive && <FloatingActions mode={mode} onPlay={() => { setPlayActive(true); setCurrentCardIndex(0); }} />}
       {!playActive && <FloatingControls mode={mode} onModeChange={(m) => setPanMode(m === "pan")} />}
       {!playActive && <RightNavDots />}
-      {!playActive && <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} />}
-      {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} onAction={handleAction} />}
+      {!playActive && <PromptBar mode={mode} onSubmit={handleUserSubmit} onHeightChange={setPromptBarHeight} selectedCard={selectedCard} onClearSelection={() => setSelectedCard(null)} confirmedConnectorIds={confirmedConnectorIds} />}
+      {!playActive && <AIChatPanel open={chatOpen} messages={messages} chatBottom={chatBottom} onAction={handleAction} onConfirmConnectors={setConfirmedConnectorIds} />}
 
 
       {/* Play mode HUD */}

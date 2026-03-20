@@ -16,9 +16,10 @@ interface Props {
   messages?: Message[];
   chatBottom?: number;
   onAction?: (label: string) => void;
+  onConfirmConnectors?: (ids: Set<string>) => void;
 }
 
-export default function AIChatPanel({ open: externalOpen, messages = [], chatBottom = 150, onAction }: Props) {
+export default function AIChatPanel({ open: externalOpen, messages = [], chatBottom = 150, onAction, onConfirmConnectors }: Props) {
   const [userOverride, setUserOverride] = useState<boolean | null>(null);
   const open = userOverride !== null ? userOverride : !!externalOpen;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -150,6 +151,7 @@ export default function AIChatPanel({ open: externalOpen, messages = [], chatBot
                       key={msg.id}
                       message={i === lastAssistantIdx ? msg : { ...msg, actions: undefined }}
                       onAction={i === lastAssistantIdx ? onAction : undefined}
+                      onConfirmConnectors={i === lastAssistantIdx ? onConfirmConnectors : undefined}
                     />
                   ));
                 })()}
