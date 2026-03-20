@@ -321,9 +321,10 @@ export function DataCard({ data, selected }: NodeProps<any>) {
     unit = "People",
     category,
     chartType,
+    connector,
     viewMode = false,
     playMode = false,
-  } = data as DataCardData & { viewMode?: boolean; playMode?: boolean };
+  } = data as DataCardData & { connector?: string; viewMode?: boolean; playMode?: boolean };
 
   const chart = CHARTS[chartType];
   const [hovered, setHovered] = useState(false);
@@ -476,7 +477,18 @@ export function DataCard({ data, selected }: NodeProps<any>) {
 
       {/* Footer */}
       <div style={{ borderTop: "1px solid #E5E5E5", paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {connector && (
+            <span style={{
+              fontSize: 11, color: "#0B6FD3",
+              background: "rgba(11,111,211,0.07)",
+              border: "1px solid rgba(11,111,211,0.18)",
+              borderRadius: 4, padding: "2px 6px",
+              lineHeight: "1.4", whiteSpace: "nowrap", fontFamily: F,
+            }}>
+              {connector}
+            </span>
+          )}
           {/* Source avatars placeholder */}
           <div style={{ display: "flex" }}>
             {["#4A90D9", "#50C878", "#F7B841"].map((color, i) => (

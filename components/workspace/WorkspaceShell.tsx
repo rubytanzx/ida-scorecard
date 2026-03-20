@@ -51,7 +51,7 @@ const DATA_CARDS = [
     title: "Population that own a financial account, total (% population ages 15+) and female (% female population ages 15+)",
     description: "Percentage of population that own a financial account. For women, the share is relative to total female population.",
     category: "Gender Equality",
-    y: 820,
+    y: 784,
   },
   {
     id: "data-safety-net",
@@ -60,7 +60,7 @@ const DATA_CARDS = [
     description: "The number of people benefiting from safety net programs supported by World Bank operations, including cash-based interventions, public works and workfare programs, fee waivers, and in-kind assistance.",
     category: "Protection for the Poorest",
     portfolioText: "More than <strong>230</strong> projects in <strong>91</strong> countries/economies",
-    y: 1600,
+    y: 1528,
   },
   {
     id: "data-financial-services",
@@ -69,7 +69,7 @@ const DATA_CARDS = [
     description: "Financial services include transaction accounts, deposit accounts, mobile money accounts, savings, loans, insurance, pensions, factoring, leasing, and investment products.",
     category: "Protection for the Poorest",
     portfolioText: "More than <strong>210</strong> projects in <strong>88</strong> countries/economies",
-    y: 2380,
+    y: 2272,
   },
   {
     id: "data-gender-equality",
@@ -78,7 +78,7 @@ const DATA_CARDS = [
     description: "Gender equality outcomes include ending gender-based violence, building and protecting human capital, accessing more and better jobs, expanding ownership and use of assets, expanding access and use of services that enable economic participation and advancing women's leadership.",
     category: "Gender Equality",
     portfolioText: "More than <strong>830</strong> projects in <strong>121</strong> countries/economies",
-    y: 3160,
+    y: 3016,
   },
   {
     id: "data-private-capital",
@@ -87,7 +87,7 @@ const DATA_CARDS = [
     description: "Value of private investments resulting from WBG programs expected to materialize within three years of a project's closure.",
     category: "More Private Investments",
     portfolioText: "More than <strong>150</strong> projects in <strong>100</strong> countries/economies",
-    y: 4040,
+    y: 3760,
   },
 ];
 
@@ -114,7 +114,7 @@ const OUTCOME_DATA = [
     title: "No Learning Poverty",
     body: "Mexico's learning poverty rate of 47.6% places nearly half of all primary-age children below reading proficiency — a 20-point gap to Chile (27.2%) and 5 points worse than the peer average of 42.5%. Given Mexico's population of ~130 million, this translates into the largest absolute number of affected children among all comparators. The data is from 2019 and may understate post-pandemic deterioration. Critically, the WB has no active operations in Mexico contributing to this outcome area — zero projects, zero students supported — while Brazil alone has 6 education projects with 48 million students in scope.",
     bodyMinHeight: 384, // 16 lines × 24px
-    y: 880,            // 40 + 756 + 84 gap
+    y: 854,            // 40 + 782 + 32 gap (782 = 756 + 26 connector chip footer wrap)
     navLabels: {
       left:  "Back to scorecard overview",
       up:    "Financial inclusion & social protection",
@@ -127,7 +127,7 @@ const OUTCOME_DATA = [
     title: "Healthier Lives (UHC + Stunting)",
     body: "Mexico's UHC Service Coverage Index of 75 sits 7 points below Chile and 5 points below both Brazil and Colombia, placing it near the bottom of the peer group. More starkly, Mexico's child stunting rate of 13.1% is the highest in the group by a significant margin — more than 11 points above Chile (1.7%) and 4 points above Brazil (8.9%) — a figure that is anomalous for an upper-middle-income country. As with education, the WB holds no active operations contributing to health outcomes in Mexico under FY25 Scorecard reporting, while Colombia's 2 health projects are delivering results to over 760,000 people. The combination of a weak UHC index, high stunting, and zero portfolio engagement makes this a significant gap.",
     bodyMinHeight: 432, // 18 lines × 24px
-    y: 1680,           // 880 + 714 + 86 gap
+    y: 1626,           // 854 + 740 + 32 gap (740 = 714 + 26)
     navLabels: {
       left:  "Back to scorecard overview",
       up:    "Learning poverty & education gap",
@@ -140,7 +140,7 @@ const OUTCOME_DATA = [
     title: "Climate / Green Planet\n(GHG + Protected Areas)",
     body: "Mexico's protected area coverage of 19.9% lags Chile (37.9%), Brazil (29.4%), and Colombia (26.4%), though Peru (16.8%) is lower. The more acute concern is the direction of Mexico's climate portfolio: Mexico is the only country in the peer group with a net emissions-increasing portfolio expectation (+19 MtCO2eq/year), driven by a single large project — Water Security for the Valley of Mexico — which offsets reductions from forestry and energy efficiency operations. All peers show net reductions, with Brazil at −323 MtCO2eq/year across 19 projects. On the positive side, Mexico's terrestrial conservation results are among the strongest delivered in the portfolio, with three projects meeting or exceeding targets. The critical gap is on renewable energy: Mexico has zero operations in this space while Brazil, Chile, and Peru all have active projects.",
     bodyMinHeight: 480, // 20 lines × 24px
-    y: 2520,           // 1680 + 762 + 78 gap
+    y: 2446,           // 1626 + 788 + 32 gap (788 = 762 + 26)
     navLabels: {
       left:  "Back to scorecard overview",
       up:    "UHC, stunting & health outcomes",
@@ -153,7 +153,7 @@ const OUTCOME_DATA = [
     title: "Digital / Financial Services",
     body: "Mexico's internet penetration of 81.2% is below Chile (94.5%) but broadly comparable to Brazil and Peru, suggesting digital infrastructure is not the binding constraint. The more significant finding is the disconnect between relatively high connectivity and very low financial account ownership (53%) — a 28-point gap — which points to barriers of product design, trust, or formal sector access rather than infrastructure. The WB portfolio has no active operations contributing to digital services or broadband outcomes in Mexico, while Brazil and Peru both have projects in scope. The Mexico DPF nominally covers financial services but has recorded no results to date.",
     bodyMinHeight: 384, // 16 lines × 24px
-    y: 3440,           // 2520 + 838 + 82 gap
+    y: 3342,           // 2446 + 864 + 32 gap (864 = 838 + 26)
     navLabels: {
       left:  "Back to scorecard overview",
       up:    "Climate portfolio & protected areas",
@@ -168,18 +168,18 @@ interface Props {
   mode?: "edit" | "view";
 }
 
-function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => void): Node[] {
+function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => void, onNavClick?: (label: string) => void): Node[] {
   const overviewNode: Node = {
     id: "card-overview", type: "overview", position: { x: 80, y: 40 },
-    data: { onShowOutcomeAreas }, draggable: true, selectable: true,
+    data: { onShowOutcomeAreas, connector: "WBG Scorecard" }, draggable: true, selectable: true,
   };
   const narrativeNode: Node = {
     id: "card-narrative", type: "narrative", position: { x: 80, y: 760 },
-    data: {}, draggable: true, selectable: true,
+    data: { connector: "WBG Scorecard" }, draggable: true, selectable: true,
   };
   const newsNode: Node = {
     id: "card-news", type: "news", position: { x: 540, y: 760 },
-    data: {}, draggable: true, selectable: true,
+    data: { connector: "WB Operations Portal" }, draggable: true, selectable: true,
   };
   const outcomeNodes: Node[] = OUTCOME_DATA.map((item, i) => ({
     id: item.id,
@@ -193,6 +193,8 @@ function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => v
       index: i,
       totalCards: OUTCOME_DATA.length,
       navLabels: item.navLabels,
+      onNavClick,
+      connector: "WBG Scorecard",
       ...(item.id === "outcome-1" ? { onNavDown: onShowDataCards } : {}),
     },
     draggable: true,
@@ -203,6 +205,7 @@ function buildAllNodes(onShowOutcomeAreas: () => void, onShowDataCards?: () => v
 
 export default function WorkspaceShell({ empty = false, prebuilt = false, mode = "edit" }: Props) {
   const [chatOpen, setChatOpen] = useState(empty);
+  const [workspaceTitle, setWorkspaceTitle] = useState<string | undefined>(undefined);
   const [messages, setMessages] = useState<Message[]>(
     empty ? [GREETING_MESSAGE] : prebuilt ? [USER_MESSAGE, AI_MESSAGE] : []
   );
@@ -266,27 +269,51 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     setSelectedCard(nodeId ? (CARD_NAME_MAP[nodeId] ?? null) : null);
   };
 
-  const handleShowOutcomeAreas = useCallback(() => {
+  const handleShowOutcomeAreas = useCallback((label?: string) => {
     setOutcomeCardsShown(true);
-    setMessages((m) => [...m, TYPING_MESSAGE]);
+    setChatOpen(true);
+    setMessages((m) => {
+      const withUser = label
+        ? [...m, { id: `msg-nav-${Date.now()}`, role: "user" as const, content: label, timestamp: "Just now" }]
+        : m;
+      return [...withUser, TYPING_MESSAGE];
+    });
     setTimeout(() => {
-      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), OUTCOME_AREAS_MESSAGE]);
+      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...OUTCOME_AREAS_MESSAGE, id: `msg-outcome-areas-${Date.now()}` }]);
     }, 1800);
   }, []);
 
-  const handleShowDataCards = useCallback(() => {
+  const handleShowDataCards = useCallback((label?: string) => {
     setDataCardsShown(true);
     setChatOpen(true);
-    setMessages((m) => [...m, TYPING_MESSAGE]);
+    setMessages((m) => {
+      const withUser = label
+        ? [...m, { id: `msg-nav-${Date.now()}`, role: "user" as const, content: label, timestamp: "Just now" }]
+        : m;
+      return [...withUser, TYPING_MESSAGE];
+    });
     setTimeout(() => {
-      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), DATA_CARDS_MESSAGE]);
+      setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...DATA_CARDS_MESSAGE, id: `msg-data-cards-${Date.now()}` }]);
     }, 1800);
   }, []);
+
+  const handleNavClick = useCallback((label: string) => {
+    setChatOpen(true);
+    const userMsg: Message = {
+      id: `msg-nav-${Date.now()}`,
+      role: "user",
+      content: label,
+      timestamp: "Just now",
+    };
+    setMessages((m) => [...m, userMsg]);
+  }, []);
+  const handleNavClickRef = useRef(handleNavClick);
+  handleNavClickRef.current = handleNavClick;
 
   // Seed all nodes immediately when prebuilt
   useEffect(() => {
     if (!prebuilt) return;
-    setCanvasNodes(buildAllNodes(handleShowOutcomeAreas, handleShowDataCards));
+    setCanvasNodes(buildAllNodes(handleShowOutcomeAreas, handleShowDataCards, handleNavClickRef.current));
     setFitViewTrigger((t) => t + 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prebuilt]);
@@ -306,6 +333,8 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         index: i,
         totalCards: OUTCOME_DATA.length,
         navLabels: item.navLabels,
+        onNavClick: handleNavClickRef.current,
+        connector: "WBG Scorecard",
         // Wire "down" nav on outcome-1 (Protection for Poorest) to reveal data cards
         ...(item.id === "outcome-1" ? { onNavDown: handleShowDataCards } : {}),
       },
@@ -317,6 +346,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       const newNodes = outcomeNodes.filter((n) => !existingIds.has(n.id));
       return newNodes.length > 0 ? [...prev, ...newNodes] : prev;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outcomeCardsShown, handleShowDataCards]);
 
   // Add data drill-down cards when triggered
@@ -332,6 +362,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         category: card.category,
         chartType: card.chartType,
         portfolioText: card.portfolioText,
+        connector: "WBG Scorecard",
       },
       draggable: true,
       selectable: true,
@@ -363,15 +394,15 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
 
       const overviewNode: Node = {
         id: "card-overview", type: "overview", position: { x: 80, y: 40 },
-        data: { onShowOutcomeAreas: handleShowOutcomeAreas }, draggable: true, selectable: true,
+        data: { onShowOutcomeAreas: handleShowOutcomeAreas, connector: "WBG Scorecard" }, draggable: true, selectable: true,
       };
       const narrativeNode: Node = {
         id: "card-narrative", type: "narrative", position: { x: 80, y: 760 },
-        data: {}, draggable: true, selectable: true,
+        data: { connector: "WBG Scorecard" }, draggable: true, selectable: true,
       };
       const newsNode: Node = {
         id: "card-news", type: "news", position: { x: 540, y: 760 },
-        data: {}, draggable: true, selectable: true,
+        data: { connector: "WB Operations Portal" }, draggable: true, selectable: true,
       };
 
       const timers: ReturnType<typeof setTimeout>[] = [];
@@ -394,6 +425,23 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     // Phase 0: First submission — show user prompt + ask for connectors
     if (submissionPhase.current === 0) {
       submissionPhase.current = 1;
+
+      // Summarise: extract CPF/country/FY patterns first, fall back to word truncation
+      const summary = (() => {
+        const cpfMatch = text.match(/CPF\s+for\s+(\w+)/i);
+        const fyMatch = text.match(/FY\s*(\d{2,4})/i);
+        if (cpfMatch) {
+          const country = cpfMatch[1];
+          const fy = fyMatch ? ` FY${fyMatch[1]}` : "";
+          return `CPF for ${country}${fy}`;
+        }
+        const stripped = text.replace(/^(i (am|want|need|would like|'m)|please|can you|could you)\s+/i, "");
+        const words = stripped.trim().split(/\s+/);
+        const short = words.slice(0, 7).join(" ");
+        return (short.length < stripped.length ? short + "…" : short)
+          .replace(/^./, (c) => c.toUpperCase());
+      })();
+      setWorkspaceTitle(summary);
 
       const userMsg: Message = { ...USER_MESSAGE, content: text };
       setChatOpen(true);
@@ -419,7 +467,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         setDataCardsShown(true);
       }, 1200));
       timers.push(setTimeout(() => {
-        setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), DATA_CARDS_MESSAGE]);
+        setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...DATA_CARDS_MESSAGE, id: `msg-data-cards-${Date.now()}` }]);
       }, 2000));
 
       return () => timers.forEach(clearTimeout);
@@ -440,7 +488,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     >
       <CanvasLoader nodes={processedNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} loading={canvasLoading} nodesDraggable={!panMode} onCardSelect={handleCardSelect} />
       <FloatingSidebar />
-      {!playActive && <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} />}
+      {!playActive && <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} titleOverride={workspaceTitle} />}
       {!playActive && <FloatingActions mode={mode} onPlay={() => { setPlayActive(true); setCurrentCardIndex(0); }} />}
       {!playActive && <FloatingControls mode={mode} onModeChange={(m) => setPanMode(m === "pan")} />}
       {!playActive && <RightNavDots />}

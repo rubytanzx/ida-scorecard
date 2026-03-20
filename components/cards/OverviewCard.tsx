@@ -104,6 +104,7 @@ export function OverviewCard({ selected, data }: NodeProps<any>) {
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const viewMode = data?.viewMode ?? false;
   const playMode = data?.playMode ?? false;
+  const connector = data?.connector as string | undefined;
 
   return (
     <div
@@ -218,7 +219,18 @@ export function OverviewCard({ selected, data }: NodeProps<any>) {
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {connector && (
+            <span style={{
+              fontSize: 11, color: "#0B6FD3",
+              background: "rgba(11,111,211,0.07)",
+              border: "1px solid rgba(11,111,211,0.18)",
+              borderRadius: 4, padding: "2px 6px",
+              lineHeight: "1.4", whiteSpace: "nowrap", fontFamily: F,
+            }}>
+              {connector}
+            </span>
+          )}
           {["WB Portfolio Data", "WDI", "Country CPF"].map((src) => (
             <span
               key={src}
@@ -257,7 +269,7 @@ export function OverviewCard({ selected, data }: NodeProps<any>) {
                 ↓ Down
               </button>
               <button
-                onClick={() => data?.onShowOutcomeAreas?.()}
+                onClick={() => data?.onShowOutcomeAreas?.("Show me how each individual outcome areas are derived")}
                 style={{
                   background: "none",
                   border: "none",

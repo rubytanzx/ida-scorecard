@@ -30,6 +30,7 @@ interface OutcomeAreaData {
   totalCards?: number;
   navLabels?: NavLabels;
   onNavDown?: () => void;
+  onNavClick?: (label: string) => void;
 }
 
 function useStreamingText(fullText: string, delay: number): string {
@@ -62,7 +63,7 @@ function useStreamingText(fullText: string, delay: number): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function OutcomeAreaCard({ data, selected }: NodeProps<any>) {
-  const { title, body, streamDelay = 0, index = 0, totalCards = 5, navLabels, onNavDown, viewMode = false, playMode = false } = data as OutcomeAreaData & { viewMode?: boolean; playMode?: boolean };
+  const { title, body, streamDelay = 0, index = 0, totalCards = 5, navLabels, onNavDown, onNavClick, connector, viewMode = false, playMode = false } = data as OutcomeAreaData & { connector?: string; viewMode?: boolean; playMode?: boolean };
   const displayed = useStreamingText(body, streamDelay + 150);
   const showCursor = displayed.length > 0 && displayed.length < body.length;
   const [hovered, setHovered] = useState(false);
@@ -176,17 +177,17 @@ export function OutcomeAreaCard({ data, selected }: NodeProps<any>) {
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           {(
             [
-              { Icon: IconArrowBarLeft,  show: true,                    label: navLabels?.left  ?? "Back to overview",         onClick: undefined },
-              { Icon: IconArrowBarUp,    show: index > 0,               label: navLabels?.up    ?? "Previous outcome area",     onClick: undefined },
-              { Icon: IconArrowBarDown,  show: index < totalCards - 1,  label: navLabels?.down  ?? "Next outcome area",         onClick: onNavDown },
-              { Icon: IconArrowBarRight, show: true,                    label: navLabels?.right ?? "Explore deeper",            onClick: undefined },
+              { Icon: IconArrowBarLeft,  show: true,                    label: navLabels?.left  ?? "Back to overview",         onClickExtra: undefined },
+              { Icon: IconArrowBarUp,    show: index > 0,               label: navLabels?.up    ?? "Previous outcome area",     onClickExtra: undefined },
+              { Icon: IconArrowBarDown,  show: index < totalCards - 1,  label: navLabels?.down  ?? "Next outcome area",         onClickExtra: onNavDown },
+              { Icon: IconArrowBarRight, show: true,                    label: navLabels?.right ?? "Explore deeper",            onClickExtra: undefined },
             ] as const
           )
             .filter((b) => b.show)
-            .map(({ Icon, label, onClick }) => (
+            .map(({ Icon, label, onClickExtra }) => (
               <button
                 key={label}
-                onClick={onClick}
+                onClick={() => { onNavClick?.(label); onClickExtra?.(); }}
                 style={{
                   background: "none",
                   border: "none",
@@ -221,6 +222,17 @@ export function OutcomeAreaCard({ data, selected }: NodeProps<any>) {
       >
         {/* Named source chips */}
         <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+          {connector && (
+            <span style={{
+              fontSize: 11, color: "#0B6FD3",
+              background: "rgba(11,111,211,0.07)",
+              border: "1px solid rgba(11,111,211,0.18)",
+              borderRadius: 4, padding: "2px 6px",
+              lineHeight: "1.4", whiteSpace: "nowrap", fontFamily: F,
+            }}>
+              {connector}
+            </span>
+          )}
           {SOURCES.map((src) => (
             <span
               key={src}

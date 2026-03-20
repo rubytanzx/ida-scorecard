@@ -86,7 +86,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
           paddingLeft: 96 + 24, // 96px sidebar + 24px inner gap
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 16,
+          gap: 24,
           alignItems: "start",
           opacity: 0.4,
           pointerEvents: "none",

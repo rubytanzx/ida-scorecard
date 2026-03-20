@@ -58,11 +58,28 @@ function TertiaryBtn({
 
 interface Props {
   initialTitle?: string;
+  titleOverride?: string;
   mode?: "edit" | "view";
 }
 
-export default function FloatingTitle({ initialTitle = "Country Partnership Framework for Mexico FY25", mode = "edit" }: Props) {
+export default function FloatingTitle({ initialTitle = "Country Partnership Framework for Mexico FY25", titleOverride, mode = "edit" }: Props) {
   const [title, setTitle] = useState(initialTitle);
+  const [titleLoading, setTitleLoading] = useState(false);
+  const [titleVisible, setTitleVisible] = useState(true);
+
+  useEffect(() => {
+    if (!titleOverride) return;
+    // Phase 1: fade out current title + show shimmer
+    setTitleVisible(false);
+    setTitleLoading(true);
+    // Phase 2: after shimmer, swap in new title and fade in
+    const t1 = setTimeout(() => {
+      setTitle(titleOverride);
+      setTitleLoading(false);
+    }, 1400);
+    const t2 = setTimeout(() => setTitleVisible(true), 1450);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [titleOverride]);
   const [editing, setEditing] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [vote, setVote] = useState<"up" | "down" | null>(null);
@@ -108,7 +125,13 @@ export default function FloatingTitle({ initialTitle = "Country Partnership Fram
 
   return (
     <>
-      <style>{`#floating-title-input::placeholder { color: #bdbdbd; }`}</style>
+      <style>{`
+        #floating-title-input::placeholder { color: #bdbdbd; }
+        @keyframes title-shimmer {
+          0%   { background-position: -400px 0; }
+          100% { background-position: 400px 0; }
+        }
+      `}</style>
       <div ref={containerRef} style={{ position: "fixed", left: 112, top: 16, zIndex: 40 }}>
 
         {/* Title pill */}
@@ -189,13 +212,35 @@ export default function FloatingTitle({ initialTitle = "Country Partnership Fram
                 />
               </TertiaryBtn>
 
-              {/* Title */}
-              <span
-                onClick={mode === "edit" ? () => setEditing(true) : undefined}
-                style={{ ...TEXT_STYLE, color: title ? "#616161" : "#bdbdbd", padding: "0 6px", cursor: mode === "edit" ? "text" : "default" }}
-              >
-                {title || PLACEHOLDER}
-              </span>
+              {/* Title — shimmer skeleton while loading, fade-in when ready */}
+              {titleLoading ? (
+                <div
+                  style={{
+                    width: 180,
+                    height: 16,
+                    borderRadius: 6,
+                    background: "linear-gradient(90deg, #f0f0f0 25%, #e0e8f4 50%, #f0f0f0 75%)",
+                    backgroundSize: "400px 100%",
+                    animation: "title-shimmer 2s ease-in-out infinite",
+                    margin: "0 6px",
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <span
+                  onClick={mode === "edit" ? () => setEditing(true) : undefined}
+                  style={{
+                    ...TEXT_STYLE,
+                    color: title ? "#616161" : "#bdbdbd",
+                    padding: "0 6px",
+                    cursor: mode === "edit" ? "text" : "default",
+                    opacity: titleVisible ? 1 : 0,
+                    transition: "opacity 0.25s ease",
+                  }}
+                >
+                  {title || PLACEHOLDER}
+                </span>
+              )}
 
               {mode === "view" && (
                 <>

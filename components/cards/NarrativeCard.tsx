@@ -44,6 +44,7 @@ export function NarrativeCard({ selected, data }: NodeProps<any>) {
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const viewMode = data?.viewMode ?? false;
   const playMode = data?.playMode ?? false;
+  const connector = data?.connector as string | undefined;
 
   return (
     <div
@@ -161,6 +162,17 @@ export function NarrativeCard({ selected, data }: NodeProps<any>) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+            {connector && (
+              <span style={{
+                fontSize: 11, color: "#0B6FD3",
+                background: "rgba(11,111,211,0.07)",
+                border: "1px solid rgba(11,111,211,0.18)",
+                borderRadius: 4, padding: "2px 6px",
+                lineHeight: "1.4", whiteSpace: "nowrap", fontFamily: F,
+              }}>
+                {connector}
+              </span>
+            )}
             {["FY25 Scorecard", "LAC Portfolio", "WB Project Portal"].map((src) => (
               <span
                 key={src}
