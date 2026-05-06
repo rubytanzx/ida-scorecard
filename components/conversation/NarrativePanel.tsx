@@ -461,7 +461,7 @@ function ContextChart() {
             <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} domain={["dataMin - 2", "dataMax + 2"]} />
             <RcTooltip
               contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: "1px solid #e5e7eb" }}
-              formatter={(v: number, name: string) => [`${v}%`, name === "fcs" ? "FCS" : "LIC avg"]}
+              formatter={(v, name) => [`${v}%`, name === "fcs" ? "FCS" : "LIC avg"]}
             />
             <Line type="monotone" dataKey="fcs" stroke="#D04040" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
             <Line type="monotone" dataKey="lic" stroke="#003F6B" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
@@ -624,7 +624,7 @@ function ImpactChart() {
             </RadialBar>
             <RcTooltip
               contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: "1px solid #e5e7eb" }}
-              formatter={(v: number) => [`${v}%`, "Achievement"]}
+              formatter={(v) => [`${v}%`, "Achievement"]}
             />
           </RadialBarChart>
         </ResponsiveContainer>
@@ -740,7 +740,7 @@ function HealthContextChart() {
             <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} domain={[20, 60]} />
             <RcTooltip
               contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: "1px solid #e5e7eb" }}
-              formatter={(v: number, name: string) => [`${v}/100`, name === "fcs" ? "FCS" : "LIC avg"]}
+              formatter={(v, name) => [`${v}/100`, name === "fcs" ? "FCS" : "LIC avg"]}
             />
             <Line type="monotone" dataKey="fcs" stroke="#D04040" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
             <Line type="monotone" dataKey="lic" stroke="#003F6B" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
@@ -893,7 +893,7 @@ function HealthImpactChart() {
             </RadialBar>
             <RcTooltip
               contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: "1px solid #e5e7eb" }}
-              formatter={(v: number) => [`${v}%`, "Driver share"]}
+              formatter={(v) => [`${v}%`, "Driver share"]}
             />
           </RadialBarChart>
         </ResponsiveContainer>

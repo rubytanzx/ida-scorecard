@@ -101,16 +101,19 @@ const FLOW_NODES = [
   {
     id: "emis",
     label: "Functional EMIS",
+    green: false,
     detail: "Real-time data from 47,000+ schools gives policymakers live visibility into attendance, learning outcomes, and resource gaps — eliminating the 2–3 year lag that previously made planning reactive.",
   },
   {
     id: "planning",
     label: "Evidence-based planning",
+    green: false,
     detail: "Annual school-level benchmarking directly informs teacher deployment, textbook allocation, and infrastructure spend at district level — replacing ad-hoc budgeting with data-driven prioritisation.",
   },
   {
     id: "investment",
     label: "Targeted investment",
+    green: false,
     detail: "$29.2B in IDA commitments are tied to evidence of improved planning capacity, ensuring funds follow demonstrated need rather than historical allocations.",
   },
   {

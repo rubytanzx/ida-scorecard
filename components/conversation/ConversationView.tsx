@@ -463,7 +463,7 @@ function PovertyChart({ title }: { title: string }) {
               fill="#5B5BD6"
               radius={[0, 3, 3, 0]}
               barSize={10}
-              onMouseEnter={(d: ChartRow) => setHovered(d.code)}
+              onMouseEnter={(d: { payload?: ChartRow }) => setHovered(d.payload?.code ?? null)}
               fillOpacity={1}
             />
             <Bar
@@ -471,7 +471,7 @@ function PovertyChart({ title }: { title: string }) {
               fill="#C7C7F0"
               radius={[0, 3, 3, 0]}
               barSize={10}
-              onMouseEnter={(d: ChartRow) => setHovered(d.code)}
+              onMouseEnter={(d: { payload?: ChartRow }) => setHovered(d.payload?.code ?? null)}
             />
           </BarChart>
         </ResponsiveContainer>
