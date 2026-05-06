@@ -5,6 +5,7 @@ import Image from "next/image";
 import { IconArrowRight, IconChartLine, IconArrowBigUp, IconArrowBigDown, IconPlugConnected } from "@tabler/icons-react";
 import { type Story } from "@/lib/mockData";
 import StoryTagBadge from "./StoryTagBadge";
+import StoryThumbnail from "./StoryThumbnail";
 import AuthorChip from "./AuthorChip";
 import InstitutionLogos from "./InstitutionLogos";
 
@@ -82,8 +83,10 @@ export default function StoryCard({ story, overlay }: Props) {
     </div>
   ) : (
     <>
-      {/* Image */}
-      {story.imageSrc ? (
+      {/* Image / Thumbnail */}
+      {story.thumbVariant ? (
+        <StoryThumbnail variant={story.thumbVariant} className="h-[168px]" />
+      ) : story.imageSrc ? (
         <div className="relative h-[168px] overflow-hidden bg-gray-100">
           <Image
             src={story.imageSrc}

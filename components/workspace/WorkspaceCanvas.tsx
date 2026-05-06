@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -14,6 +14,7 @@ import { NarrativeCard } from "@/components/cards/NarrativeCard";
 import { NewsCard } from "@/components/cards/NewsCard";
 import { OutcomeAreaCard } from "@/components/cards/OutcomeAreaCard";
 import { DataCard } from "@/components/cards/DataCard";
+import { IDACard } from "@/components/cards/IDACard";
 
 const nodeTypes = {
   overview: OverviewCard,
@@ -21,6 +22,7 @@ const nodeTypes = {
   news: NewsCard,
   outcomeArea: OutcomeAreaCard,
   dataCard: DataCard,
+  idaCard: IDACard,
 };
 
 interface Props {
@@ -28,9 +30,11 @@ interface Props {
   orderedNodes: Node[];
   playActive: boolean;
   fitViewTrigger: number;
+  focusTarget?: { id: string; seq: number } | null;
   loading?: boolean;
   nodesDraggable?: boolean;
   onCardSelect?: (id: string | null) => void;
+  onNodesDelete?: (ids: string[]) => void;
 }
 
 function FitViewTrigger({ trigger }: { trigger: number }) {
@@ -43,11 +47,19 @@ function FitViewTrigger({ trigger }: { trigger: number }) {
   return null;
 }
 
-export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, playActive, fitViewTrigger, loading, nodesDraggable = true, onCardSelect }: Props) {
+function FocusNodeTrigger({ nodeId, seq }: { nodeId: string | null; seq: number }) {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    if (!nodeId || seq === 0) return;
+    setTimeout(() => fitView({ nodes: [{ id: nodeId }], padding: 0.35, duration: 500 }), 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seq]);
+  return null;
+}
+
+export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, playActive, fitViewTrigger, focusTarget, loading, nodesDraggable = true, onCardSelect, onNodesDelete }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
-  // Sync external node changes: add new nodes and update data/draggable on existing ones.
-  // Position is preserved from internal state (user may have moved cards).
   useEffect(() => {
     setNodes((prev) => {
       const extMap = new Map(externalNodes.map((n) => [n.id, n]));
@@ -68,9 +80,13 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
     });
   }, [externalNodes, setNodes]);
 
+  const handleNodesDelete = useCallback((deleted: Node[]) => {
+    onNodesDelete?.(deleted.map((n) => n.id));
+  }, [onNodesDelete]);
+
   // Masonry grid — rendered during play mode instead of ReactFlow
   if (playActive) {
-    const SPAN_TWO = new Set(["narrative", "overview"]);
+    const SPAN_TWO = new Set(["narrative", "overview", "idaCard"]);
     return (
       <div
         style={{
@@ -83,7 +99,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
           paddingTop: 24,
           paddingRight: 24,
           paddingBottom: 24,
-          paddingLeft: 96 + 24, // 96px sidebar + 24px inner gap
+          paddingLeft: 96 + 24,
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
           gap: 24,
@@ -158,6 +174,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
         nodesConnectable={false}
         elementsSelectable={true}
         style={{ background: "#FFFFFF", width: "100%", height: "100%" }}
+        onNodesDelete={handleNodesDelete}
         onSelectionChange={({ nodes: selected }) => {
           const hit = selected.find((n) => n.selected);
           onCardSelect?.(hit?.id ?? null);
@@ -174,6 +191,7 @@ export default function WorkspaceCanvas({ nodes: externalNodes, orderedNodes, pl
           style={{ opacity: 0.31 }}
         />
         <FitViewTrigger trigger={fitViewTrigger} />
+        <FocusNodeTrigger nodeId={focusTarget?.id ?? null} seq={focusTarget?.seq ?? 0} />
       </ReactFlow>
     </div>
   );

@@ -21,6 +21,7 @@ export const MCP_CONNECTORS: ConnectorItem[] = [
   { id: 'wbg-scorecard',  name: 'WBG Scorecard',              description: 'FY25 results framework, country scorecards & outcome indicators' },
   { id: 'ifc',            name: 'IFC',                         description: 'Private sector investment data, advisory services & portfolio results' },
   { id: 'miga',           name: 'MIGA',                        description: 'Guarantee portfolio, political risk insurance & investment facilitation' },
+  { id: 'ida',            name: 'IDA',                         description: 'IDA commitments, credits & grants supporting the world\'s poorest countries' },
   { id: 'wb-operations',  name: 'WB Operations Portal',        description: 'Active & pipeline project data, financial commitments & supervision ratings' },
   { id: 'wdi',            name: 'WDI',                         description: 'World Development Indicators — country-level statistical database' },
   { id: 'cpf',            name: 'Country Partnership Frameworks', description: 'CPF objectives, results matrices & completion and learning reviews' },
@@ -67,7 +68,7 @@ export const CONNECTOR_MESSAGE: Message = {
 export const CONNECTOR_CONFIRMED_AI_MESSAGE: Message = {
   id: 'msg-connectors-confirmed',
   role: 'assistant',
-  content: 'Connected to **WBG Scorecard FY25**, **IFC**, **MIGA**, **WB Operations Portal**, **WDI**, **Country Partnership Frameworks**, and **WB Open Data**.\n\nWhat would you like to create?',
+  content: 'Connected to **WBG Scorecard FY25**, **IFC**, **MIGA**, **IDA**, **WB Operations Portal**, **WDI**, **Country Partnership Frameworks**, and **WB Open Data**.\n\nWhat would you like to create?',
   timestamp: 'Just now',
 };
 
@@ -101,5 +102,38 @@ export const DATA_CARDS_MESSAGE: Message = {
     { label: 'Show comparable education projects in Brazil' },
     { label: 'Flag this gap for the CPF brief' },
     { label: 'Show me the full portfolio gap for Protection of the Poorest' },
+  ],
+};
+
+export const IDA_CONNECTOR_MESSAGE: Message = {
+  id: 'msg-ida-connectors',
+  role: 'assistant',
+  content: "To map IDA's social protection impact, I'll need access to portfolio data and development indicators. Select the connections below.",
+  timestamp: '',
+  connectors: MCP_CONNECTORS,
+  actions: [{ label: 'Confirm connectors' }],
+};
+
+export const IDA_AI_MESSAGE: Message = {
+  id: 'msg-ida-2',
+  role: 'assistant',
+  content: "I've built 4 initial cards for your IDA social protection analysis — **Context**, **Intervention**, **Evidence**, and **Impact**. Use the nav panel on the left to jump between them.\n\nIDA holds **$4.2 billion** in active commitments across **91 countries** for social protection and labor programs — the largest SP portfolio among multilateral development banks.\n\n**Safety nets are the core delivery vehicle.** More than 234 million people benefit from IDA-supported safety net programs, with Sub-Saharan Africa and South Asia accounting for over 80% of reach.\n\nThe critical gap: coverage in **fragile and conflict-affected states (FCS)** sits at just 18% — well below the 72% average for IBRD countries.",
+  timestamp: 'Just now',
+  actions: [
+    { label: 'Break down coverage by region' },
+    { label: 'Which IDA projects have the highest beneficiary counts?' },
+    { label: 'Show the gender breakdown for financial inclusion' },
+  ],
+};
+
+export const IDA_DATA_CARDS_MESSAGE: Message = {
+  id: 'msg-ida-data-cards',
+  role: 'assistant',
+  content: "**Coverage gaps are deepest in fragile states — and growing.**\n\nOnly 18% of people in FCS countries are covered by any social protection program, vs 47% in stable IDA countries. IDA's financial inclusion programs reach **350 million people and businesses**, but female account ownership lags male ownership by 9 percentage points across the IDA portfolio.\n\nI've added the financial services access and gender equity cards to your canvas.",
+  timestamp: 'Just now',
+  actions: [
+    { label: 'Show FCS country breakdown' },
+    { label: 'Map financial inclusion gaps by region' },
+    { label: 'Compare IDA vs IBRD gender equity results' },
   ],
 };

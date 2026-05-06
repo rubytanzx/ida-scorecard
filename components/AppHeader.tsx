@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { IconChevronDown, IconPlus } from "@tabler/icons-react";
+import { IconChevronDown, IconFolder } from "@tabler/icons-react";
 
 const NAV_TABS = [
   { id: "for-you", label: "For You" },
-  { id: "explore-notebooks", label: "Explore Notebooks" },
+  { id: "explore-narratives", label: "Explore Narratives" },
   { id: "scorecard-data", label: "Scorecard Data", hasDropdown: true },
 ] as const;
+
+interface Props {
+  workspaceCount?: number;
+  onOpenWorkspace?: () => void;
+}
 
 function WBGLogo() {
   return (
@@ -20,22 +24,23 @@ function WBGLogo() {
   );
 }
 
-export default function AppHeader() {
+export default function AppHeader({ workspaceCount = 0, onOpenWorkspace }: Props) {
   const [activeTab, setActiveTab] = useState("for-you");
-  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-[0_1px_0_0_#f1f5f9] h-[72px]">
-      <div className="max-w-[1440px] mx-auto px-[24px] h-[72px] flex items-end justify-between gap-4">
+      {/* 3-column grid keeps the nav truly viewport-centered regardless of
+          the widths of the brand on the left and the workspace icon on the right. */}
+      <div className="max-w-[1440px] mx-auto px-[24px] h-[72px] grid grid-cols-[1fr_auto_1fr] items-end gap-4">
         {/* Brand */}
-        <Link href="/" className="self-center flex items-center gap-3 shrink-0">
+        <Link href="/" className="justify-self-start self-center flex items-center gap-3 shrink-0">
           <WBGLogo />
           <div className="w-px h-4 bg-gray-200" />
-          <span className="text-[13px] font-semibold text-gray-800 tracking-tight">Scorecard</span>
+          <span className="text-[13px] font-semibold text-gray-800 tracking-tight">IDA Scorecard</span>
         </Link>
 
-        {/* Nav */}
-        <nav className="flex items-end gap-1" aria-label="Main navigation">
+        {/* Nav (always sits at viewport center) */}
+        <nav className="justify-self-center flex items-end gap-1" aria-label="Main navigation">
           {NAV_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -64,11 +69,25 @@ export default function AppHeader() {
           ))}
         </nav>
 
-        {/* Right actions */}
-        <div className="self-center flex items-center">
-          <button onClick={() => router.push("/workspace/new")} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold transition-colors whitespace-nowrap">
-            <IconPlus size={14} stroke={2.5} />
-            Create Notebook
+        {/* Right actions — workspace folder, navigates to /workspace page */}
+        <div className="justify-self-end self-center flex items-center relative">
+          <button
+            onClick={onOpenWorkspace}
+            aria-label={`My workspace (${workspaceCount} conversation${workspaceCount === 1 ? "" : "s"})`}
+            className="group relative w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <IconFolder size={20} stroke={1.6} />
+            {workspaceCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center justify-center">
+                {workspaceCount}
+              </span>
+            )}
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute top-[calc(100%+6px)] right-0 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              My workspace
+            </span>
           </button>
         </div>
       </div>

@@ -191,7 +191,7 @@ export default function SidebarSection() {
     <div className="flex flex-col gap-[24px]">
       <MetricSection
         title="Trending Scorecard Pulse"
-        subtitle="• FY25 Results"
+        subtitle="• FY25 Results · IDA"
         metrics={pulseMetrics}
       />
       <MetricSection

@@ -3,15 +3,15 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import type { Node } from "reactflow";
 import CanvasLoader from "./CanvasLoader";
-import FloatingSidebar from "./FloatingSidebar";
 import FloatingTitle from "./FloatingTitle";
+import CanvasNavPane from "./CanvasNavPane";
 import FloatingActions from "./FloatingActions";
 import FloatingControls from "./FloatingControls";
 import RightNavDots from "./RightNavDots";
 import PromptBar, { PROMPT_BOTTOM, PILLS_GAP_BOTTOM, PILLS_GAP_TOP, PILLS_H } from "./PromptBar";
 import PlayModeCard from "./PlayModeCard";
 import AIChatPanel from "./AIChatPanel";
-import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE, GREETING_MESSAGE, OUTCOME_AREAS_MESSAGE, DATA_CARDS_MESSAGE, CONNECTOR_MESSAGE, CONNECTOR_CONFIRMED_AI_MESSAGE } from "@/data/mockInteraction";
+import { USER_MESSAGE, TYPING_MESSAGE, AI_MESSAGE, GREETING_MESSAGE, OUTCOME_AREAS_MESSAGE, DATA_CARDS_MESSAGE, CONNECTOR_MESSAGE, CONNECTOR_CONFIRMED_AI_MESSAGE, IDA_CONNECTOR_MESSAGE, IDA_AI_MESSAGE, IDA_DATA_CARDS_MESSAGE } from "@/data/mockInteraction";
 import type { Message } from "@/data/mockInteraction";
 
 const CARD_NAME_MAP: Record<string, string> = {
@@ -29,6 +29,10 @@ const CARD_NAME_MAP: Record<string, string> = {
   "data-financial-services": "Financial Services",
   "data-gender-equality": "Gender Equality",
   "data-private-capital": "Private Capital",
+  "ida-section-context":         "Context",
+  "ida-section-intervention":    "Intervention (IDA projects)",
+  "ida-section-evidence":        "Evidence",
+  "ida-section-impact":          "Impact",
 };
 
 // Outcome area cards — placed in a column to the right of the OverviewCard (x:80, w:1200)
@@ -215,6 +219,8 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
   const [promptBarHeight, setPromptBarHeight] = useState(56); // single-line default
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [confirmedConnectorIds, setConfirmedConnectorIds] = useState<Set<string> | undefined>(undefined);
+  const [focusTarget, setFocusTarget] = useState<{ id: string; seq: number } | null>(null);
+  const [activeNavNodeId, setActiveNavNodeId] = useState<string | null>(null);
   const [outcomeCardsShown, setOutcomeCardsShown] = useState(prebuilt);
   const [dataCardsShown, setDataCardsShown] = useState(prebuilt);
   const orderedNodes = useMemo(
@@ -265,6 +271,8 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
 
   // submissionPhase: 0=awaiting prompt, 1=awaiting connector confirm, 2=board created (card chat), 3=done
   const submissionPhase = useRef<number>(prebuilt ? 2 : 0);
+  const flowTypeRef = useRef<'cpf-mexico' | 'ida-social-protection'>('cpf-mexico');
+  const [canvasFlowType, setCanvasFlowType] = useState<'cpf-mexico' | 'ida-social-protection'>('cpf-mexico');
 
   const handleCardSelect = (nodeId: string | null) => {
     setSelectedCard(nodeId ? (CARD_NAME_MAP[nodeId] ?? null) : null);
@@ -393,6 +401,76 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       setMessages((m) => [...m, confirmMsg, TYPING_MESSAGE]);
       setCanvasLoading(true);
 
+      if (flowTypeRef.current === 'ida-social-protection') {
+        const sectionNodes: Node[] = [
+          {
+            id: "ida-section-context", type: "idaCard",
+            position: { x: 80, y: 40 }, draggable: true, selectable: true,
+            data: {
+              title: "Context",
+              stats: [{ value: "79.6%", label: "W&C Africa learning poverty" }, { value: "90.3%", label: "FCS contexts globally" }],
+              body: "Sub-Saharan Africa is home to the world's deepest learning crisis. In Western and Central Africa, 79.6% of children cannot read by end of primary school age. In fragile and conflict-affected states globally, learning poverty reaches 90.3% — a threshold that defines much of Sub-Saharan Africa, where 7 of the 10 highest-burden FCS countries are IDA-eligible. A critical systemic barrier is the absence of reliable education data — without functioning EMIS and accountable governance structures, policymakers cannot identify where children are falling behind or direct resources effectively. Data from 2019, the most recent available.",
+              sourcesCount: 3, cta: "Pull country-level breakdown", connector: "IDA",
+            },
+          },
+          {
+            id: "ida-section-intervention", type: "idaCard",
+            position: { x: 551, y: 40 }, draggable: true, selectable: true,
+            data: {
+              title: "Intervention",
+              stats: [{ value: "$29.2B", label: "committed across SSA" }, { value: "150", label: "IDA education projects" }],
+              body: "IDA's response targets the governance and data systems that underpin education quality. Three interlocking mechanisms are deployed across the portfolio:",
+              listItems: [
+                "Modernised EMIS enabling real-time data flows from schools to policymakers",
+                "Direct school grants tied to evidence-based School Improvement Plans",
+                "Performance-based conditions incentivising systemic reform at national level",
+              ],
+              sourcesCount: 3, cta: "Show me how each individual outcome areas are derived", connector: "IDA",
+            },
+          },
+          {
+            id: "ida-section-evidence", type: "idaCard",
+            position: { x: 1022, y: 40 }, draggable: true, selectable: true,
+            data: {
+              title: "Evidence",
+              stats: [{ value: "42M", label: "students reached · SSA" }, { value: "60%", label: "of portfolio target" }],
+              progressItems: [
+                { label: "Achieved vs target", displayValue: "42M / 70.6M", pct: 60 },
+                { label: "Kenya PEELP", displayValue: "7.6M / 8M", note: "96%", pct: 95 },
+                { label: "Ethiopia GEQIP-E", displayValue: "18M students", pct: 75 },
+                { label: "Tanzania HEET", displayValue: "224K / 100K", note: "exceeded", pct: 100, exceeded: true },
+              ],
+              sourcesCount: 3, cta: "Find actual vs achieved by region", connector: "IDA",
+            },
+          },
+          {
+            id: "ida-section-impact", type: "idaCard",
+            position: { x: 1493, y: 40 }, draggable: true, selectable: true,
+            data: {
+              title: "Impact",
+              stats: [{ value: "53.6%", label: "global learning poverty" }, { value: "#1", label: "SSA highest-burden region" }],
+              body: "Where IDA has strengthened governance systems, results follow at scale. The pathway is clear:",
+              showFlow: true,
+              bodyAfter: "SSA's trajectory depends on sustained system-level reform. IDA's portfolio is building the institutional infrastructure that will convert future financing into lasting results — not for one cohort, but for the generation entering school today.",
+              sourcesCount: 1, cta: "Link to IDA21 vision indicators", connector: "IDA",
+            },
+          },
+        ];
+
+        const timers: ReturnType<typeof setTimeout>[] = [];
+        timers.push(setTimeout(() => setCanvasNodes(sectionNodes.slice(0, 1)), 2300));
+        timers.push(setTimeout(() => setCanvasNodes(sectionNodes.slice(0, 2)), 2600));
+        timers.push(setTimeout(() => setCanvasNodes(sectionNodes.slice(0, 3)), 2900));
+        timers.push(setTimeout(() => setCanvasNodes(sectionNodes),             3100));
+        timers.push(setTimeout(() => { setFitViewTrigger((t) => t + 1); setCanvasLoading(false); }, 3400));
+        timers.push(setTimeout(() => {
+          setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), IDA_AI_MESSAGE]);
+        }, 4000));
+
+        return () => timers.forEach(clearTimeout);
+      }
+
+      // CPF Mexico flow
       const overviewNode: Node = {
         id: "card-overview", type: "overview", position: { x: 80, y: 40 },
         data: { onShowOutcomeAreas: handleShowOutcomeAreas, connector: "WBG Scorecard" }, draggable: true, selectable: true,
@@ -410,10 +488,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       timers.push(setTimeout(() => setCanvasNodes([overviewNode]),                           2300));
       timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode]),            2600));
       timers.push(setTimeout(() => setCanvasNodes([overviewNode, narrativeNode, newsNode]),  2900));
-      timers.push(setTimeout(() => {
-        setFitViewTrigger((t) => t + 1);
-        setCanvasLoading(false);
-      }, 3200));
+      timers.push(setTimeout(() => { setFitViewTrigger((t) => t + 1); setCanvasLoading(false); }, 3200));
       timers.push(setTimeout(() => {
         setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), AI_MESSAGE]);
       }, 3800));
@@ -427,8 +502,17 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
     if (submissionPhase.current === 0) {
       submissionPhase.current = 1;
 
-      // Summarise: extract CPF/country/FY patterns first, fall back to word truncation
+      // Detect flow type from input text
+      const isCPFMexico = /cpf\s*for\s*mexico/i.test(text) || /operations\s+officer.*cpf/i.test(text);
+      const isIDA = /\bida\b/i.test(text);
+      flowTypeRef.current = isCPFMexico ? 'cpf-mexico' : isIDA ? 'ida-social-protection' : 'cpf-mexico';
+      setCanvasFlowType(flowTypeRef.current);
+
+      // Summarise title
       const summary = (() => {
+        if (flowTypeRef.current === 'ida-social-protection') {
+          return "IDA Social Protection Impact";
+        }
         const cpfMatch = text.match(/CPF\s+for\s+(\w+)/i);
         const fyMatch = text.match(/FY\s*(\d{2,4})/i);
         if (cpfMatch) {
@@ -444,9 +528,10 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       })();
       setWorkspaceTitle(summary);
 
+      const connectorMsg = flowTypeRef.current === 'ida-social-protection' ? IDA_CONNECTOR_MESSAGE : CONNECTOR_MESSAGE;
       const userMsg: Message = { ...USER_MESSAGE, content: text };
       setChatOpen(true);
-      setMessages([userMsg, CONNECTOR_MESSAGE]);
+      setMessages([userMsg, connectorMsg]);
       return;
     }
 
@@ -464,12 +549,19 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
       setMessages((m) => [...m, userMsg, TYPING_MESSAGE]);
 
       const timers: ReturnType<typeof setTimeout>[] = [];
-      timers.push(setTimeout(() => {
-        setDataCardsShown(true);
-      }, 1200));
-      timers.push(setTimeout(() => {
-        setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...DATA_CARDS_MESSAGE, id: `msg-data-cards-${Date.now()}` }]);
-      }, 2000));
+
+      if (flowTypeRef.current === 'ida-social-protection') {
+        timers.push(setTimeout(() => {
+          setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...IDA_DATA_CARDS_MESSAGE, id: `msg-ida-data-${Date.now()}` }]);
+        }, 1200));
+      } else {
+        timers.push(setTimeout(() => {
+          setDataCardsShown(true);
+        }, 1200));
+        timers.push(setTimeout(() => {
+          setMessages((m) => [...m.filter((msg) => msg.role !== "typing"), { ...DATA_CARDS_MESSAGE, id: `msg-data-cards-${Date.now()}` }]);
+        }, 2000));
+      }
 
       return () => timers.forEach(clearTimeout);
     }
@@ -487,9 +579,9 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
         background: "#FFFFFF",
       }}
     >
-      <CanvasLoader nodes={processedNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} loading={canvasLoading} nodesDraggable={!panMode} onCardSelect={handleCardSelect} />
-      <FloatingSidebar />
+      <CanvasLoader nodes={processedNodes} orderedNodes={orderedNodes} playActive={playActive} fitViewTrigger={fitViewTrigger} focusTarget={focusTarget} loading={canvasLoading} nodesDraggable={!panMode} onCardSelect={handleCardSelect} onNodesDelete={(ids) => setCanvasNodes((prev) => prev.filter((n) => !ids.includes(n.id)))} />
       {!playActive && <FloatingTitle mode={mode} initialTitle={empty ? "" : undefined} titleOverride={workspaceTitle} />}
+      {!playActive && <CanvasNavPane nodes={orderedNodes} activeNodeId={activeNavNodeId} onFocus={(id) => { setActiveNavNodeId(id); setFocusTarget((prev) => ({ id, seq: (prev?.seq ?? 0) + 1 })); }} />}
       {!playActive && <FloatingActions mode={mode} onPlay={() => { setPlayActive(true); setCurrentCardIndex(0); }} />}
       {!playActive && <FloatingControls mode={mode} onModeChange={(m) => setPanMode(m === "pan")} />}
       {!playActive && <RightNavDots />}

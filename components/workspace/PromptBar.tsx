@@ -258,10 +258,10 @@ export default function PromptBar({
             zIndex: 50, transition: "bottom 0.15s ease",
           }}
         >
-          <button onClick={onClearSelection} style={{ background: "none", border: "none", padding: 0, display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0 }}>
+          <button onClick={onClearSelection} style={{ background: "none", border: "none", padding: 0, lineHeight: 0, display: "flex", alignItems: "center", cursor: "pointer", flexShrink: 0 }}>
             <IconX size={18} stroke={2} color="#FFFFFF" />
           </button>
-          <span style={{ fontFamily: F, fontSize: 14, color: "#FFFFFF", lineHeight: "20px" }}>
+          <span style={{ fontFamily: F, fontSize: 14, color: "#FFFFFF", lineHeight: "1.2", flex: 1 }}>
             Chat about card <strong style={{ fontWeight: 700 }}>{selectedCard}</strong>
           </span>
         </div>

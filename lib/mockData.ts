@@ -14,6 +14,8 @@ export interface StoryTag {
   variant: "structural-break" | "peer-divergence" | "methodology-gap" | "concentration-risk" | "trend" | "signal" | "evidence-gap";
 }
 
+export type ThumbVariant = "people" | "digital" | "planet" | "fcs";
+
 export interface Story {
   id: string;
   tag: StoryTag;
@@ -28,10 +30,15 @@ export interface Story {
   href?: string;
   imageSrc?: string;
   imageAlt?: string;
+  thumbVariant?: ThumbVariant;
   lastUpdated?: string;
   upvotes?: number;
   downvotes?: number;
   connectors?: number;
+  /** When set, clicking the story opens the shared-link viewer with this
+   * prompt as the underlying artefact — turning the story card into an
+   * entry point to a published insightographic. */
+  viewerPrompt?: string;
 }
 
 export interface FeaturedStory extends Story {
@@ -42,18 +49,19 @@ export interface FeaturedStory extends Story {
 
 export const featuredStory: FeaturedStory = {
   id: "featured-1",
-  tag: { label: "Trend", variant: "trend" },
-  headline: "ECA reform-driven PCE outpacing EAP by 2.1x despite lower investment volume",
+  tag: { label: "Peer Divergence · FCS Focus", variant: "peer-divergence" },
+  headline: "IDA countries in FCS delivering 2.3× more health coverage per dollar than non-FCS IDA peers",
   description:
-    "Regulatory and governance reforms in ECA are converting to Private Capital Enabled results at more than double the rate of infrastructure-led approaches in EAP. Suggests reform type — not investment scale — is the primary driver.",
+    "Targeted health systems investments in fragile states are showing outsized efficiency gains — 370M people reached against a 425M pipeline. Reform sequencing, not aid volume, appears to be the primary driver.",
   workspaceType: "Trend",
   workspaceIcon: "chart-line",
-  institutions: ["IFC", "MIGA"],
-  author: { initials: "AO", name: "Amara Osei", color: "#2563eb" },
-  ctaLabel: "View ECA vs EAP PCE Reform Analysis",
+  institutions: ["IDA", "FCS"],
+  author: { initials: "KR", name: "Kofi Rana", color: "#2563eb" },
+  ctaLabel: "View FCS health coverage analysis",
   ctaHref: "#",
   imageSrc: "/images/story-featured.jpg",
-  imageAlt: "Collapsed bridge infrastructure",
+  imageAlt: "Health workers in a fragile-states clinic",
+  thumbVariant: "fcs",
   lastUpdated: "Mar 19, 2025",
   upvotes: 312,
   downvotes: 11,
@@ -63,47 +71,52 @@ export const featuredStory: FeaturedStory = {
 export const secondaryStories: Story[] = [
   {
     id: "story-1",
-    tag: { label: "Structural Break", variant: "structural-break" },
-    headline: "Q2 disbursements missed target in 9 IDA countries that met Q1",
-    workspaceType: "Trend",
-    workspaceIcon: "chart-line",
-    institutions: ["IFC", "MIGA"],
-    author: { initials: "RK", name: "Rajiv Khanna", color: "#7c3aed" },
-    ctaLabel: "View Q1 vs Q2 Disbursement Analysis",
+    tag: { label: "Peer Divergence · Sub-Saharan Africa", variant: "peer-divergence" },
+    headline: "FY25 IDA delivery reaches 939M in extreme-poverty countries — Infrastructure and Planet trail plan most",
+    workspaceType: "Insightographic",
+    workspaceIcon: "bar-chart",
+    institutions: ["IDA", "AFE", "AFW"],
+    author: { initials: "RT", name: "Ruby Tan", color: "#0891b2" },
+    ctaLabel: "Open shared insightographic",
     ctaHref: "#",
     imageSrc: "/images/story-1.jpg",
-    imageAlt: "Collapsed bridge infrastructure",
-    lastUpdated: "Mar 14, 2025",
-    upvotes: 94, downvotes: 7, connectors: 4,
+    imageAlt: "Cross-pillar IDA delivery in Sub-Saharan Africa",
+    thumbVariant: "people",
+    lastUpdated: "May 5, 2026",
+    upvotes: 184, downvotes: 4, connectors: 6,
+    viewerPrompt:
+      "Is IDA making a difference for people in extreme poverty in Sub-Saharan Africa?",
   },
   {
     id: "story-2",
     tag: { label: "Peer Divergence", variant: "peer-divergence" },
-    headline: "MENAAP CMU contributing to 40% fewer indicators than regional average",
+    headline: "Digital connectivity surge — but 62% of LIC countries still unmapped for broadband reach",
     workspaceType: "Trend",
     workspaceIcon: "chart-line",
-    institutions: ["IFC", "MIGA"],
-    author: { initials: "DS", name: "Dina El-Sayed", color: "#0891b2" },
-    ctaLabel: "View MENAAP Regional Benchmarks",
+    institutions: ["IDA", "AFW"],
+    author: { initials: "DN", name: "Dina N.", color: "#0891b2" },
+    ctaLabel: "View broadband mapping gaps",
     ctaHref: "#",
     imageSrc: "/images/story-2.jpg",
     imageAlt: "Global network connectivity from space",
+    thumbVariant: "digital",
     lastUpdated: "Mar 9, 2025",
     upvotes: 156, downvotes: 23, connectors: 6,
   },
   {
     id: "story-3",
-    tag: { label: "Peer Divergence", variant: "peer-divergence" },
-    headline: "Mexico falling behind LAC peers on education and safety nets — 4 projects contributing but 2 are stalling",
+    tag: { label: "Emerging Signal", variant: "signal" },
+    headline: "Climate resilience targets at 57% of pipeline — LDCs outpacing middle-income IDA borrowers",
     workspaceType: "Trend",
     workspaceIcon: "chart-line",
-    institutions: ["IFC", "MIGA"],
-    author: { initials: "CM", name: "Carlos Mendoza", color: "#a101a1" },
-    ctaLabel: "View Peer Gap Analysis",
+    institutions: ["IDA", "EAP"],
+    author: { initials: "CS", name: "Carlos S.", color: "#a101a1" },
+    ctaLabel: "View LDC climate analysis",
     ctaHref: "/workspace/mexico-fy25/view",
     href: "/story/story-3",
     imageSrc: "/images/story-3.jpg",
-    imageAlt: "Healthcare worker with patients",
+    imageAlt: "Climate-resilient infrastructure in an LDC setting",
+    thumbVariant: "planet",
     lastUpdated: "Mar 17, 2025",
     upvotes: 231, downvotes: 5, connectors: 7,
   },
@@ -128,35 +141,42 @@ export interface ChangingCard {
   chartType: "grouped-bar" | "area" | "multi-area";
   chartData: ChartDataPoint[];
   legend: { label: string; color: string }[];
+  /** When set, clicking the card opens the shared-link viewer for this
+   * prompt — wiring the home-page card to a pre-generated artefact. */
+  viewerPrompt?: string;
 }
 
 export const changingCards: ChangingCard[] = [
   {
     id: "changing-1",
-    tag: { label: "Concentration Risk", variant: "concentration-risk" },
-    headline: "Jobs Indicator Surging in ECA — But 80% Driven by Indirect Employment",
-    workspaceType: "Signal",
-    institutions: ["IFC", "ECA"],
-    ctaLabel: "View ECA jobs breakdown by project",
+    tag: { label: "Concentration Risk · FCS", variant: "concentration-risk" },
+    headline: "5 IDA-FCS countries account for ~37% of FY25 health-services shortfall",
+    workspaceType: "Insightographic",
+    institutions: ["IDA", "FCS", "MENAAP"],
+    ctaLabel: "Open shared insightographic",
     ctaHref: "#",
     chartType: "grouped-bar",
     chartData: [
-      { label: "FY23", value: 57, secondary: 23 },
-      { label: "FY24", value: 93, secondary: 42 },
-      { label: "FY25", value: 113, secondary: 68 },
+      { label: "Yemen",   value: 1.2, secondary: 3.2 },
+      { label: "Sudan",   value: 1.7, secondary: 4.1 },
+      { label: "Afgh.",   value: 2.4, secondary: 5.5 },
+      { label: "S.Sudan", value: 0.6, secondary: 1.3 },
+      { label: "Myanmar", value: 1.5, secondary: 3.1 },
     ],
     legend: [
-      { label: "Jobs", color: "#3b82f6" },
-      { label: "Indirect Unemployment", color: "#f9a8d4" },
+      { label: "FY25 achieved (M people)", color: "#dc2626" },
+      { label: "FY25 target (M people)",   color: "#fca5a5" },
     ],
+    viewerPrompt:
+      "Which countries are furthest behind on health services targets in FY25 — and what's driving the gap?",
   },
   {
     id: "changing-2",
     tag: { label: "Methodology Gap", variant: "methodology-gap" },
-    headline: "Gender Equality Results Rising — But Methodology Questions Persist",
+    headline: "Gender equality results rising — but beneficiary counting methodology varies across 14 IDA projects",
     workspaceType: "Signal",
-    institutions: ["IBRD", "IFC", "MIGA"],
-    ctaLabel: "Review Gender Inclusion Methodology",
+    institutions: ["IDA", "IBRD", "MIGA"],
+    ctaLabel: "Review gender inclusion methodology",
     ctaHref: "#",
     chartType: "multi-area",
     chartData: [
@@ -169,16 +189,16 @@ export const changingCards: ChangingCard[] = [
     ],
     legend: [
       { label: "Global Average", color: "#94a3b8" },
-      { label: "LCR (7M)", color: "#3b82f6" },
+      { label: "LCR (flat)", color: "#3b82f6" },
     ],
   },
   {
     id: "changing-3",
     tag: { label: "Stalling", variant: "peer-divergence" },
-    headline: "6 Scorecard Indicators Stalling Across LCR — No Advancement in 24 Months",
+    headline: "6 Scorecard indicators stalling across LCR — no advancement in 24 months",
     workspaceType: "Signal",
-    institutions: ["IBRD", "IDA", "LCR"],
-    ctaLabel: "View LCR stalled indicators by country",
+    institutions: ["IDA", "LCR"],
+    ctaLabel: "View LCR stalled indicators",
     ctaHref: "#",
     chartType: "area",
     chartData: [
@@ -215,10 +235,10 @@ export const counterIntuitiveCards: CounterIntuitiveCard[] = [
   {
     id: "counter-1",
     tag: { label: "Evidence Gap", variant: "evidence-gap" },
-    headline: "Few Large Projects = Portfolio Strength",
+    headline: "Few large IDA projects ≠ portfolio strength",
     workspaceType: "Robust",
-    institutions: ["IFC", "ECA"],
-    ctaLabel: "View Concentration Risk across 14 ind…",
+    institutions: ["IDA", "AFE", "AFW"],
+    ctaLabel: "View concentration risk across 14 indicators",
     ctaHref: "#",
     chartType: "bar",
     chartData: [
@@ -235,25 +255,25 @@ export const counterIntuitiveCards: CounterIntuitiveCard[] = [
   {
     id: "counter-2",
     tag: { label: "Evidence Gap", variant: "evidence-gap" },
-    headline: "Gender Equality Results Rising — But Methodology Questions Persist",
+    headline: "Gender equality rising — methodology questions persist",
     workspaceType: "Trend",
-    institutions: ["IBRD", "IFC", "MIGA"],
+    institutions: ["IDA", "IBRD", "MIGA"],
     ctaLabel: "View mapping gaps",
     ctaHref: "#",
     chartType: "donut",
     chartData: [],
     donutData: [
-      { label: "42% mapped", value: 42, color: "#3b82f6" },
-      { label: "58% unmapped", value: 58, color: "#e2e8f0" },
+      { label: "62% mapped", value: 62, color: "#3b82f6" },
+      { label: "38% unmapped", value: 38, color: "#e2e8f0" },
     ],
   },
   {
     id: "counter-3",
     tag: { label: "Evidence Gap", variant: "evidence-gap" },
-    headline: "Client Context Gains = WBG Impact",
+    headline: "Client context gains ≠ WBG impact in IDA countries",
     workspaceType: "Trend",
-    institutions: ["IBRD", "IDA", "LCR"],
-    ctaLabel: "View Context vs Intervention attribution",
+    institutions: ["IDA", "LCR"],
+    ctaLabel: "View context vs intervention attribution",
     ctaHref: "#",
     chartType: "area-annotated",
     chartData: [
@@ -285,21 +305,21 @@ export const patternCards: PatternCard[] = [
     id: "pattern-1",
     headline: "Indicators flat for 2+ years",
     description:
-      "Scorecard indicators showing no advancement over 24 months, suggesting structural barriers rather than cyclical dips",
+      "Scorecard indicators with no advancement over 24 months, suggesting structural barriers rather than cyclical dips.",
     href: "#",
   },
   {
     id: "pattern-2",
     headline: "Peer groups with mismatched contexts",
     description:
-      "Countries being benchmarked against peers with fundamentally different income levels, fragility status, or portfolio size",
+      "IDA countries benchmarked against peers with fundamentally different income levels, fragility status, or portfolio size.",
     href: "#",
   },
   {
     id: "pattern-3",
     headline: "Projects contributing to 4+ indicators",
     description:
-      "Multi-indicator projects that could be replicated or scaled — high-leverage portfolio positions",
+      "Multi-indicator IDA projects that could be replicated or scaled — high-leverage portfolio positions.",
     href: "#",
   },
 ];

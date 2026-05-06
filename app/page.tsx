@@ -5,6 +5,7 @@ import {
   IconSparkles, IconX, IconArrowUp, IconPlus,
   IconPaperclip, IconPhoto, IconPlugConnected,
   IconChevronRight, IconSettings, IconTool,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 import { MCP_CONNECTORS } from "@/data/mockInteraction";
 import AppHeader from "@/components/AppHeader";
@@ -18,6 +19,12 @@ import CounterIntuitiveCard from "@/components/CounterIntuitiveCard";
 import PatternCard from "@/components/PatternCard";
 import AppFooter from "@/components/AppFooter";
 import StoryDetailModal from "@/components/StoryDetailModal";
+import ConversationView from "@/components/conversation/ConversationView";
+import NarrativePanel, { NARRATIVE_PANEL_DEFAULT_WIDTH } from "@/components/conversation/NarrativePanel";
+import InsightographicPanel from "@/components/conversation/InsightographicPanel";
+import ViewerView from "@/components/conversation/ViewerView";
+import WorkspaceView from "@/components/conversation/WorkspaceView";
+import PromptBar from "@/components/PromptBar";
 
 import {
   featuredStory,
@@ -26,6 +33,15 @@ import {
   counterIntuitiveCards,
   patternCards,
 } from "@/lib/mockData";
+
+// First ~6 words of the prompt as a working title.
+function deriveArtefactTitle(prompt: string): string {
+  if (!prompt.trim()) return "";
+  const words = prompt.trim().replace(/[?!.]+$/g, "").split(/\s+/).slice(0, 7);
+  let t = words.join(" ");
+  if (t.length > 56) t = t.slice(0, 56) + "…";
+  return t;
+}
 
 // ─── Chat menu helpers ────────────────────────────────────────────────────────
 
@@ -149,6 +165,228 @@ export default function HomePage() {
   const [aiInput, setAiInput] = useState("");
   const story3 = secondaryStories.find((s) => s.id === "story-3") ?? null;
 
+  // Conversation flow: "home" → user submits → 3s beam → "conversation".
+  // The shared PromptBar stays mounted; only its `mode` prop changes, so
+  // it animates from hero-center to bottom-fixed.
+  const [view, setView] = useState<"home" | "conversation" | "workspace" | "viewer">("home");
+  const [conversationPrompt, setConversationPrompt] = useState("");
+  const [promptValue, setPromptValue] = useState("");
+  // Single discriminator for which right-side artefact pane is open.
+  // null = closed; only one pane can be visible at a time.
+  type RightPane = "narrative" | "insightographic" | null;
+  const [rightPane, setRightPane] = useState<RightPane>(null);
+  const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
+  const [rightPaneDragging, setRightPaneDragging] = useState(false);
+  // True for ~4s after the user clicks "Create narrative" — drives the
+  // narrative-panel reasoning + skeleton + animated geography loader.
+  const [narrativeGenerating, setNarrativeGenerating] = useState(false);
+  // True for ~3.5s after the user picks "Generate · Insightographic" —
+  // drives the beam + cycling text loader inside the insightographic pane.
+  const [insightographicGenerating, setInsightographicGenerating] = useState(false);
+  // When a kind that already exists is picked from the Generate menu, we
+  // open a confirm dialog instead of regenerating immediately. null = no
+  // dialog open; otherwise the kind being asked about.
+  const [regenerateConfirm, setRegenerateConfirm] = useState<string | null>(null);
+  const [homeScrolled, setHomeScrolled] = useState(false);
+  const homeScrollRef = useRef<HTMLDivElement>(null);
+
+  // Track home-page scroll so the prompt bar can dock at the bottom once the
+  // user moves past the hero. Listen on both the inner overflow-y-auto
+  // container and the window so it works regardless of the scroll target.
+  useEffect(() => {
+    if (view !== "home") return;
+    const THRESHOLD = 80;
+    const check = () => {
+      const inner = homeScrollRef.current;
+      const innerTop = inner?.scrollTop ?? 0;
+      const winTop = typeof window !== "undefined"
+        ? (window.scrollY || document.documentElement.scrollTop || 0)
+        : 0;
+      setHomeScrolled(Math.max(innerTop, winTop) > THRESHOLD);
+    };
+    check();
+    const inner = homeScrollRef.current;
+    inner?.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("scroll", check, { passive: true });
+    return () => {
+      inner?.removeEventListener("scroll", check);
+      window.removeEventListener("scroll", check);
+    };
+  }, [view]);
+
+  // Conversations + artefacts — each conversation owns its own artefacts list.
+  // `kind` discriminates which right-side pane to open when re-selected.
+  interface Artefact {
+    id: string;
+    kind: "narrative" | "insightographic";
+    title: string;
+    prompt: string;
+    createdAt: number;
+  }
+  interface Conversation {
+    id: string;
+    title: string;
+    prompt: string;
+    createdAt: number;
+    artefacts: Artefact[];
+  }
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const currentConversation = conversations.find((c) => c.id === currentConversationId);
+  const currentArtefacts = currentConversation?.artefacts ?? [];
+
+  const handleSearchComplete = (text: string) => {
+    const id = Date.now().toString();
+    setConversations((prev) => [
+      ...prev,
+      {
+        id,
+        title: deriveArtefactTitle(text) || "Untitled query",
+        prompt: text,
+        createdAt: Date.now(),
+        artefacts: [],
+      },
+    ]);
+    setCurrentConversationId(id);
+    setConversationPrompt(text);
+    setPromptValue("");        // empty the bar for follow-up questions
+    setView("conversation");
+    setHomeScrolled(false);    // reset for when we return home
+  };
+
+  const handleCreateNarrative = () => {
+    if (!currentConversationId) return;
+    // One narrative per conversation — if one already exists, just re-open
+    // the panel without generating again.
+    const existing = currentConversation?.artefacts.find((a) => a.kind === "narrative");
+    if (existing) {
+      setRightPane("narrative");
+      return;
+    }
+    // Open the panel immediately in loading state — feels more responsive
+    // than waiting until "generation" completes to reveal it.
+    setNarrativeGenerating(true);
+    setRightPane("narrative");
+    // Mock generation pass: ~2.5s reasoning + ~1.5s skeleton before content
+    // lands. The panel handles the internal phase split; we just keep
+    // `loading` true for the full duration.
+    window.setTimeout(() => {
+      const a: Artefact = {
+        id: Date.now().toString(),
+        kind: "narrative",
+        title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
+        prompt: conversationPrompt,
+        createdAt: Date.now(),
+      };
+      setConversations((prev) =>
+        prev.map((c) => c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c)
+      );
+      setNarrativeGenerating(false);
+    }, 4000);
+  };
+
+  // Generate format from the narrative panel. Only "insightographic" is
+  // wired up to a real pane today — the other formats stay as no-ops until
+  // their respective views are built.
+  // Internal — runs the mock generation pass for the insightographic.
+  // `replace` removes any existing insightographic before adding the new
+  // one, preserving the "one per conversation" rule when regenerating.
+  const runInsightographicGeneration = (replace: boolean) => {
+    if (!currentConversationId) return;
+    if (replace) {
+      setConversations((prev) =>
+        prev.map((c) => c.id === currentConversationId
+          ? { ...c, artefacts: c.artefacts.filter((a) => a.kind !== "insightographic") }
+          : c
+        )
+      );
+    }
+    setInsightographicGenerating(true);
+    setRightPane("insightographic");
+    window.setTimeout(() => {
+      const baseTitle = deriveArtefactTitle(conversationPrompt) || "Insightographic";
+      const a: Artefact = {
+        id: Date.now().toString(),
+        kind: "insightographic",
+        title: `${baseTitle} · Insightographic`,
+        prompt: conversationPrompt,
+        createdAt: Date.now(),
+      };
+      setConversations((prev) =>
+        prev.map((c) => c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c)
+      );
+      setInsightographicGenerating(false);
+    }, 3500);
+  };
+
+  const handleGenerate = (kind: string) => {
+    if (kind !== "insightographic") return;
+    if (!currentConversationId) return;
+    const existing = currentConversation?.artefacts.find((a) => a.kind === "insightographic");
+    if (existing) {
+      // Existing artefact — ask before regenerating.
+      setRegenerateConfirm(kind);
+      return;
+    }
+    runInsightographicGeneration(false);
+  };
+
+  const confirmRegenerate = () => {
+    const kind = regenerateConfirm;
+    setRegenerateConfirm(null);
+    if (kind === "insightographic") runInsightographicGeneration(true);
+  };
+
+  const handleSelectArtefact = (a: Artefact) => {
+    setRightPane(a.kind);
+  };
+
+  // Open the shared-link viewer for one of the home-page story cards.
+  // If a conversation for this prompt already exists, jump back into it
+  // (so we don't clutter the workspace with duplicates); otherwise fabricate
+  // one with a pre-generated insightographic artefact attached.
+  const handleOpenViewer = (prompt: string, fallbackTitle: string) => {
+    const existing = conversations.find((c) => c.prompt === prompt);
+    if (existing) {
+      setCurrentConversationId(existing.id);
+      setConversationPrompt(prompt);
+      setView("viewer");
+      return;
+    }
+    const id = `seed-${Date.now()}`;
+    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
+    const baseTitle = deriveArtefactTitle(prompt) || fallbackTitle;
+    const insight: Artefact = {
+      id: `${id}-insight`,
+      kind: "insightographic",
+      title: `${baseTitle} · Insightographic`,
+      prompt,
+      createdAt: yesterday,
+    };
+    setConversations((prev) => [
+      ...prev,
+      {
+        id,
+        title: baseTitle,
+        prompt,
+        createdAt: yesterday,
+        artefacts: [insight],
+      },
+    ]);
+    setCurrentConversationId(id);
+    setConversationPrompt(prompt);
+    setView("viewer");
+  };
+
+  const handleSelectConversation = (id: string) => {
+    const conv = conversations.find((c) => c.id === id);
+    if (!conv) return;
+    setCurrentConversationId(id);
+    setConversationPrompt(conv.prompt);
+    setRightPane(null);
+    setView("conversation");
+  };
+
   // + button menu state
   const [menuOpen, setMenuOpen] = useState(false);
   const [subOpen, setSubOpen] = useState(false);
@@ -190,16 +428,111 @@ export default function HomePage() {
   useEffect(() => { if (!menuOpen) setSubOpen(false); }, [menuOpen]);
 
   return (
+    <>
+      {/* Shared, always-mounted prompt bar. Animates between hero-center
+          (home) and bottom-fixed (conversation). */}
+      {view !== "workspace" && view !== "viewer" && <PromptBar
+        mode={(view === "conversation" || (view === "home" && homeScrolled)) ? "bottom" : "hero"}
+        widthMode={view === "conversation" ? "wide" : "compact"}
+        value={promptValue}
+        onChange={setPromptValue}
+        onComplete={handleSearchComplete}
+        onCreateNarrative={handleCreateNarrative}
+        panelOpen={view === "conversation" && rightPane !== null}
+        panelWidth={rightPaneWidth}
+        suppressTransition={rightPaneDragging}
+        // Hide the chip once a narrative artefact exists — one per conversation,
+        // so there's nothing left to "create."
+        showCreateChip={view === "conversation" && !currentArtefacts.some((a) => a.kind === "narrative")}
+        inConversation={view === "conversation"}
+        onSubmit={() => {
+          // Scroll the home view back to the top on submit so the beam runs
+          // in the right place and the bar can animate from bottom→hero first.
+          if (view === "home" && homeScrolled) {
+            const el = homeScrollRef.current;
+            if (el) el.scrollTo({ top: 0, behavior: "smooth" });
+            setHomeScrolled(false);
+          }
+        }}
+      />}
+
+      {view === "conversation" && (
+        <>
+          <NarrativePanel
+            open={rightPane === "narrative"}
+            prompt={conversationPrompt}
+            onClose={() => setRightPane(null)}
+            onGenerate={handleGenerate}
+            loading={narrativeGenerating}
+            generatedKinds={currentArtefacts.map((a) => a.kind)}
+            width={rightPaneWidth}
+            onResize={(w, dragging) => {
+              setRightPaneWidth(w);
+              setRightPaneDragging(dragging);
+            }}
+          />
+          <InsightographicPanel
+            open={rightPane === "insightographic"}
+            prompt={conversationPrompt}
+            onClose={() => setRightPane(null)}
+            onOpenNarrative={() => setRightPane("narrative")}
+            onPreviewAsViewer={() => {
+              setRightPane(null);
+              setView("viewer");
+            }}
+            loading={insightographicGenerating}
+            width={rightPaneWidth}
+            onResize={(w, dragging) => {
+              setRightPaneWidth(w);
+              setRightPaneDragging(dragging);
+            }}
+          />
+        </>
+      )}
+
+      {view === "viewer" ? (
+        <ViewerView
+          prompt={conversationPrompt}
+          title={currentConversation?.title ?? "Shared insightographic"}
+          onClose={() => setView("home")}
+        />
+      ) : view === "workspace" ? (
+        <WorkspaceView
+          items={conversations.map((c) => ({
+            id: c.id,
+            title: c.title,
+            prompt: c.prompt,
+            createdAt: c.createdAt,
+            artefactCount: c.artefacts.length,
+          }))}
+          onSelect={handleSelectConversation}
+          onClose={() => setView("home")}
+        />
+      ) : view === "conversation" ? (
+        <ConversationView
+          prompt={conversationPrompt}
+          onClose={() => { setView("home"); setConversationPrompt(""); setRightPane(null); }}
+          panelOpen={rightPane !== null}
+          panelWidth={rightPaneWidth}
+          suppressTransition={rightPaneDragging}
+          artefacts={currentArtefacts}
+          onSelectArtefact={handleSelectArtefact}
+          title={currentConversation?.title}
+          onTitleChange={(t) => setConversations((prev) =>
+            prev.map((c) => c.id === currentConversationId ? { ...c, title: t } : c)
+          )}
+        />
+      ) : (
     <div className="flex h-screen overflow-hidden bg-white">
       {/* ── Main scrollable content ── */}
-      <div className="flex-1 min-w-0 overflow-y-auto flex flex-col">
-      <AppHeader />
+      <div ref={homeScrollRef} className="flex-1 min-w-0 overflow-y-auto flex flex-col">
+      <AppHeader
+        workspaceCount={conversations.length}
+        onOpenWorkspace={() => setView("workspace")}
+      />
 
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Search Hero */}
-        <FadeIn delay={0}>
-          <SearchHero />
-        </FadeIn>
+        <SearchHero onPillClick={setPromptValue} />
 
         {/* Main 2-col layout */}
         <div className="flex flex-col xl:flex-row gap-8 items-start">
@@ -217,19 +550,31 @@ export default function HomePage() {
               </FadeIn>
               <FadeIn delay={150}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {secondaryStories.map((story) =>
-                    story.id === "story-3" ? (
-                      <div
-                        key={story.id}
-                        className="cursor-pointer"
-                        onClick={() => setModalStory(story)}
-                      >
-                        <StoryCard story={{ ...story, href: undefined }} />
-                      </div>
-                    ) : (
-                      <StoryCard key={story.id} story={story} />
-                    )
-                  )}
+                  {secondaryStories.map((story) => {
+                    if (story.viewerPrompt) {
+                      return (
+                        <div
+                          key={story.id}
+                          className="cursor-pointer"
+                          onClick={() => handleOpenViewer(story.viewerPrompt!, story.headline)}
+                        >
+                          <StoryCard story={{ ...story, href: undefined }} />
+                        </div>
+                      );
+                    }
+                    if (story.id === "story-3") {
+                      return (
+                        <div
+                          key={story.id}
+                          className="cursor-pointer"
+                          onClick={() => setModalStory(story)}
+                        >
+                          <StoryCard story={{ ...story, href: undefined }} />
+                        </div>
+                      );
+                    }
+                    return <StoryCard key={story.id} story={story} />;
+                  })}
                 </div>
               </FadeIn>
             </section>
@@ -240,7 +585,17 @@ export default function HomePage() {
                 <SectionHeader title="What&apos;s Changing Right Now" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {changingCards.map((card) => (
-                    <InsightChartCard key={card.id} card={card} />
+                    card.viewerPrompt ? (
+                      <div
+                        key={card.id}
+                        className="cursor-pointer"
+                        onClick={() => handleOpenViewer(card.viewerPrompt!, card.headline)}
+                      >
+                        <InsightChartCard card={card} />
+                      </div>
+                    ) : (
+                      <InsightChartCard key={card.id} card={card} />
+                    )
                   ))}
                 </div>
               </FadeIn>
@@ -530,5 +885,55 @@ export default function HomePage() {
         <StoryDetailModal story={modalStory} onClose={() => setModalStory(null)} />
       )}
     </div>
+      )}
+
+      {/* Regenerate confirmation — appears when a user picks a Generate
+          option whose artefact already exists. Click the backdrop or
+          Cancel to dismiss; Regenerate replaces the existing artefact
+          and re-runs the mock composer. */}
+      {regenerateConfirm && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setRegenerateConfirm(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-[440px] max-w-[calc(100vw-32px)] mx-4 p-6 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: "card-enter 200ms ease-out both" }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                <IconAlertTriangle size={18} className="text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15px] font-semibold text-gray-900">
+                  Replace existing {regenerateConfirm}?
+                </h3>
+                <p className="text-[13px] text-gray-600 mt-1.5 leading-relaxed">
+                  This conversation already has {regenerateConfirm === "insightographic" ? "an" : "a"} {regenerateConfirm}.
+                  Regenerating will overwrite the existing version — it can&rsquo;t be recovered afterwards.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-1">
+              <button
+                onClick={() => setRegenerateConfirm(null)}
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRegenerate}
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              >
+                Regenerate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

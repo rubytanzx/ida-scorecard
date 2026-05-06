@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { IconChartLine, IconArrowRight } from "@tabler/icons-react";
 import { type FeaturedStory } from "@/lib/mockData";
+import StoryThumbnail from "./StoryThumbnail";
 import AuthorChip from "./AuthorChip";
 import InstitutionLogos from "./InstitutionLogos";
 
@@ -45,8 +46,13 @@ export default function FeaturedStoryCard({ story }: Props) {
         </div>
       </div>
 
-      {/* Image side */}
-      {story.imageSrc && (
+      {/* Image / Thumbnail side */}
+      {story.thumbVariant ? (
+        <StoryThumbnail
+          variant={story.thumbVariant}
+          className="hidden sm:block w-[280px] lg:w-[320px] shrink-0"
+        />
+      ) : story.imageSrc ? (
         <div className="hidden sm:block relative w-[280px] lg:w-[320px] shrink-0 overflow-hidden">
           <Image
             src={story.imageSrc}
@@ -55,7 +61,7 @@ export default function FeaturedStoryCard({ story }: Props) {
             className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
           />
         </div>
-      )}
+      ) : null}
     </article>
   );
 }

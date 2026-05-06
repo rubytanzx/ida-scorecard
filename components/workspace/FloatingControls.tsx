@@ -99,15 +99,15 @@ export default function FloatingControls({ mode = "edit", onModeChange }: Props)
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 40,
-          background: "white",
-          border: "1px solid #e5e5e5",
+          background: "#FFFFFF",
+          border: "1px solid #E0E0E0",
           borderRadius: 16,
-          boxShadow: "0px 2px 4px 0px rgba(12,35,60,0.08)",
-          padding: "8px 16px",
+          boxShadow: "0px 8px 20px 0px rgba(0,0,0,0.05)",
+          padding: "12px 16px",
           display: "flex",
           alignItems: "center",
           gap: 8,
-          height: 56,
+          height: 64,
         }}
       >
         {mode === "edit" && (
