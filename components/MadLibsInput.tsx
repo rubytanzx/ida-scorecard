@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconChevronDown, IconCheck, IconX, IconPlus, IconArrowUp, IconMicrophone } from "@tabler/icons-react";
 
@@ -84,6 +84,23 @@ const PARAMS: Record<ParamId, ParamDef> = {
 
 const PARAM_ORDER: ParamId[] = ["geography", "sector", "audience", "goal"];
 
+// ─── Segment model ───────────────────────────────────────────────────────────
+// The input row is a sequence of inline segments. Pills are inserted at the
+// caret (= end of trailing text), so a sentence reads naturally:
+//   [text][pill][text][pill][trailing text]
+// The trailing text segment is always the live typing target.
+
+type TextSegment = { kind: "text"; id: string; value: string };
+type PillSegment = { kind: "pill"; id: string; paramId: ParamId; value: string };
+type Segment = TextSegment | PillSegment;
+
+const makeId = () => Math.random().toString(36).slice(2, 10);
+
+// field-sizing is a modern CSS prop (Chrome 123+, Safari 17.4+, FF 123+) that
+// auto-sizes an input to its content. Lets non-trailing text segments shrink
+// to fit so pills sit tight against their text.
+const fieldSizingStyle = { fieldSizing: "content" } as unknown as CSSProperties;
+
 // ─── Props ───────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -97,41 +114,41 @@ interface Props {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, onAllPlaced }: Props) {
-  const [text, setText] = useState(initialText);
-  const [placed, setPlaced] = useState<ParamId[]>([]);
-  const [values, setValues] = useState<Record<ParamId, string>>({
-    goal: "", geography: "", sector: "", audience: "",
-  });
-  const [openDropdown, setOpenDropdown] = useState<ParamId | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [segments, setSegments] = useState<Segment[]>(() => [
+    { kind: "text", id: "init", value: initialText },
+  ]);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const trailingInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const unplaced = PARAM_ORDER.filter(p => !placed.includes(p));
+  const placedParamIds = segments
+    .filter((s): s is PillSegment => s.kind === "pill")
+    .map(s => s.paramId);
+  const unplaced = PARAM_ORDER.filter(p => !placedParamIds.includes(p));
   const allPlaced = unplaced.length === 0;
 
-  // Build the prompt string — text first, then pill values (matches the
-  // visual order in the bar). No "Label:" prefix.
+  // Build the prompt by walking segments in order. Pill values inline with
+  // text gives a natural sentence: "show me X for Geography on Sector".
   const buildPrompt = () => {
     const parts: string[] = [];
-    if (text.trim()) parts.push(text.trim());
-    placed.forEach(p => {
-      const v = values[p].trim();
+    segments.forEach(s => {
+      const v = s.kind === "text" ? s.value : s.value.trim();
       if (v) parts.push(v);
     });
-    return parts.join("  ");
+    return parts.join(" ").replace(/\s+/g, " ").trim();
   };
 
   // Auto-collapse only after every pill has a value AND no dropdown is mid-pick.
-  // Including `values` in the deps re-runs the effect on every keystroke,
-  // resetting the 600ms timer until the user pauses — so we don't collapse
-  // out from under someone who's still typing the last pill's value.
-  const allFilled = allPlaced && PARAM_ORDER.every(p => values[p].trim() !== "");
+  // Including `segments` re-runs the effect on every keystroke, resetting the
+  // 600ms timer until the user pauses.
+  const allFilled =
+    allPlaced && segments.every(s => s.kind !== "pill" || s.value.trim() !== "");
   useEffect(() => {
     if (!allFilled || openDropdown) return;
     const t = setTimeout(() => onAllPlaced?.(buildPrompt()), 600);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allFilled, values, openDropdown]);
+  }, [allFilled, segments, openDropdown]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -145,15 +162,49 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
     return () => document.removeEventListener("mousedown", handle);
   }, [openDropdown]);
 
+  // Insert a pill at the caret (= after the current trailing text). The old
+  // trailing text becomes a committed mid-segment and a fresh empty text
+  // segment is created after the pill.
   const addPill = (paramId: ParamId) => {
-    setPlaced(prev => [...prev, paramId]);
-    setTimeout(() => inputRef.current?.focus(), 60);
+    setSegments(prev => [
+      ...prev,
+      { kind: "pill", id: makeId(), paramId, value: "" },
+      { kind: "text", id: makeId(), value: "" },
+    ]);
+    setTimeout(() => trailingInputRef.current?.focus(), 60);
   };
 
-  const removePill = (paramId: ParamId) => {
-    setPlaced(prev => prev.filter(p => p !== paramId));
-    setValues(prev => ({ ...prev, [paramId]: "" }));
+  // Removing a pill merges the surrounding text segments back together so the
+  // sentence flows seamlessly.
+  const removePill = (segId: string) => {
+    setSegments(prev => {
+      const idx = prev.findIndex(s => s.id === segId);
+      if (idx < 0) return prev;
+      const before = prev[idx - 1];
+      const after = prev[idx + 1];
+      if (before?.kind === "text" && after?.kind === "text") {
+        const merged: TextSegment = {
+          kind: "text",
+          id: before.id,
+          value: before.value + after.value,
+        };
+        return [...prev.slice(0, idx - 1), merged, ...prev.slice(idx + 2)];
+      }
+      return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+    });
     setOpenDropdown(null);
+  };
+
+  const updateTextValue = (segId: string, value: string) => {
+    setSegments(prev =>
+      prev.map(s => (s.id === segId && s.kind === "text" ? { ...s, value } : s))
+    );
+  };
+
+  const updatePillValue = (segId: string, value: string) => {
+    setSegments(prev =>
+      prev.map(s => (s.id === segId && s.kind === "pill" ? { ...s, value } : s))
+    );
   };
 
   const handleSubmit = () => {
@@ -162,44 +213,73 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
     onSubmit(p);
   };
 
+  const trailingIdx = segments.length - 1;
+  const showInitialPlaceholder =
+    segments.length === 1 &&
+    segments[0].kind === "text" &&
+    segments[0].value === "";
+
   return (
     <div ref={containerRef} className="w-full flex flex-col">
       {/* ── Tag + input row ── */}
       <div className="flex items-start gap-2 px-4 py-3">
         <IconPlus size={15} className="text-gray-400 shrink-0 mt-[9px]" />
 
-        {/* Text input first, pills inline after it. `field-sizing: content`
-            shrinks the input to its typed value so pills sit immediately
-            behind the text instead of being pushed in front of it. */}
+        {/* The whole row is one typable area — the trailing input flex-grows
+            to fill, pills and committed text fragments sit inline in order.
+            Clicking anywhere in the row focuses the trailing input. */}
         <div
-          className="flex-1 flex flex-wrap items-center gap-1.5 min-h-[32px] cursor-text"
-          onClick={() => inputRef.current?.focus()}
+          className="flex-1 flex flex-wrap items-center gap-x-1 gap-y-1.5 min-h-[32px] cursor-text"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("[data-pill]")) return;
+            if ((e.target as HTMLElement).tagName === "INPUT") return;
+            trailingInputRef.current?.focus();
+          }}
         >
-          <input
-            ref={inputRef}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Backspace" && text === "" && placed.length > 0) {
-                removePill(placed[placed.length - 1]);
-              }
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit();
-              }
-              if (e.key === "Escape") onDismiss();
-            }}
-            placeholder={placed.length === 0 ? "What do you want to learn about IDA results?" : ""}
-            className="bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none py-0.5 [field-sizing:content]"
-            style={{ minWidth: placed.length === 0 ? "100%" : 80, maxWidth: "100%" }}
-            autoFocus
-          />
-
-          <AnimatePresence mode="popLayout">
-            {placed.map(paramId => (
+          {segments.map((seg, i) => {
+            if (seg.kind === "text") {
+              const isTrailing = i === trailingIdx;
+              return (
+                <input
+                  key={seg.id}
+                  ref={isTrailing ? trailingInputRef : undefined}
+                  value={seg.value}
+                  onChange={e => updateTextValue(seg.id, e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Backspace" && seg.value === "" && i > 0) {
+                      const prev = segments[i - 1];
+                      if (prev.kind === "pill") {
+                        e.preventDefault();
+                        removePill(prev.id);
+                      }
+                    }
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                    if (e.key === "Escape") onDismiss();
+                  }}
+                  placeholder={
+                    isTrailing && showInitialPlaceholder
+                      ? "What do you want to learn about IDA results?"
+                      : ""
+                  }
+                  className={
+                    "bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none py-0.5 " +
+                    (isTrailing ? "flex-1 min-w-[120px]" : "min-w-[4px]")
+                  }
+                  style={isTrailing ? undefined : fieldSizingStyle}
+                  autoFocus={
+                    isTrailing && (i === 0 || segments[i - 1]?.kind === "pill")
+                  }
+                />
+              );
+            }
+            return (
               <motion.div
-                key={paramId}
-                layoutId={`param-${paramId}`}
+                key={seg.id}
+                data-pill
+                layoutId={`param-${seg.paramId}`}
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
@@ -207,16 +287,18 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
                 style={{ display: "inline-flex" }}
               >
                 <EditorPill
-                  paramId={paramId}
-                  value={values[paramId]}
-                  onValueChange={v => setValues(prev => ({ ...prev, [paramId]: v }))}
-                  open={openDropdown === paramId}
-                  onToggle={() => setOpenDropdown(openDropdown === paramId ? null : paramId)}
-                  onRemove={() => removePill(paramId)}
+                  paramId={seg.paramId}
+                  value={seg.value}
+                  onValueChange={v => updatePillValue(seg.id, v)}
+                  open={openDropdown === seg.id}
+                  onToggle={() =>
+                    setOpenDropdown(openDropdown === seg.id ? null : seg.id)
+                  }
+                  onRemove={() => removePill(seg.id)}
                 />
               </motion.div>
-            ))}
-          </AnimatePresence>
+            );
+          })}
         </div>
 
         {/* Actions */}

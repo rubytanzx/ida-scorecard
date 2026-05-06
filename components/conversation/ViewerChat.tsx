@@ -5,7 +5,6 @@ import {
   IconArrowUp,
   IconMicrophone,
   IconPlus,
-  IconSparkles,
   IconUser,
   IconNotebook,
 } from "@tabler/icons-react";
@@ -160,21 +159,6 @@ export default function ViewerChat({ prompt, onOpenNarrative }: Props) {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <header className="shrink-0 px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-        <span className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center">
-          <IconSparkles size={13} className="text-blue-600" />
-        </span>
-        <div className="flex flex-col">
-          <span className="text-[12.5px] font-semibold text-gray-900 leading-none">
-            Ask about this insight
-          </span>
-          <span className="text-[10px] text-gray-400 mt-0.5">
-            Public Q&amp;A — won&rsquo;t change the original artefact
-          </span>
-        </div>
-      </header>
-
       {/* Conversation */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-auto-hide">
         <div className="max-w-[680px] mx-auto px-6 py-6 flex flex-col gap-6">
