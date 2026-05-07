@@ -82,11 +82,22 @@ export default function PromptBar({
 
   const [submitted, setSubmitted] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [narrativeBeam, setNarrativeBeam] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const narrativeBeamTimerRef = useRef<number | null>(null);
 
   const isBottom = mode === "bottom";
 
   useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
+
+  useEffect(() => {
+    if (narrativePhase !== "generating") return;
+    setNarrativeBeam(true);
+    narrativeBeamTimerRef.current = window.setTimeout(() => setNarrativeBeam(false), 3000);
+    return () => {
+      if (narrativeBeamTimerRef.current) clearTimeout(narrativeBeamTimerRef.current);
+    };
+  }, [narrativePhase]);
 
   const triggerBeam = (v: string) => {
     onSubmit?.();
@@ -143,6 +154,34 @@ export default function PromptBar({
 
   return (
     <>
+      {/* Narrative generation beam */}
+      {narrativeBeam && (
+        <div
+          aria-hidden
+          className="fixed pointer-events-none overflow-hidden"
+          style={{ top: 75, left: 0, right: 0, height: 360, zIndex: 45 }}
+        >
+          <div
+            className="prompt-beam absolute"
+            style={{
+              top: 0,
+              left: "50%",
+              width: "min(1400px, 100vw)",
+              height: 280,
+              transform: "translateX(-50%)",
+              borderRadius: "50%",
+            }}
+          />
+        </div>
+      )}
+      {narrativeBeam && (
+        <div
+          aria-hidden
+          className="prompt-stroke fixed left-0 right-0"
+          style={{ top: 72, height: 3, zIndex: 55 }}
+        />
+      )}
+
       {/* BEAM */}
       {submitted && !isBottom && (
         <div

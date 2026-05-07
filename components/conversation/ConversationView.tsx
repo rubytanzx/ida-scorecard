@@ -968,9 +968,16 @@ function NarrativeGeneratingMessage() {
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
         SC
       </div>
-      <p className="text-[13.5px] text-gray-700 leading-relaxed pt-1">
-        Got it — generating the first draft of your narrative now.
-      </p>
+      <div className="flex flex-col gap-2 pt-1">
+        <p className="text-[13.5px] text-gray-700 leading-relaxed">
+          Got it — generating the first draft of your narrative now.
+        </p>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1290,6 +1297,16 @@ export default function ConversationView({
           </div>
 
           {/* ── Narrative confirmation flow ── */}
+          {showBlock1 && (
+            <div className="self-end flex items-center gap-3 max-w-[85%]">
+              <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
+                Create narrative
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+                NT
+              </div>
+            </div>
+          )}
           {showBlock1 && (
             <NarrativePlanningMessage
               animate={narrativePhase === "planning"}
