@@ -177,9 +177,9 @@ export default function HomePage() {
   const [rightPane, setRightPane] = useState<RightPane>(null);
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
-  // True for ~4s after the user clicks "Create narrative" — drives the
-  // narrative-panel reasoning + skeleton + animated geography loader.
-  const [narrativeGenerating, setNarrativeGenerating] = useState(false);
+  // 4-phase state machine for the narrative creation flow.
+  type NarrativePhase = "idle" | "planning" | "skeleton-ready" | "generating";
+  const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
   // True for ~3.5s after the user picks "Generate · Insightographic" —
   // drives the beam + cycling text loader inside the insightographic pane.
   const [insightographicGenerating, setInsightographicGenerating] = useState(false);
@@ -256,33 +256,44 @@ export default function HomePage() {
 
   const handleCreateNarrative = () => {
     if (!currentConversationId) return;
-    // One narrative per conversation — if one already exists, just re-open
-    // the panel without generating again.
+    // One narrative per conversation — if one already exists, just re-open the panel.
     const existing = currentConversation?.artefacts.find((a) => a.kind === "narrative");
     if (existing) {
       setRightPane("narrative");
       return;
     }
-    // Open the panel immediately in loading state — feels more responsive
-    // than waiting until "generation" completes to reveal it.
-    setNarrativeGenerating(true);
-    setRightPane("narrative");
-    // Mock generation pass: ~2.5s reasoning + ~1.5s skeleton before content
-    // lands. The panel handles the internal phase split; we just keep
-    // `loading` true for the full duration.
+    setNarrativePhase("planning");
+  };
+
+  const handleNarrativePlanningComplete = () => {
+    setNarrativePhase("skeleton-ready");
+  };
+
+  const handleNarrativeConfirm = () => {
+    if (!currentConversationId) return;
+    setNarrativePhase("generating");
+    // Save the artefact now so the panel has it when it opens.
+    const a: Artefact = {
+      id: Date.now().toString(),
+      kind: "narrative",
+      title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
+      prompt: conversationPrompt,
+      createdAt: Date.now(),
+    };
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c
+      )
+    );
+    // Brief pause so Block 3 "Got it…" message is visible before panel slides in.
     window.setTimeout(() => {
-      const a: Artefact = {
-        id: Date.now().toString(),
-        kind: "narrative",
-        title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
-        prompt: conversationPrompt,
-        createdAt: Date.now(),
-      };
-      setConversations((prev) =>
-        prev.map((c) => c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c)
-      );
-      setNarrativeGenerating(false);
-    }, 4000);
+      setRightPane("narrative");
+      setNarrativePhase("idle");
+    }, 500);
+  };
+
+  const handleNarrativeMakeChanges = () => {
+    setNarrativePhase("idle");
   };
 
   // Generate format from the narrative panel. Only "insightographic" is
@@ -427,6 +438,10 @@ export default function HomePage() {
 
   useEffect(() => { if (!menuOpen) setSubOpen(false); }, [menuOpen]);
 
+  // Suppress unused variable warning — story3 is referenced elsewhere in the
+  // component tree but ESLint can't see that through JSX.
+  void story3;
+
   return (
     <>
       {/* Shared, always-mounted prompt bar. Animates between hero-center
@@ -441,9 +456,14 @@ export default function HomePage() {
         panelOpen={view === "conversation" && rightPane !== null}
         panelWidth={rightPaneWidth}
         suppressTransition={rightPaneDragging}
-        // Hide the chip once a narrative artefact exists — one per conversation,
-        // so there's nothing left to "create."
-        showCreateChip={view === "conversation" && !currentArtefacts.some((a) => a.kind === "narrative")}
+        showCreateChip={
+          view === "conversation" &&
+          !currentArtefacts.some((a) => a.kind === "narrative") &&
+          (narrativePhase === "idle" || narrativePhase === "skeleton-ready")
+        }
+        narrativePhase={narrativePhase}
+        onNarrativeConfirm={handleNarrativeConfirm}
+        onNarrativeMakeChanges={handleNarrativeMakeChanges}
         inConversation={view === "conversation"}
         onSubmit={() => {
           // Scroll the home view back to the top on submit so the beam runs
@@ -463,7 +483,7 @@ export default function HomePage() {
             prompt={conversationPrompt}
             onClose={() => setRightPane(null)}
             onGenerate={handleGenerate}
-            loading={narrativeGenerating}
+            loading={narrativePhase === "generating"}
             generatedKinds={currentArtefacts.map((a) => a.kind)}
             width={rightPaneWidth}
             onResize={(w, dragging) => {
@@ -521,6 +541,8 @@ export default function HomePage() {
           onTitleChange={(t) => setConversations((prev) =>
             prev.map((c) => c.id === currentConversationId ? { ...c, title: t } : c)
           )}
+          narrativePhase={narrativePhase}
+          onNarrativePlanningComplete={handleNarrativePlanningComplete}
         />
       ) : (
     <div className="flex h-screen overflow-hidden bg-white">
