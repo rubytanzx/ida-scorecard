@@ -635,37 +635,84 @@ const NARRATIVE_PLAN_STEPS: ThoughtStep[] = [
   { type: "analyze", text: "Structuring narrative sections",        detail: "Context · Intervention · Evidence · Impact" },
 ];
 
-function ThoughtProcess({ flow }: { flow: FlowId }) {
-  const [open, setOpen] = useState(false);
+function StreamingText({
+  text,
+  wordDelay = 30,
+  onComplete,
+}: {
+  text: string;
+  wordDelay?: number;
+  onComplete?: () => void;
+}) {
+  const words = useMemo(() => text.split(" "), [text]);
+  const [count, setCount] = useState(0);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    if (count >= words.length) { onCompleteRef.current?.(); return; }
+    const t = setTimeout(() => setCount((n) => n + 1), wordDelay);
+    return () => clearTimeout(t);
+  }, [count, words.length, wordDelay]);
+
+  return <>{words.slice(0, count).join(" ")}</>;
+}
+
+function ThoughtProcess({ flow, onComplete }: { flow: FlowId; onComplete?: () => void }) {
   const steps = flow === "health-gap" ? THOUGHT_STEPS_HEALTH : THOUGHT_STEPS_AFRICA;
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [open, setOpen] = useState(true);
+  const done = visibleCount >= steps.length;
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    if (done) return;
+    const t = setTimeout(() => setVisibleCount((n) => n + 1), 400);
+    return () => clearTimeout(t);
+  }, [visibleCount, done]);
+
+  useEffect(() => {
+    if (!done) return;
+    const t = setTimeout(() => { setOpen(false); onCompleteRef.current?.(); }, 400);
+    return () => clearTimeout(t);
+  }, [done]);
 
   return (
     <div className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => done && setOpen((v) => !v)}
         className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
         aria-expanded={open}
       >
         <span className="w-6 h-6 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0">
-          <IconSparkles size={13} className="text-blue-500" />
+          <IconSparkles size={13} className={done ? "text-blue-500" : "text-blue-500 animate-pulse"} />
         </span>
         <span className="text-[13px] font-semibold text-gray-700">Thought Process</span>
         <span className="text-[11px] text-gray-300">·</span>
         <span className="text-[11px] text-gray-500 font-mono">{steps.length} steps</span>
-        <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
-          <IconCheck size={10} stroke={3} />
-          Complete
-        </span>
-        <IconChevronDown
-          size={14}
-          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        {done ? (
+          <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
+            <IconCheck size={10} stroke={3} />
+            Complete
+          </span>
+        ) : (
+          <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            Running
+          </span>
+        )}
+        {done && (
+          <IconChevronDown
+            size={14}
+            className={`text-gray-400 transition-transform ml-1 ${open ? "rotate-180" : ""}`}
+          />
+        )}
       </button>
 
       {open && (
         <div className="px-4 pb-4 pt-2 bg-white border-t border-gray-100">
           <ol className="relative pl-7">
-            {/* Connector line */}
             <span
               aria-hidden
               className="absolute top-3 bottom-3 w-px bg-gray-200"
@@ -674,9 +721,14 @@ function ThoughtProcess({ flow }: { flow: FlowId }) {
             {steps.map((step, i) => {
               const meta = THOUGHT_STEP_META[step.type];
               const Icon = meta.icon;
+              const visible = i < visibleCount;
               return (
-                <li key={i} className="relative py-2 first:pt-0 last:pb-0">
-                  {/* Timeline marker */}
+                <li
+                  key={i}
+                  className={`relative py-2 first:pt-0 last:pb-0 transition-opacity duration-300 ${
+                    visible ? "opacity-100" : "opacity-0"
+                  }`}
+                >
                   <span
                     className="absolute -left-7 top-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.05)]"
                     style={{ background: meta.tint }}
@@ -693,7 +745,7 @@ function ThoughtProcess({ flow }: { flow: FlowId }) {
                     <span className="text-[10px] text-gray-400 font-mono">Step {i + 1}</span>
                   </div>
                   <div className="text-[12.5px] text-gray-800 leading-snug">{step.text}</div>
-                  {step.detail && (
+                  {step.detail && visible && (
                     <div className="mt-1 text-[10.5px] text-gray-500 font-mono bg-gray-50 border border-gray-100 rounded px-2 py-1 inline-block">
                       → {step.detail}
                     </div>
@@ -1098,6 +1150,9 @@ export default function ConversationView({
   const signals = flow === "health-gap" ? HEALTH_RELATED_SIGNALS : RELATED_SIGNALS;
   const narratives = useMemo(() => pickNarratives(prompt, 4), [prompt]);
 
+  const [thoughtDone, setThoughtDone] = useState(false);
+  const [leadDone, setLeadDone] = useState(false);
+
   const narrativeArtefact = artefacts.find((a) => a.kind === "narrative");
   // Show blocks permanently once the artefact is saved (persistent chat history).
   const showBlock1 = narrativePhase !== "idle" || !!narrativeArtefact;
@@ -1233,78 +1288,91 @@ export default function ConversationView({
             </div>
           </div>
 
-          {/* Thought process */}
-          <ThoughtProcess flow={flow} />
+          {/* Thought process — animates steps sequentially, fires onComplete when done */}
+          <ThoughtProcess flow={flow} onComplete={() => setThoughtDone(true)} />
 
-          {/* Assistant response */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
-              SC
+          {/* Assistant response — appears after thought process collapses */}
+          {thoughtDone && (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+                SC
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                <p className="text-[14.5px] font-semibold text-gray-900 leading-relaxed">
+                  <StreamingText
+                    text={content.leadAnswer}
+                    wordDelay={30}
+                    onComplete={() => setLeadDone(true)}
+                  />
+                </p>
+
+                {/* Rest of response fades in after lead answer finishes streaming */}
+                <div
+                  className="flex flex-col gap-4 transition-opacity duration-700"
+                  style={{ opacity: leadDone ? 1 : 0 }}
+                >
+                  <p className="text-[13.5px] text-gray-700 leading-relaxed">
+                    {content.bodyText}
+                  </p>
+                  <p className="text-[12.5px] text-gray-500">
+                    {content.filterCaption}
+                  </p>
+
+                  {/* Chart — flow-specific */}
+                  {flow === "health-gap" ? (
+                    <HealthGapChart
+                      title={content.chartTitle}
+                      caption="Health Services results · project-level data · FY2025"
+                    />
+                  ) : (
+                    <PovertyChart title={content.chartTitle} />
+                  )}
+
+                  {/* Related Signals */}
+                  <div className="flex flex-col gap-2 mt-2">
+                    <h5 className="text-[12px] font-semibold text-gray-500">{content.signalsHeader}</h5>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {signals.map((s, i) => <SignalCard key={i} s={s} />)}
+                    </div>
+                  </div>
+
+                  {/* Narratives — matched to the user's prompt via keyword scoring */}
+                  <div className="flex flex-col gap-2 mt-2">
+                    <h5 className="text-[12px] font-semibold text-gray-500">Narratives you may be interested in</h5>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {narratives.map((nv) => <NarrativeCard key={nv.slug} n={nv} />)}
+                    </div>
+                  </div>
+
+                  {/* Sources */}
+                  <UsedSources sources={content.sources} />
+
+                  {/* Continue exploring */}
+                  <div className="flex flex-col gap-3 mt-2">
+                    <h5 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Continue Exploring</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {content.continueExploring.map((q) => (
+                        <button
+                          key={q}
+                          className="px-3 py-1.5 rounded-full border border-gray-200 text-[12.5px] text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action icons */}
+                  <div className="flex items-center gap-3 mt-2 pt-3 border-t border-gray-100 text-gray-400">
+                    <button className="hover:text-gray-700 transition-colors"><IconCopySm size={16} /></button>
+                    <span className="w-px h-4 bg-gray-200" />
+                    <button className="hover:text-gray-700 transition-colors"><IconThumbUp size={16} /></button>
+                    <button className="hover:text-gray-700 transition-colors"><IconThumbDown size={16} /></button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-4">
-              <p className="text-[14.5px] font-semibold text-gray-900 leading-relaxed">
-                {content.leadAnswer}
-              </p>
-              <p className="text-[13.5px] text-gray-700 leading-relaxed">
-                {content.bodyText}
-              </p>
-              <p className="text-[12.5px] text-gray-500">
-                {content.filterCaption}
-              </p>
-
-              {/* Chart — flow-specific */}
-              {flow === "health-gap" ? (
-                <HealthGapChart
-                  title={content.chartTitle}
-                  caption="Health Services results · project-level data · FY2025"
-                />
-              ) : (
-                <PovertyChart title={content.chartTitle} />
-              )}
-
-              {/* Related Signals */}
-              <div className="flex flex-col gap-2 mt-2">
-                <h5 className="text-[12px] font-semibold text-gray-500">{content.signalsHeader}</h5>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {signals.map((s, i) => <SignalCard key={i} s={s} />)}
-                </div>
-              </div>
-
-              {/* Narratives — matched to the user's prompt via keyword scoring */}
-              <div className="flex flex-col gap-2 mt-2">
-                <h5 className="text-[12px] font-semibold text-gray-500">Narratives you may be interested in</h5>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {narratives.map((nv) => <NarrativeCard key={nv.slug} n={nv} />)}
-                </div>
-              </div>
-
-              {/* Sources */}
-              <UsedSources sources={content.sources} />
-
-              {/* Continue exploring */}
-              <div className="flex flex-col gap-3 mt-2">
-                <h5 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Continue Exploring</h5>
-                <div className="flex flex-wrap gap-2">
-                  {content.continueExploring.map((q) => (
-                    <button
-                      key={q}
-                      className="px-3 py-1.5 rounded-full border border-gray-200 text-[12.5px] text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action icons */}
-              <div className="flex items-center gap-3 mt-2 pt-3 border-t border-gray-100 text-gray-400">
-                <button className="hover:text-gray-700 transition-colors"><IconCopySm size={16} /></button>
-                <span className="w-px h-4 bg-gray-200" />
-                <button className="hover:text-gray-700 transition-colors"><IconThumbUp size={16} /></button>
-                <button className="hover:text-gray-700 transition-colors"><IconThumbDown size={16} /></button>
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* ── Narrative confirmation flow ── */}
           {showBlock1 && (
