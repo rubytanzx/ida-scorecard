@@ -679,7 +679,7 @@ function ThoughtProcess({ flow, onComplete }: { flow: FlowId; onComplete?: () =>
   }, [done]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden">
+    <div className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden narrative-content-enter">
       <button
         onClick={() => done && setOpen((v) => !v)}
         className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
