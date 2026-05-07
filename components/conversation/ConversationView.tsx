@@ -902,7 +902,7 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
   const [leadDone, setLeadDone] = useState(!animate);
 
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 narrative-content-enter">
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
         SC
       </div>
@@ -1035,7 +1035,7 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
 
 function NarrativeGeneratingMessage({ generating }: { generating: boolean }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 narrative-content-enter">
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
         SC
       </div>
@@ -1401,7 +1401,7 @@ export default function ConversationView({
 
           {/* ── Narrative confirmation flow ── */}
           {showBlock1 && (
-            <div className="self-end flex items-center gap-3 max-w-[85%]">
+            <div className="self-end flex items-center gap-3 max-w-[85%] narrative-content-enter">
               <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
                 Create narrative
               </div>
