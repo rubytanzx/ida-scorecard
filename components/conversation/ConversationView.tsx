@@ -1163,6 +1163,16 @@ export default function ConversationView({
 
   const [thoughtDone, setThoughtDone] = useState(false);
   const [leadDone, setLeadDone] = useState(false);
+  const [mountStage, setMountStage] = useState(0);
+
+  // Stage 0 (frame 0): blank — nothing pops in on the first paint
+  // Stage 1 (~0ms): user message slides in
+  // Stage 2 (350ms): ThoughtProcess mounts and starts its step sequence
+  useEffect(() => {
+    const t1 = setTimeout(() => setMountStage(1), 0);
+    const t2 = setTimeout(() => setMountStage(2), 350);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   const narrativeArtefact = artefacts.find((a) => a.kind === "narrative");
   // Show blocks permanently once the artefact is saved (persistent chat history).
@@ -1289,18 +1299,22 @@ export default function ConversationView({
           shared PromptBar that sits fixed at the page bottom. */}
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
         <div className="max-w-[680px] mx-auto px-6 py-8 pb-32 flex flex-col gap-6">
-          {/* User message */}
-          <div className="self-end flex items-center gap-3 max-w-[85%]">
-            <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
-              {prompt}
+          {/* User message — stage 1: slides in after first paint */}
+          {mountStage >= 1 && (
+            <div className="self-end flex items-center gap-3 max-w-[85%] narrative-content-enter">
+              <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
+                {prompt}
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+                NT
+              </div>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
-              NT
-            </div>
-          </div>
+          )}
 
-          {/* Thought process — animates steps sequentially, fires onComplete when done */}
-          <ThoughtProcess flow={flow} onComplete={() => setThoughtDone(true)} />
+          {/* Thought process — stage 2: mounts 350ms after user message, then steps animate sequentially */}
+          {mountStage >= 2 && (
+            <ThoughtProcess flow={flow} onComplete={() => setThoughtDone(true)} />
+          )}
 
           {/* Assistant response — appears after thought process collapses */}
           {thoughtDone && (
