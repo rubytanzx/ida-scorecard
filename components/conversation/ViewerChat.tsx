@@ -19,8 +19,12 @@ interface Props {
 type FlowId = "africa-poverty" | "health-gap";
 function detectFlow(p: string): FlowId {
   const t = p.toLowerCase();
-  if (t.includes("health services target")) return "health-gap";
-  if (t.includes("extreme poverty")) return "africa-poverty";
+  if (
+    t.includes("health services target") ||
+    t.includes("health & nutrition") ||
+    t.includes("global") ||
+    t.includes("countries")
+  ) return "health-gap";
   return "africa-poverty";
 }
 
@@ -64,14 +68,14 @@ interface DataContextContent {
 const DATA_CONTEXT: Record<FlowId, DataContextContent> = {
   "africa-poverty": {
     intro:
-      "Sure — figures are from the active FY2025 portfolio (end-June 2025). Aggregates pulled from CSC_RES_*.xlsx (Org_Code = WBG, Time_Period = 2025-06-30), joined with Client Context series for the geographic lens.",
+      "Sure — figures are from the active FY2025 portfolio (end-June 2025). Aggregates pulled from IDA Results data (WBG global, June 2025 cut-off), joined with Client Context indicators for the geographic lens.",
     filterLabel: "Filter by theme:",
     filters: ["People", "Prosperity", "Planet", "Infrastructure", "Digital"],
     followUp: "Do you want to build a narrative from this insightographic?",
   },
   "health-gap": {
     intro:
-      "Sure — figures are from the active FY2025 health portfolio (end-June 2025). Pulled from CSC_RES_HEA_SERV.xlsx · WB Project Information (Reporting_FY = 2025, FCV_Flag = Y), then ranked countries by achievement ratio.",
+      "Sure — figures are from the active FY2025 health portfolio (end-June 2025). Pulled from Health Services results · project-level data (FY2025, FCS countries), then ranked countries by achievement ratio.",
     filterLabel: "Filter by status:",
     filters: ["All countries", "FCS", "Behind target"],
     followUp: "Do you want to build a narrative from this insightographic?",

@@ -3,7 +3,7 @@
 ```python
 import pandas as pd
 
-# --- Results file: Schema A ---
+# --- Results file: Schema A (example: HNP Services = CSC_RES_HEA_SERV.xlsx) ---
 df = pd.read_excel('CSC_RES_HEA_SERV.xlsx', sheet_name='Aggregates')
 
 # Global WBG headline, FY25
@@ -22,7 +22,7 @@ fcs = proj[
     (proj['Reporting_FY'] == 2025)
 ]
 
-# --- Context/Vision file: Schema B ---
+# --- Context/Vision file: Schema B (example: Electricity Access Context = EG_ELC_ACCS_ZS.xlsx) ---
 ctx = pd.read_excel('EG_ELC_ACCS_ZS.xlsx', sheet_name='Aggregates')
 
 # Country rows use Geography_Type == 'ECONOMY'; data column is 'Value'
@@ -34,12 +34,12 @@ latest = (
     .reset_index()
 )
 
-# --- PER_ALLSP_COV_POP_TO: two sub-indicators ---
+# --- Social Protection Coverage (PER_ALLSP_COV_POP_TO.xlsx): two sub-indicators in one file ---
 sp = pd.read_excel('PER_ALLSP_COV_POP_TO.xlsx', sheet_name='Aggregates')
-total_pop = sp[sp['Indicator_Code'] == 'PER_ALLSP_COV_POP_TOT']
-poorest_q1 = sp[sp['Indicator_Code'] == 'PER_ALLSP_COV_Q1_TOT']
+total_pop = sp[sp['Indicator_Code'] == 'PER_ALLSP_COV_POP_TOT']   # all population
+poorest_q1 = sp[sp['Indicator_Code'] == 'PER_ALLSP_COV_Q1_TOT']   # poorest quintile
 
-# --- Food insecurity: pick the right file ---
-# Client Context country-level: SN_ITK_MSFI_ZS_CC.xlsx
-# Vision global/regional:       SN_ITK_MSFI_ZS.xlsx
+# --- Food insecurity: pick the right file by Indicator_Type ---
+# "Food Insecurity Client Context" = SN_ITK_MSFI_ZS_CC.xlsx  (country-level, Client Context)
+# "Food Insecurity Vision"         = SN_ITK_MSFI_ZS.xlsx     (global/regional, Vision)
 ```

@@ -76,8 +76,13 @@ export type FlowId = "africa-poverty" | "health-gap";
 
 export function detectFlow(prompt: string): FlowId {
   const t = prompt.toLowerCase();
-  if (t.includes("health services target")) return "health-gap";
-  if (t.includes("extreme poverty")) return "africa-poverty";
+  if (
+    t.includes("health services target") ||
+    t.includes("health & nutrition") ||
+    t.includes("global") ||
+    t.includes("countries")
+  ) return "health-gap";
+  // "extreme poverty", "africa", "sub-saharan", "poverty & social protection", "social protection" → africa-poverty
   return "africa-poverty";
 }
 
@@ -188,9 +193,9 @@ const FLOW_CONTENT: Record<FlowId, FlowContent> = {
       "Show me FCS-only results for Sub-Saharan Africa",
     ],
     sources: [
-      "CSC_RES_SOC_SAF_PROG.xlsx · Aggregates (Time_Period 2025-06-30, Org WBG, Geo GLOBAL)",
-      "CSC_RES_EDU_SUPP.xlsx · WB Project Information (Reporting_FY 2025, FCV_Flag = Y)",
-      "1_1_RESULTS_Social_Safety_Nets.pdf · Methodology note — beneficiary counting rules",
+      "Social Safety Nets results · FY2025 global aggregate",
+      "Education Support results · FY2025 project data, FCS countries",
+      "Social Safety Nets methodology note — beneficiary counting rules",
     ],
   },
   "health-gap": {
@@ -202,7 +207,7 @@ const FLOW_CONTENT: Record<FlowId, FlowContent> = {
     bodyText:
       "Globally, WBG-supported HNP services reached 370M people in FY25 vs the 425M pipeline (87%). The headline obscures sharp country-level divergence: Yemen, Sudan, Afghanistan, South Sudan and Myanmar each fall well below 50% of plan, while Bangladesh, India and Pakistan are within 12 points of theirs. The shared driver across the bottom-five is conflict-affected service delivery — staff displacement, drug-supply chain breakdown, and de-prioritization of primary care for emergency response.",
     filterCaption:
-      "FY25 country-level breakdown of CSC_RES_HEA_SERV. Filter by status:",
+      "FY25 country-level breakdown of Health Services results. Filter by status:",
     chartTitle: "HNP service achievement — country gaps vs FY25 target",
     signalsHeader: "Driving signals",
     continueExploring: [
@@ -212,10 +217,10 @@ const FLOW_CONTENT: Record<FlowId, FlowContent> = {
       "What's the FY26 pipeline for HNP in conflict states?",
     ],
     sources: [
-      "CSC_RES_HEA_SERV.xlsx · WB Project Information (Reporting_FY 2025, FCV_Flag = Y)",
-      "3_1_RESULTS_HNP_Services.pdf · Methodology note — service coverage definition",
-      "3_2_CONTEXT_Universal_Health_Coverage.pdf · UHC service coverage index",
-      "14_1_CONTEXT_Poverty_in_FCS.pdf · FCS context — health correlates",
+      "Health Services results · FY2025 project data, FCS countries",
+      "HNP Services methodology note — service coverage definition",
+      "Universal Health Coverage context — UHC service coverage index",
+      "Poverty in FCS context — health correlates",
     ],
   },
 };
@@ -603,17 +608,17 @@ interface ThoughtStep {
 }
 
 const THOUGHT_STEPS_AFRICA: ThoughtStep[] = [
-  { type: "search",  text: "Searching the active FY2025 portfolio for poverty-relevant outcome indicators",         detail: "8 indicator codes matched (CSC_RES_*)" },
-  { type: "filter",  text: "Filtering to IDA-eligible countries and excluding double-counted beneficiaries",          detail: "Double_Counting_Flag != Y" },
-  { type: "compute", text: "Computing achieved/expected pipeline ratios per indicator at FY25 cut-off",                detail: "Time_Period == 2025-06-30" },
+  { type: "search",  text: "Searching the active FY2025 portfolio for poverty-relevant outcome indicators",         detail: "8 Results indicators matched" },
+  { type: "filter",  text: "Filtering to IDA-eligible countries and excluding double-counted beneficiaries",          detail: "Deduplicating beneficiaries" },
+  { type: "compute", text: "Computing achieved/expected pipeline ratios per indicator at FY25 cut-off",                detail: "FY2025 cut-off (June 2025)" },
   { type: "analyze", text: "Identifying regional leaders and cross-referencing related context signals",               detail: "AFE/AFW lead vs other regions" },
 ];
 
 const THOUGHT_STEPS_HEALTH: ThoughtStep[] = [
-  { type: "search",  text: "Pulling CSC_RES_HEA_SERV.xlsx WB Project Information for Reporting_FY 2025",               detail: "874 project rows scanned" },
-  { type: "compute", text: "Computing achieved/expected ratio per country and aggregating by ISO3",                     detail: "Double_Counting_Flag != Y" },
-  { type: "filter",  text: "Joining FCV_Flag = Y from the project sheet and ranking countries furthest below 100%",     detail: "5 countries below 50% — all FCS" },
-  { type: "analyze", text: "Layering UHC index and stunting context indicators to identify driver patterns",            detail: "SH_UHC_SRVS_CV_XD · SH_STA_STNT_ME_ZS" },
+  { type: "search",  text: "Reading Health Services results · project-level rows for FY2025",                           detail: "874 project rows scanned" },
+  { type: "compute", text: "Computing achieved/expected ratio per country and aggregating by ISO3",                     detail: "Deduplicating beneficiaries" },
+  { type: "filter",  text: "Filtering to fragile/conflict-affected states and ranking countries furthest below 100%",   detail: "5 countries below 50% — all FCS" },
+  { type: "analyze", text: "Layering UHC index and stunting context indicators to identify driver patterns",            detail: "UHC Coverage · Stunting" },
 ];
 
 function ThoughtProcess({ flow }: { flow: FlowId }) {
@@ -942,7 +947,7 @@ export default function ConversationView({
               {flow === "health-gap" ? (
                 <HealthGapChart
                   title={content.chartTitle}
-                  caption="CSC_RES_HEA_SERV · WB Project Information sheet · FY25 (Reporting_FY = 2025)"
+                  caption="Health Services results · project-level data · FY2025"
                 />
               ) : (
                 <PovertyChart title={content.chartTitle} />

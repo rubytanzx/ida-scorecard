@@ -650,8 +650,12 @@ type FlowId = "africa-poverty" | "health-gap";
 
 function detectFlow(prompt: string): FlowId {
   const t = prompt.toLowerCase();
-  if (t.includes("health services target")) return "health-gap";
-  if (t.includes("extreme poverty")) return "africa-poverty";
+  if (
+    t.includes("health services target") ||
+    t.includes("health & nutrition") ||
+    t.includes("global") ||
+    t.includes("countries")
+  ) return "health-gap";
   return "africa-poverty";
 }
 
@@ -680,17 +684,17 @@ const SECTIONS_AFRICA: Section[] = [
     title: "Intervention",
     body: "WBG operations across People, Planet, Infrastructure, and Digital pillars converged on integrated programs in FY25, with safety nets, education, and health systems forming the largest single delivery channels.",
     bullets: [
-      "Social safety net programs (CSC_RES_SOC_SAF_PROG)",
-      "Better-education support (CSC_RES_EDU_SUPP)",
-      "HNP services (CSC_RES_HEA_SERV) — 370M reached vs 425M expected",
-      "Climate resilience operations (CSC_RES_RESI_CLIM_RISK)",
+      "Social safety net programs",
+      "Better-education support",
+      "Health services — 370M reached vs 425M expected",
+      "Climate resilience operations",
     ],
     Chart: InterventionChart,
   },
   {
     id: "evidence",
     title: "Evidence",
-    body: "FY25 headline numbers (CSC_RES_*.xlsx Aggregates at Time_Period 2025-06-30, Org_Code = WBG) show measurable scaling against pipeline targets, with two indicators significantly behind plan.",
+    body: "FY25 headline numbers (IDA Results data · WBG global · June 2025) show measurable scaling against pipeline targets, with two indicators significantly behind plan.",
     bullets: [
       "244M people through safety nets vs ~313M expected (+12% YoY)",
       "325M students supported vs ~452M expected",
@@ -943,7 +947,7 @@ const SECTIONS_HEALTH: Section[] = [
     id: "evidence",
     title: "Evidence",
     body:
-      "Bottom-5 country breakdown of CSC_RES_HEA_SERV (WB Project Information, FCV_Flag = Y, FY25). Each is below 50% of plan; collectively they account for ~37% of the global pipeline shortfall.",
+      "Bottom-5 country breakdown of Health Services results (FCS project data, FY2025). Each is below 50% of plan; collectively they account for ~37% of the global pipeline shortfall.",
     bullets: [
       "Yemen: 1.2M / 3.2M (38%)",
       "Sudan: 1.7M / 4.1M (41%)",
@@ -957,7 +961,7 @@ const SECTIONS_HEALTH: Section[] = [
     id: "impact",
     title: "Impact",
     body:
-      "Driver decomposition (qualitative coding from CSC_RES_HEA_SERV project notes + supplementary PDF) suggests conflict-related supply chain disruption is the single largest contributor — inputs that IDA can mitigate via shorter procurement cycles and pooled-buyer agreements with WHO.",
+      "Driver decomposition (Health Services project notes + supplementary methodology note) suggests conflict-related supply chain disruption is the single largest contributor — inputs that IDA can mitigate via shorter procurement cycles and pooled-buyer agreements with WHO.",
     bullets: [
       "Conflict-related supply: 38% of measured gap",
       "Health worker shortage: 27%",
@@ -1027,7 +1031,7 @@ interface ReasoningStep {
 const REASONING_STEPS: Record<FlowId, ReasoningStep[]> = {
   "africa-poverty": [
     { label: "Reading conversation context",          detail: "1 prompt · IDA · poverty signal" },
-    { label: "Indexing relevant indicators",          detail: "7 CSC_RES_* matches in metadata" },
+    { label: "Indexing relevant indicators",          detail: "7 Results indicators matched" },
     { label: "Determining regional scope",            detail: "Sub-Saharan Africa (AFE + AFW)" },
     { label: "Pulling FY25 portfolio aggregates",     detail: "Time_Period == 2025-06-30" },
     { label: "Cross-referencing context indicators",  detail: "5 Client Context series paired" },
@@ -1035,8 +1039,8 @@ const REASONING_STEPS: Record<FlowId, ReasoningStep[]> = {
   ],
   "health-gap": [
     { label: "Reading conversation context",          detail: "1 prompt · health · FCS" },
-    { label: "Filtering to FCV-flagged projects",     detail: "FCV_Flag = Y, 874 rows" },
-    { label: "Computing achievement ratios per country", detail: "Achieved / Expected per ISO3" },
+    { label: "Filtering to FCV-flagged projects",     detail: "874 projects in fragile/conflict states" },
+    { label: "Computing achievement ratios per country", detail: "Achieved vs. target by country" },
     { label: "Ranking bottom-5 performers",           detail: "5 countries below 50% of plan" },
     { label: "Decomposing gap by driver",             detail: "Conflict supply · workforce · access" },
     { label: "Drafting structured narrative sections",detail: "Context · Intervention · Evidence · Impact" },

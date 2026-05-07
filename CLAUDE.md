@@ -31,7 +31,7 @@ Do not load all context files by default. Only read the relevant file from `/con
 
 ## File loading order for data tasks
 
-1. Read `IDA_Scorecard_Metadata_1.xlsx` first for indicator catalogue.
-2. Read the relevant `CSC_RES_*.xlsx` file for Results indicators and use Schema A.
-3. Read relevant Context/Vision XLSX files using Schema B.
+1. Read `IDA_Scorecard_Metadata_1.xlsx` (Scorecard Metadata) first for indicator catalogue.
+2. Read the relevant Results file (`CSC_RES_*.xlsx`) using Schema A. Use `context/xlsx-inventory.md` to look up the Short Label → filename mapping (e.g. "HNP Services" → `CSC_RES_HEA_SERV.xlsx`).
+3. Read the relevant Context or Vision file using Schema B. Short Labels are also in `context/xlsx-inventory.md` (e.g. "Electricity Access Context" → `EG_ELC_ACCS_ZS.xlsx`).
 4. Read the relevant PDF methodology note before making methodology claims.

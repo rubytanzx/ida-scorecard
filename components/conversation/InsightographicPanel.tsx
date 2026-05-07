@@ -10,9 +10,8 @@ import {
 } from "@tabler/icons-react";
 import {
   ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
+  PieChart,
+  Pie,
   Cell,
 } from "recharts";
 import {
@@ -24,304 +23,493 @@ interface Props {
   open: boolean;
   prompt: string;
   onClose: () => void;
-  /** Switch to the narrative pane in the same slot. Optional now —
-   * the footer no longer surfaces a button for it; callers may still
-   * pass it for header-level affordances if desired. */
   onOpenNarrative?: () => void;
-  /** Open the public/shared-link viewer experience for this artefact. */
   onPreviewAsViewer?: () => void;
   width: number;
   onResize: (width: number, dragging: boolean) => void;
-  /** When true, render a beam-driven generation animation instead of
-   * the real poster body — used while the user has just clicked
-   * "Generate · Insightographic" and the artefact is being composed. */
   loading?: boolean;
 }
 
-// ─── Flow detection (mirrors NarrativePanel / ConversationView) ─────────────
+// ─── Flow detection ──────────────────────────────────────────────────────────
 
 type FlowId = "africa-poverty" | "health-gap";
 function detectFlow(prompt: string): FlowId {
   const t = prompt.toLowerCase();
-  if (t.includes("health services target")) return "health-gap";
-  if (t.includes("extreme poverty")) return "africa-poverty";
+  if (
+    t.includes("health services target") ||
+    t.includes("health & nutrition") ||
+    t.includes("global") ||
+    t.includes("countries")
+  ) return "health-gap";
   return "africa-poverty";
 }
 
-// ─── Per-flow content — poster-style summary of the conversation ────────────
+// ─── Shared poster sub-components ────────────────────────────────────────────
 
-type Tone = "navy" | "teal" | "gold" | "green" | "red" | "purple";
-const TONE_COLOR: Record<Tone, string> = {
-  navy:   "#003F6B",
-  teal:   "#00A0DF",
-  gold:   "#E88B2B",
-  green:  "#2E8B57",
-  red:    "#D04040",
-  purple: "#6B4FA0",
-};
-
-interface ChartDatum {
-  name: string;
-  value: number;        // achieved
-  expected?: number;    // pipeline target (bars only)
-  color: string;
-}
-
-interface FlowContent {
-  kicker: string;       // small uppercase eyebrow
-  title: string;        // header title
-  headline: string;     // serif statement at top of body
-  // Hero KPI block
-  heroValue: string;
-  heroSub: string;
-  heroProgressPct: number;
-  heroProgressLabel: string;
-  // Chart card
-  chartTitle: string;
-  chartType: "radial" | "bars";
-  chartData: ChartDatum[];
-  // Stats strip (3-up)
-  stats: { value: string; label: string; tone: Tone }[];
-  // Pull-quote insight
-  insight: string;
-  // Sources (shortened)
-  sources: string[];
-}
-
-const FLOW_CONTENT: Record<FlowId, FlowContent> = {
-  "africa-poverty": {
-    kicker: "FY25 INSIGHTOGRAPHIC",
-    title: "IDA Cross-Pillar Reach",
-    headline:
-      "FY25 IDA delivery reached 939M direct beneficiaries across People-pillar programs in the world's 75 poorest countries.",
-    heroValue: "939M",
-    heroSub: "direct beneficiaries (FY25)",
-    heroProgressPct: 63,
-    heroProgressLabel: "63% of 1.49B FY25 pipeline",
-    chartTitle: "Vertical achievement vs FY25 plan",
-    chartType: "radial",
-    chartData: [
-      { name: "People",         value: 68, color: "#2E8B57" },
-      { name: "Prosperity",     value: 52, color: "#E88B2B" },
-      { name: "Planet",         value: 45, color: "#E88B2B" },
-      { name: "Infrastructure", value: 41, color: "#D04040" },
-      { name: "Digital",        value: 50, color: "#E88B2B" },
-    ],
-    stats: [
-      { value: "370M", label: "Health-services reach",  tone: "navy"  },
-      { value: "325M", label: "Students supported",     tone: "teal"  },
-      { value: "244M", label: "Safety-net beneficiaries", tone: "green" },
-    ],
-    insight:
-      "Infrastructure (41%) and Planet (45%) lag the pipeline most — these are the highest-leverage gaps for FY26 funding decisions.",
-    sources: [
-      "CSC_RES_*.xlsx · Aggregates (Time_Period 2025-06-30, Org_Code WBG)",
-      "1_1_RESULTS_Social_Safety_Nets.pdf",
-      "IDA_Scorecard_Metadata_1.xlsx",
-    ],
-  },
-  "health-gap": {
-    kicker: "FY25 INSIGHTOGRAPHIC",
-    title: "Health-Services Delivery Gap",
-    headline:
-      "Five IDA-FCS countries account for ~37% of FY25 HNP pipeline shortfall — workforce + supply chain are the dominant drivers.",
-    heroValue: "5 / 75",
-    heroSub: "IDA countries below 50% of FY25 HNP plan",
-    heroProgressPct: 87,
-    heroProgressLabel: "Global HNP reach: 370M of 425M (87%)",
-    chartTitle: "Bottom-5 HNP achievement vs FY25 target",
-    chartType: "bars",
-    chartData: [
-      { name: "Yemen",       value: 1.2, expected: 3.2, color: "#D04040" },
-      { name: "Sudan",       value: 1.7, expected: 4.1, color: "#D04040" },
-      { name: "Afghanistan", value: 2.4, expected: 5.5, color: "#D04040" },
-      { name: "South Sudan", value: 0.6, expected: 1.3, color: "#D04040" },
-      { name: "Myanmar",     value: 1.5, expected: 3.1, color: "#D04040" },
-    ],
-    stats: [
-      { value: "38%", label: "Conflict-related supply", tone: "red"  },
-      { value: "27%", label: "Health-worker shortage",  tone: "gold" },
-      { value: "18%", label: "Displacement / access",   tone: "navy" },
-    ],
-    insight:
-      "All five underperformers are conflict-affected. Workforce strengthening and pooled-procurement supply chains are the highest-leverage FY26 levers.",
-    sources: [
-      "CSC_RES_HEA_SERV.xlsx · WB Project Information (FY25, FCV_Flag = Y)",
-      "3_1_RESULTS_HNP_Services.pdf",
-      "14_1_CONTEXT_Poverty_in_FCS.pdf",
-    ],
-  },
-};
-
-// ─── Charts (poster-scale) ──────────────────────────────────────────────────
-
-function VerticalRadial({ data }: { data: ChartDatum[] }) {
+function PosterHeader({
+  title,
+  subtitle,
+  source,
+}: {
+  title: string;
+  subtitle: string;
+  source: string;
+}) {
   return (
-    <div className="h-[210px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadialBarChart
-          cx="50%"
-          cy="50%"
-          innerRadius="28%"
-          outerRadius="92%"
-          data={data}
-          startAngle={90}
-          endAngle={-270}
-          barSize={11}
-        >
-          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-          <RadialBar background dataKey="value" cornerRadius={4}>
-            {data.map((d) => <Cell key={d.name} fill={d.color} />)}
-          </RadialBar>
-        </RadialBarChart>
-      </ResponsiveContainer>
+    <div style={{ background: "#003F6B" }} className="px-6 py-5 text-white shrink-0">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h1 className="text-[19px] font-bold leading-tight flex-1">{title}</h1>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-white/45 shrink-0 pt-0.5">
+          Source: {source}
+        </span>
+      </div>
+      <p className="text-[11.5px] text-white/70 leading-snug">{subtitle}</p>
     </div>
   );
 }
 
-function CountryBars({ data }: { data: ChartDatum[] }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="flex flex-col gap-2.5">
-      {data.map((row) => {
-        const ratio = row.expected ? row.value / row.expected : 0;
-        const pct = Math.round(ratio * 100);
-        return (
-          <li key={row.name} className="flex flex-col gap-1">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[12.5px] text-gray-700 font-medium">{row.name}</span>
-              <span className="text-[11px] tabular-nums text-gray-500">
-                {row.value}M / {row.expected}M · {pct}%
-              </span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden relative">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full"
-                style={{ width: "100%", background: "#F1D4D4" }}
-              />
-              <div
-                className="absolute inset-y-0 left-0 rounded-full"
-                style={{ width: `${pct}%`, background: row.color }}
-              />
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+    <h2 className="text-[9.5px] font-bold uppercase tracking-widest text-gray-400 mb-2.5">
+      {children}
+    </h2>
   );
 }
 
-// ─── Reusable body — used by the panel AND the shared-link viewer ───────────
+function ContextKPI({
+  value,
+  label,
+  accent,
+}: {
+  value: string;
+  label: string;
+  accent: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+      <div className="flex items-start gap-2">
+        <span
+          className="w-[3px] self-stretch rounded-sm shrink-0"
+          style={{ background: accent }}
+        />
+        <span className="text-[16px] font-bold text-gray-900 leading-tight">{value}</span>
+      </div>
+      <span className="text-[10px] text-gray-500 leading-snug pl-2.5">{label}</span>
+    </div>
+  );
+}
+
+function MiniBar({
+  name,
+  pct,
+  color,
+}: {
+  name: string;
+  pct: number;
+  color: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[9px] text-gray-500 w-[90px] shrink-0 truncate leading-tight">
+        {name}
+      </span>
+      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      <span className="text-[9px] font-semibold tabular-nums shrink-0 w-6 text-right"
+            style={{ color }}>
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
+function TealCallout({ lines }: { lines: string[] }) {
+  return (
+    <div style={{ background: "#007BA4" }} className="px-5 py-4 text-white text-center">
+      {lines.map((l, i) => (
+        <p
+          key={i}
+          className={`leading-snug ${
+            i === 0
+              ? "text-[12px] font-bold"
+              : "text-[11px] text-white/85 mt-1"
+          }`}
+        >
+          {l}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function PosterFooter({ caption }: { caption: string }) {
+  return (
+    <div className="px-5 py-2.5 bg-gray-800">
+      <p className="text-[9px] text-gray-400 text-center tracking-wide">{caption}</p>
+    </div>
+  );
+}
+
+// ─── Africa Poverty Poster ────────────────────────────────────────────────────
+
+const AFRICA_REGIONS = [
+  { name: "AFE  Africa East",          pct: 97, color: "#2E8B57" },
+  { name: "AFW  Africa West",          pct: 86, color: "#00A0DF" },
+  { name: "SAR  South Asia",           pct: 93, color: "#E88B2B" },
+  { name: "EAP  East Asia & Pacific",  pct: 83, color: "#00A0DF" },
+  { name: "ECA  Eur & Central Asia",   pct: 62, color: "#00A0DF" },
+  { name: "LCR  Latin America",        pct: 41, color: "#E88B2B" },
+  { name: "MENAAP",                    pct: 54, color: "#E88B2B" },
+];
+
+const AFRICA_PILLARS = [
+  { label: "People",         value: "939M", pct: 53 },
+  { label: "Planet",         value: "337M", pct: 45 },
+  { label: "Infrastructure", value: "215M", pct: 41 },
+  { label: "Digital",        value: "217M", pct: 50 },
+  { label: "Prosperity",     value: "56M",  pct: 52 },
+];
+
+const DEEP_DIVE = [
+  { label: "Health Services", achieved: 370, target: 425, pct: 87, color: "#2E8B57" },
+  { label: "Safety Nets",     achieved: 325, target: 452, pct: 72, color: "#E88B2B" },
+  { label: "Climate",         achieved: 244, target: 425, pct: 37, color: "#D04040" },
+];
+
+function AfricaPovertyPoster() {
+  return (
+    <div className="flex flex-col text-gray-900">
+      <PosterHeader
+        title="Is IDA Making a Difference?"
+        subtitle="FY25 Corporate Scorecard Results — People Living in Extreme Poverty"
+        source="WBG Corporate Scorecard"
+      />
+
+      {/* The Context */}
+      <div className="px-5 pt-4 pb-3 bg-gray-50">
+        <SectionLabel>The Context</SectionLabel>
+        <div className="grid grid-cols-3 gap-2">
+          <ContextKPI
+            value="30.4%"
+            label="FCS population in extreme poverty"
+            accent="#D04040"
+          />
+          <ContextKPI
+            value="70%"
+            label="Learning poverty in LIC primary schools"
+            accent="#E88B2B"
+          />
+          <ContextKPI
+            value="56 countries"
+            label="Collecting below 15% tax-to-GDP"
+            accent="#E88B2B"
+          />
+        </div>
+        <p className="text-[10.5px] text-gray-500 mt-2.5 leading-snug">
+          IDA serves ~75 of the world's poorest countries facing debt, climate shocks & service gaps
+        </p>
+      </div>
+
+      {/* FY25 Global Reach */}
+      <div className="px-5 py-4 bg-white border-t border-gray-100">
+        <SectionLabel>FY25 Global Reach</SectionLabel>
+        <div className="flex gap-4 items-start">
+          {/* Hero number */}
+          <div className="shrink-0 w-28">
+            <div className="text-[38px] font-bold text-gray-900 leading-none">377M</div>
+            <div className="text-[10.5px] text-gray-600 mt-1 leading-snug">
+              people reached in FY25
+            </div>
+            <div className="text-[10px] text-gray-400 mt-0.5">68% of 557M target</div>
+            <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{ width: "68%", background: "#2E8B57" }}
+              />
+            </div>
+          </div>
+          {/* Regional bars */}
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5 pt-1">
+            {AFRICA_REGIONS.map((r) => (
+              <MiniBar key={r.name} name={r.name} pct={r.pct} color={r.color} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FY25 Delivery by Pillar */}
+      <div style={{ background: "#003F6B" }} className="px-5 py-4">
+        <h2 className="text-[9.5px] font-bold uppercase tracking-widest text-white/45 mb-2.5">
+          FY25 Delivery by Pillar
+        </h2>
+        <div className="flex gap-2">
+          {/* Overall % box */}
+          <div
+            className="w-12 flex flex-col items-center justify-center rounded-lg shrink-0 py-3"
+            style={{ background: "rgba(255,255,255,0.18)" }}
+          >
+            <span className="text-[22px] font-bold text-white leading-none">53%</span>
+          </div>
+          {/* Pillar grid */}
+          <div className="flex-1 grid grid-cols-3 gap-1.5">
+            {AFRICA_PILLARS.map((p) => (
+              <div
+                key={p.label}
+                className="rounded-lg p-2 flex flex-col gap-0.5"
+                style={{ background: "rgba(255,255,255,0.09)" }}
+              >
+                <span className="text-[8px] font-semibold text-white/55 uppercase tracking-wide">
+                  {p.label}
+                </span>
+                <span className="text-[15px] font-bold text-white leading-none">
+                  {p.value}
+                </span>
+                <span className="text-[7.5px] text-white/45">beneficiaries</span>
+                <div className="mt-1.5 h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${p.pct}%`, background: "rgba(255,255,255,0.55)" }}
+                  />
+                </div>
+                <span className="text-[7.5px] text-white/40">{p.pct}% of plan</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Achievement Pillar Deep Dive */}
+      <div className="px-5 py-4 bg-white">
+        <SectionLabel>Achievement Pillar Deep Dive</SectionLabel>
+        <div className="flex flex-col gap-3">
+          {DEEP_DIVE.map((d) => (
+            <div key={d.label}>
+              <div className="flex items-baseline justify-between mb-1">
+                <span className="text-[11px] text-gray-700 font-medium">
+                  {d.label}: {d.achieved}M of {d.target}M
+                </span>
+                <span
+                  className="text-[11.5px] font-bold tabular-nums shrink-0 ml-2"
+                  style={{ color: d.color }}
+                >
+                  {d.pct}%
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${d.pct}%`, background: d.color }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <TealCallout
+        lines={[
+          "FCS countries: 2.3× more health coverage per dollar than non-FCS IDA peers",
+          "Infrastructure (41%) and Planet (45%) are the next funding-cycle priorities",
+        ]}
+      />
+      <PosterFooter caption="WBG Corporate Scorecard · FY25 · Time Period: 2025-06-30 · Org Code: WBG" />
+    </div>
+  );
+}
+
+// ─── Health Gap Poster ────────────────────────────────────────────────────────
+
+const HNP_REGIONS = [
+  { name: "SAR  South Asia",          pct: 89, color: "#00A0DF" },
+  { name: "AFW  Africa West",         pct: 64, color: "#003F6B" },
+  { name: "ECA  Eur & Central Asia",  pct: 74, color: "#00A0DF" },
+  { name: "LCR  Latin America",       pct: 72, color: "#00A0DF" },
+  { name: "South Sudan",              pct: 25, color: "#D04040" },
+  { name: "MENAAP (Yemen)",           pct: 12, color: "#D04040" },
+];
+
+const HNP_PROGRAMS = [
+  { label: "Primary care expansion",  achieved: 88,  target: 225, pct: 39 },
+  { label: "Maternal & child health", achieved: 110, target: 148, pct: 74 },
+  { label: "Disease surveillance",    achieved: 62,  target: 90,  pct: 69 },
+  { label: "Nutrition programs",      achieved: 78,  target: 115, pct: 68 },
+  { label: "Health workforce",        achieved: 65,  target: 320, pct: 20 },
+];
+
+const HNP_MIX = [
+  { name: "Conflict-related supply chain", value: 38, color: "#003F6B" },
+  { name: "Health worker shortage",        value: 27, color: "#E88B2B" },
+  { name: "Displacement / access",         value: 18, color: "#7EC8E3" },
+  { name: "Funding lag",                   value: 10, color: "#9CA3AF" },
+  { name: "Reporting completeness",        value:  7, color: "#D1D5DB" },
+];
+
+function HealthGapPoster() {
+  return (
+    <div className="flex flex-col text-gray-900">
+      <PosterHeader
+        title="FCS Health Services: Who's Furthest Behind & Why?"
+        subtitle="FY25 Corporate Scorecard — IDA Fragility-Affected States"
+        source="WBG Corporate Scorecard"
+      />
+
+      {/* The Context */}
+      <div className="px-5 pt-4 pb-3 bg-gray-50">
+        <SectionLabel>The Context</SectionLabel>
+        <div className="grid grid-cols-3 gap-2">
+          <ContextKPI
+            value="32/100"
+            label="UHC Service Coverage Index (vs LIC avg 49)"
+            accent="#003F6B"
+          />
+          <ContextKPI
+            value="33.6%"
+            label="Stunting prevalence in FCS under-5s"
+            accent="#E88B2B"
+          />
+          <ContextKPI
+            value="0.8 per 1,000"
+            label="Health worker density in FCS (WHO threshold: 4.45)"
+            accent="#D04040"
+          />
+        </div>
+        <p className="text-[10.5px] text-gray-500 mt-2.5 leading-snug">
+          UHC coverage in FCS countries has been roughly flat for 5 years while the LIC average has nudged up
+        </p>
+      </div>
+
+      {/* Dark banner */}
+      <div style={{ background: "#003F6B" }} className="px-5 py-3">
+        <p className="text-[11px] font-semibold text-white text-center leading-snug">
+          All below 50% of FY25 plan — collectively ~37% of global pipeline shortfall
+        </p>
+      </div>
+
+      {/* FY25 Global HNP Reach */}
+      <div className="px-5 py-4 bg-white">
+        <SectionLabel>FY25 Global HNP Reach (FCS Lens)</SectionLabel>
+        <div className="flex gap-4 items-start">
+          {/* Hero number */}
+          <div className="shrink-0 w-28">
+            <div className="text-[36px] font-bold text-gray-900 leading-none">264M</div>
+            <div className="text-[10.5px] text-gray-600 mt-1 leading-snug">
+              people received HNP services in FY25
+            </div>
+            <div className="text-[10px] text-gray-400 mt-0.5">78% of 340M target</div>
+            <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{ width: "78%", background: "#00A0DF" }}
+              />
+            </div>
+          </div>
+          {/* Regional bars */}
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5 pt-1">
+            {HNP_REGIONS.map((r) => (
+              <MiniBar key={r.name} name={r.name} pct={r.pct} color={r.color} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom 5 */}
+      <div className="px-5 py-4 bg-gray-50 border-t border-gray-100">
+        <SectionLabel>Bottom 5: Driving the Furthest Gap</SectionLabel>
+        <div className="flex gap-3">
+          {/* Program bars */}
+          <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+            {HNP_PROGRAMS.map((p) => (
+              <div key={p.label}>
+                <div className="flex items-baseline justify-between mb-0.5">
+                  <span className="text-[10px] text-gray-700 leading-tight truncate max-w-[130px]">
+                    {p.label}
+                  </span>
+                  <span className="text-[9.5px] tabular-nums text-gray-400 shrink-0 ml-1">
+                    {p.achieved}M · {p.pct}%
+                  </span>
+                </div>
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden relative">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ width: "100%", background: "#FEE2E2" }}
+                  />
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ width: `${p.pct}%`, background: "#003F6B" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* HNP Delivery Mix donut */}
+          <div className="shrink-0 w-[110px] flex flex-col items-center gap-1">
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-gray-400 text-center">
+              FY25 HNP Delivery Mix
+            </span>
+            <div className="h-[88px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={HNP_MIX}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="48%"
+                    outerRadius="78%"
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    strokeWidth={0}
+                  >
+                    {HNP_MIX.map((d) => (
+                      <Cell key={d.name} fill={d.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <ul className="w-full flex flex-col gap-0.5 mt-0.5">
+              {HNP_MIX.slice(0, 3).map((d) => (
+                <li key={d.name} className="flex items-center gap-1">
+                  <span
+                    className="w-1.5 h-1.5 rounded-sm shrink-0"
+                    style={{ background: d.color }}
+                  />
+                  <span className="text-[8.5px] text-gray-600 leading-tight truncate flex-1">
+                    {d.name}
+                  </span>
+                  <span className="text-[8.5px] font-bold text-gray-500 shrink-0 ml-0.5">
+                    {d.value}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <TealCallout
+        lines={[
+          "Highest-leverage FY26 lever: Workforce + Supply Chain Remediation in 5 Conflict States",
+        ]}
+      />
+      <PosterFooter caption="WBG Corporate Scorecard · FCS Lens · FY25 · Source: Health Services results" />
+    </div>
+  );
+}
+
+// ─── Reusable body — shared with the public/viewer experience ────────────────
 
 export function InsightographicBody({ prompt }: { prompt: string }) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
-  const c = FLOW_CONTENT[flow];
-  return (
-    <div className="px-6 py-6 flex flex-col gap-5">
-      {/* Headline */}
-      <h2 className="text-[20px] font-bold text-gray-900 leading-snug">
-        {c.headline}
-      </h2>
-
-      {/* Hero KPI on a navy gradient — anchors the page */}
-      <div className="rounded-xl bg-gradient-to-br from-[#003F6B] to-[#0A5A8E] text-white p-5 flex flex-col gap-2 shadow-sm">
-        <span className="text-[44px] leading-none font-bold tabular-nums tracking-tight">
-          {c.heroValue}
-        </span>
-        <span className="text-[12.5px] text-white/80 leading-snug">
-          {c.heroSub}
-        </span>
-        <div className="mt-2 h-1.5 bg-white/15 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#00A0DF] rounded-full transition-[width] duration-700"
-            style={{ width: `${c.heroProgressPct}%` }}
-          />
-        </div>
-        <span className="text-[10.5px] text-white/60">
-          {c.heroProgressLabel}
-        </span>
-      </div>
-
-      {/* Chart card */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3">
-        <h6 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-          {c.chartTitle}
-        </h6>
-        {c.chartType === "radial" ? (
-          <VerticalRadial data={c.chartData} />
-        ) : (
-          <CountryBars data={c.chartData} />
-        )}
-        {c.chartType === "radial" && (
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] mt-1">
-            {c.chartData.map((d) => (
-              <li key={d.name} className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-sm shrink-0"
-                    style={{ background: d.color }}
-                  />
-                  <span className="text-gray-700 truncate">{d.name}</span>
-                </span>
-                <span className="font-mono text-gray-500 tabular-nums shrink-0">
-                  {d.value}%
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 3-up stats strip */}
-      <div className="grid grid-cols-3 gap-2">
-        {c.stats.map((s) => (
-          <div
-            key={s.label}
-            className="flex flex-col gap-0.5 p-3 rounded-lg border border-gray-200 bg-white"
-          >
-            <span
-              className="text-[20px] font-bold tabular-nums leading-none"
-              style={{ color: TONE_COLOR[s.tone] }}
-            >
-              {s.value}
-            </span>
-            <span className="text-[10.5px] text-gray-600 leading-snug">
-              {s.label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Pull quote — distinguishes the recommendation from the data */}
-      <blockquote className="border-l-2 border-emerald-400 pl-4 py-1 text-[13.5px] text-gray-800 italic leading-relaxed">
-        {c.insight}
-      </blockquote>
-
-      {/* Sources */}
-      <div className="pt-3 mt-1 border-t border-gray-100">
-        <h6 className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-          Sources
-        </h6>
-        <ul className="text-[10.5px] text-gray-500 space-y-0.5 font-mono">
-          {c.sources.map((s) => (
-            <li key={s} className="truncate">{s}</li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Generated-from caption */}
-      {prompt && (
-        <p className="text-[11px] text-gray-400 italic mt-1">
-          Generated from: &ldquo;{prompt}&rdquo;
-        </p>
-      )}
-    </div>
-  );
+  return flow === "health-gap" ? <HealthGapPoster /> : <AfricaPovertyPoster />;
 }
 
-// ─── Generation loading state ───────────────────────────────────────────────
-// Reuses the prompt-bar's beam animation so the "AI is thinking" visual
-// language stays consistent across the app. A single beam glows from the
-// top of the panel body while a label cycles through generation stages.
+// ─── Generation loading state ────────────────────────────────────────────────
 
 const INSIGHT_LOADING_STAGES = [
   "Generating",
@@ -341,9 +529,10 @@ function InsightographicLoading() {
   }, []);
 
   return (
-    <div className="relative h-full overflow-hidden flex flex-col items-center justify-center" aria-busy="true">
-      {/* Beam — clipped to the top of the panel body. Same visual as the
-          prompt-bar beam but scaled down to fit a single column. */}
+    <div
+      className="relative h-full overflow-hidden flex flex-col items-center justify-center"
+      aria-busy="true"
+    >
       <div
         aria-hidden
         className="absolute top-0 left-0 right-0 pointer-events-none overflow-hidden"
@@ -362,15 +551,12 @@ function InsightographicLoading() {
         />
       </div>
 
-      {/* Animated stroke directly under the panel header, mirroring the
-          beam treatment. */}
       <div
         aria-hidden
         className="prompt-stroke absolute top-0 left-0 right-0"
         style={{ height: 2 }}
       />
 
-      {/* Loader content — sits over the beam */}
       <div className="relative z-10 flex flex-col items-center gap-4 px-6 -mt-20">
         <div className="w-14 h-14 rounded-full bg-white/85 backdrop-blur-sm border border-emerald-200 flex items-center justify-center shadow-sm">
           <IconWand size={22} className="text-emerald-600 animate-pulse" />
@@ -383,7 +569,10 @@ function InsightographicLoading() {
           <div
             key={stage}
             className="text-[18px] font-semibold text-gray-900 transition-opacity duration-300"
-            style={{ animation: "narrative-content-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both" }}
+            style={{
+              animation:
+                "narrative-content-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both",
+            }}
           >
             {INSIGHT_LOADING_STAGES[stage]}
             <span className="inline-block w-1 ml-0.5 stream-cursor">·</span>
@@ -393,15 +582,16 @@ function InsightographicLoading() {
           </div>
         </div>
 
-        {/* Stage-progress dots */}
         <div className="flex items-center gap-1.5 mt-1">
           {INSIGHT_LOADING_STAGES.map((_, i) => (
             <span
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === stage   ? "w-6 bg-emerald-500" :
-                i <  stage    ? "w-1.5 bg-emerald-400" :
-                                 "w-1.5 bg-gray-200"
+                i === stage
+                  ? "w-6 bg-emerald-500"
+                  : i < stage
+                  ? "w-1.5 bg-emerald-400"
+                  : "w-1.5 bg-gray-200"
               }`}
             />
           ))}
@@ -411,7 +601,7 @@ function InsightographicLoading() {
   );
 }
 
-// ─── Panel ──────────────────────────────────────────────────────────────────
+// ─── Panel ────────────────────────────────────────────────────────────────────
 
 export default function InsightographicPanel({
   open,
@@ -427,7 +617,11 @@ export default function InsightographicPanel({
   const startX = useRef(0);
   const startWidth = useRef(0);
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
-  const c = FLOW_CONTENT[flow];
+
+  // Panel header label based on flow
+  const kicker = "FY25 INSIGHTOGRAPHIC";
+  const title =
+    flow === "health-gap" ? "Health-Services Delivery Gap" : "IDA Cross-Pillar Reach";
 
   useEffect(() => {
     if (!dragging) return;
@@ -482,7 +676,9 @@ export default function InsightographicPanel({
         >
           <span
             className={`block h-12 w-1 rounded-full transition-colors ${
-              dragging ? "bg-blue-500" : "bg-gray-200 group-hover:bg-gray-300"
+              dragging
+                ? "bg-blue-500"
+                : "bg-gray-200 group-hover:bg-gray-300"
             }`}
           />
           <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-gray-200 rounded-md p-0.5 text-gray-400 pointer-events-none shadow-sm">
@@ -499,10 +695,10 @@ export default function InsightographicPanel({
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
-              {c.kicker}
+              {kicker}
             </span>
             <span className="text-[14px] font-semibold text-gray-900 leading-none truncate">
-              {c.title}
+              {title}
             </span>
           </div>
         </div>
@@ -523,16 +719,16 @@ export default function InsightographicPanel({
         </div>
       </header>
 
-      {/* Body — single-page poster (shared with the public viewer).
-          While generating, swap to a beam-driven loader so the panel
-          isn't empty during the artefact's mock compose pass. */}
+      {/* Body */}
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
-        {loading ? <InsightographicLoading /> : <InsightographicBody prompt={prompt} />}
+        {loading ? (
+          <InsightographicLoading />
+        ) : (
+          <InsightographicBody prompt={prompt} />
+        )}
       </div>
 
-      {/* Footer — Publish is the only action once the insightographic
-          exists. Switching to the narrative happens via the Files icon
-          in the conversation/viewer header. */}
+      {/* Footer */}
       <footer className="shrink-0 px-5 py-3 border-t border-gray-100 bg-gray-50">
         <button
           onClick={onPreviewAsViewer}

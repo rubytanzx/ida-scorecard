@@ -19,8 +19,12 @@ interface Props {
 type FlowId = "africa-poverty" | "health-gap";
 function detectFlow(p: string): FlowId {
   const t = p.toLowerCase();
-  if (t.includes("health services target")) return "health-gap";
-  if (t.includes("extreme poverty")) return "africa-poverty";
+  if (
+    t.includes("health services target") ||
+    t.includes("health & nutrition") ||
+    t.includes("global") ||
+    t.includes("countries")
+  ) return "health-gap";
   return "africa-poverty";
 }
 
