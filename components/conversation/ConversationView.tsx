@@ -1073,7 +1073,7 @@ export default function ConversationView({
   title,
   onTitleChange,
   embedded,
-  narrativePhase = "idle" as NarrativePhase,
+  narrativePhase = "idle",
   onNarrativePlanningComplete,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
