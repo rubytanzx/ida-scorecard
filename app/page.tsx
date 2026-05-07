@@ -159,6 +159,9 @@ const AI_SUGGESTIONS = [
   "Show me WB projects contributing to health outcomes",
 ];
 
+// 4-phase state machine for the narrative creation flow.
+export type NarrativePhase = "idle" | "planning" | "skeleton-ready" | "generating";
+
 export default function HomePage() {
   const [modalStory, setModalStory] = useState<(typeof secondaryStories)[0] | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
@@ -177,8 +180,6 @@ export default function HomePage() {
   const [rightPane, setRightPane] = useState<RightPane>(null);
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
-  // 4-phase state machine for the narrative creation flow.
-  type NarrativePhase = "idle" | "planning" | "skeleton-ready" | "generating";
   const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
   // True for ~3.5s after the user picks "Generate · Insightographic" —
   // drives the beam + cycling text loader inside the insightographic pane.
@@ -189,6 +190,9 @@ export default function HomePage() {
   const [regenerateConfirm, setRegenerateConfirm] = useState<string | null>(null);
   const [homeScrolled, setHomeScrolled] = useState(false);
   const homeScrollRef = useRef<HTMLDivElement>(null);
+  // Stored handle for the post-confirm animation delay so future readers
+  // know it's intentional and can cancel if navigation patterns change.
+  const narrativeConfirmTimerRef = useRef<number | null>(null);
 
   // Track home-page scroll so the prompt bar can dock at the bottom once the
   // user moves past the hero. Listen on both the inner overflow-y-auto
@@ -286,7 +290,7 @@ export default function HomePage() {
       )
     );
     // Brief pause so Block 3 "Got it…" message is visible before panel slides in.
-    window.setTimeout(() => {
+    narrativeConfirmTimerRef.current = window.setTimeout(() => {
       setRightPane("narrative");
       setNarrativePhase("idle");
     }, 500);
