@@ -33,6 +33,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import type { NarrativePhase } from "../../app/page";
 
 const F = "'Open Sans', sans-serif";
 
@@ -621,6 +622,15 @@ const THOUGHT_STEPS_HEALTH: ThoughtStep[] = [
   { type: "analyze", text: "Layering UHC index and stunting context indicators to identify driver patterns",            detail: "UHC Coverage · Stunting" },
 ];
 
+const NARRATIVE_PLAN_STEPS: ThoughtStep[] = [
+  { type: "search",  text: "Reading conversation context",          detail: "africa-poverty signal · 1 query" },
+  { type: "search",  text: "Loading indicator catalogue",           detail: "IDA_Scorecard_Metadata_1.xlsx · 21 Results indicators" },
+  { type: "filter",  text: "Matching 6 Results indicators",         detail: "SOC_SAF · EDU_SUPP · HEA_SERV · RESI_CLIM · ELC_ACCS · EXT_POOR_FCS" },
+  { type: "compute", text: "Filtering to AFE + AFW · FY25 cut-off", detail: "Time_Period == 2025-06-30 · Double_Counting_Flag ≠ Y" },
+  { type: "filter",  text: "Pairing 3 Client Context series",       detail: "CSC_CLI_EXT_POOR_FCS · SE_LPV_PRIM · EG_ELC_ACCS_ZS" },
+  { type: "analyze", text: "Structuring narrative sections",        detail: "Context · Intervention · Evidence · Impact" },
+];
+
 function ThoughtProcess({ flow }: { flow: FlowId }) {
   const [open, setOpen] = useState(false);
   const steps = flow === "health-gap" ? THOUGHT_STEPS_HEALTH : THOUGHT_STEPS_AFRICA;
@@ -690,6 +700,132 @@ function ThoughtProcess({ flow }: { flow: FlowId }) {
           </ol>
         </div>
       )}
+    </div>
+  );
+}
+
+function NarrativePlanningMessage({
+  animate,
+  onComplete,
+}: {
+  animate: boolean;
+  onComplete?: () => void;
+}) {
+  const [visibleCount, setVisibleCount] = useState(() =>
+    animate ? 0 : NARRATIVE_PLAN_STEPS.length
+  );
+  const [open, setOpen] = useState(animate);
+  const done = visibleCount >= NARRATIVE_PLAN_STEPS.length;
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  // Reveal one step every 400ms while animating
+  useEffect(() => {
+    if (!animate || done) return;
+    const t = setTimeout(() => setVisibleCount((n) => n + 1), 400);
+    return () => clearTimeout(t);
+  }, [animate, visibleCount, done]);
+
+  // Auto-collapse and fire callback once all steps are visible
+  useEffect(() => {
+    if (!animate || !done) return;
+    const t = setTimeout(() => {
+      setOpen(false);
+      onCompleteRef.current?.();
+    }, 400);
+    return () => clearTimeout(t);
+  }, [animate, done]);
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden">
+          <button
+            onClick={() => done && setOpen((v) => !v)}
+            className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+            aria-expanded={open}
+          >
+            <span className="w-6 h-6 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0">
+              <IconSparkles
+                size={13}
+                className={done ? "text-blue-500" : "text-blue-500 animate-pulse"}
+              />
+            </span>
+            <span className="text-[13px] font-semibold text-gray-700">Narrative planning</span>
+            <span className="text-[11px] text-gray-300">·</span>
+            <span className="text-[11px] text-gray-500 font-mono">
+              {NARRATIVE_PLAN_STEPS.length} steps
+            </span>
+            {done ? (
+              <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
+                <IconCheck size={10} stroke={3} />
+                Complete
+              </span>
+            ) : (
+              <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Running
+              </span>
+            )}
+            {done && (
+              <IconChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform ml-1 ${open ? "rotate-180" : ""}`}
+              />
+            )}
+          </button>
+
+          {open && (
+            <div className="px-4 pb-4 pt-2 bg-white border-t border-gray-100">
+              <ol className="relative pl-7">
+                <span
+                  aria-hidden
+                  className="absolute top-3 bottom-3 w-px bg-gray-200"
+                  style={{ left: 12 }}
+                />
+                {NARRATIVE_PLAN_STEPS.map((step, i) => {
+                  const meta = THOUGHT_STEP_META[step.type];
+                  const Icon = meta.icon;
+                  const visible = i < visibleCount;
+                  return (
+                    <li
+                      key={i}
+                      className={`relative py-2 first:pt-0 last:pb-0 transition-opacity duration-300 ${
+                        visible ? "opacity-100" : "opacity-0"
+                      }`}
+                    >
+                      <span
+                        className="absolute -left-7 top-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.05)]"
+                        style={{ background: meta.tint }}
+                      >
+                        <Icon size={11} style={{ color: meta.color }} />
+                      </span>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span
+                          className="text-[9.5px] font-semibold uppercase tracking-wider px-1 py-px rounded"
+                          style={{ background: meta.tint, color: meta.color }}
+                        >
+                          {meta.label}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-mono">Step {i + 1}</span>
+                      </div>
+                      <div className="text-[12.5px] text-gray-800 leading-snug">{step.text}</div>
+                      {step.detail && visible && (
+                        <div className="mt-1 text-[10.5px] text-gray-500 font-mono bg-gray-50 border border-gray-100 rounded px-2 py-1 inline-block">
+                          → {step.detail}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
