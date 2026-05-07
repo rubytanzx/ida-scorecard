@@ -830,6 +830,147 @@ function NarrativePlanningMessage({
   );
 }
 
+function NarrativeSkeletonMessage() {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col gap-3">
+        <p className="text-[13.5px] text-gray-700 leading-relaxed">
+          Here&rsquo;s the outline for your narrative. Let me know if this looks right:
+        </p>
+
+        <div className="flex flex-col gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4">
+          {/* Context */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+              Context
+            </span>
+            <p className="text-[13px] text-gray-800 leading-relaxed">
+              Sub-Saharan Africa remains the epicentre of extreme poverty. FCS-country poverty sits
+              at 30.4%{" "}
+              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
+                CSC_CLI_EXT_POOR_FCS
+              </code>
+              , 70% learning poverty persists in primary schools{" "}
+              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
+                SE_LPV_PRIM
+              </code>
+              , and 56 economies collect less than 15% tax-to-GDP — limiting fiscal space for
+              homegrown investment.
+            </p>
+          </div>
+
+          <div className="h-px bg-gray-200" />
+
+          {/* Intervention */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+              Intervention
+            </span>
+            <p className="text-[13px] text-gray-800 leading-relaxed">
+              FY25 IDA operations targeted People-pillar programs across AFE + AFW, with safety
+              nets, education access, and primary health care as the primary delivery channels.
+              Climate resilience and electricity expansion{" "}
+              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
+                EG_ELC_ACCS_ZS
+              </code>{" "}
+              addressed the Planet and Infrastructure pillars.
+            </p>
+          </div>
+
+          <div className="h-px bg-gray-200" />
+
+          {/* Evidence */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+              Evidence
+            </span>
+            <p className="text-[13px] text-gray-800 leading-relaxed mb-1.5">
+              Key FY25 results vs. pipeline targets:
+            </p>
+            <ul className="flex flex-col gap-1.5 text-[12.5px] text-gray-700 pl-1">
+              <li className="flex items-baseline gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span>
+                  Social safety nets: 244M / ~313M{" "}
+                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
+                    CSC_RES_SOC_SAF_PROG
+                  </code>
+                </span>
+              </li>
+              <li className="flex items-baseline gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span>
+                  Students supported: 325M / ~452M{" "}
+                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
+                    CSC_RES_EDU_SUPP
+                  </code>
+                </span>
+              </li>
+              <li className="flex items-baseline gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span>
+                  Health services: 370M / ~425M{" "}
+                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
+                    CSC_RES_HEA_SERV
+                  </code>
+                </span>
+              </li>
+              <li className="flex items-baseline gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0 mt-[5px]" />
+                <span>
+                  Climate resilience: 244M / ~425M — behind target{" "}
+                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
+                    CSC_RES_RESI_CLIM_RISK
+                  </code>
+                </span>
+              </li>
+              <li className="flex items-baseline gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-red-400 shrink-0 mt-[5px]" />
+                <span>
+                  Electricity access: 215M / 576M — significantly behind target{" "}
+                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
+                    CSC_RES_ELC_ACCS
+                  </code>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="h-px bg-gray-200" />
+
+          {/* Impact */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+              Impact
+            </span>
+            <p className="text-[13px] text-gray-800 leading-relaxed">
+              The People vertical leads at 68% achievement. FCS-country health efficiency is 2.3×
+              vs. non-FCS IDA peers. Infrastructure at 41% flags FY26 priorities, with electricity
+              access warranting a dedicated funding push in AFE.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NarrativeGeneratingMessage() {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <p className="text-[13.5px] text-gray-700 leading-relaxed pt-1">
+        Got it — generating the first draft of your narrative now.
+      </p>
+    </div>
+  );
+}
+
 // Hover-to-edit conversation title — pencil glyph appears on hover; click to
 // switch to a centered text input that commits on Enter or blur, cancels on
 // Escape. Used in the conversation header so users can override the
