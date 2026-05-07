@@ -7,8 +7,10 @@ import {
   IconArrowUp,
   IconPlus,
   IconNotebook,
+  IconCheck,
 } from "@tabler/icons-react";
 import MadLibsInput from "./MadLibsInput";
+import type { NarrativePhase } from "../app/page";
 
 type Mode = "hero" | "bottom";
 type WidthMode = "compact" | "wide";
@@ -34,6 +36,12 @@ interface Props {
   suppressTransition?: boolean;
   /** Show the "Create narrative" chip (only in conversation mode). */
   showCreateChip?: boolean;
+  /** Current phase of the narrative creation flow — controls which chips to show. */
+  narrativePhase?: NarrativePhase;
+  /** Fires when the user clicks "Yes, create narrative" in skeleton-ready phase. */
+  onNarrativeConfirm?: () => void;
+  /** Fires when the user clicks "Make changes" in skeleton-ready phase. */
+  onNarrativeMakeChanges?: () => void;
   /** When true, submit doesn't trigger a new conversation transition. */
   inConversation?: boolean;
   /** Fires immediately when the user hits Enter / clicks send. Lets the parent
@@ -57,6 +65,9 @@ export default function PromptBar({
   panelWidth = 0,
   suppressTransition = false,
   showCreateChip = false,
+  narrativePhase = "idle" as NarrativePhase,
+  onNarrativeConfirm,
+  onNarrativeMakeChanges,
   inConversation = false,
   onSubmit,
 }: Props) {
@@ -167,10 +178,10 @@ export default function PromptBar({
         />
       )}
 
-      {/* "Create narrative" chip */}
+      {/* Narrative chips — "Create narrative" when idle, "Yes / Make changes" when skeleton-ready */}
       {isBottom && showCreateChip && (
         <div
-          className={`fixed flex justify-end ${suppressTransition ? "" : "transition-[left,width] duration-[900ms]"}`}
+          className={`fixed flex justify-end gap-2 ${suppressTransition ? "" : "transition-[left,width] duration-[900ms]"}`}
           style={{
             left: leftCss,
             transform: "translateX(-50%)",
@@ -180,14 +191,34 @@ export default function PromptBar({
             transitionTimingFunction: suppressTransition ? undefined : "cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          <button
-            type="button"
-            onClick={() => onCreateNarrative?.()}
-            className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-700 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
-          >
-            <IconNotebook size={12} className="opacity-60" />
-            Create narrative
-          </button>
+          {narrativePhase === "skeleton-ready" ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onNarrativeMakeChanges?.()}
+                className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-600 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
+              >
+                Make changes
+              </button>
+              <button
+                type="button"
+                onClick={() => onNarrativeConfirm?.()}
+                className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-white bg-blue-600 border border-blue-600 rounded-full shadow-sm hover:bg-blue-700 active:scale-[0.98] transition-colors"
+              >
+                <IconCheck size={12} />
+                Yes, create narrative
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onCreateNarrative?.()}
+              className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-700 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
+            >
+              <IconNotebook size={12} className="opacity-60" />
+              Create narrative
+            </button>
+          )}
         </div>
       )}
 
