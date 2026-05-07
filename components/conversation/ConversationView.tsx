@@ -715,6 +715,14 @@ function NarrativePlanningMessage({
   animate: boolean;
   onComplete?: () => void;
 }) {
+  // Delay appearance so the user message bubble has time to settle first.
+  const [visible, setVisible] = useState(!animate);
+  useEffect(() => {
+    if (!animate) return;
+    const t = setTimeout(() => setVisible(true), 700);
+    return () => clearTimeout(t);
+  }, [animate]);
+
   const [visibleCount, setVisibleCount] = useState(() =>
     animate ? 0 : NARRATIVE_PLAN_STEPS.length
   );
@@ -739,6 +747,8 @@ function NarrativePlanningMessage({
     }, 400);
     return () => clearTimeout(t);
   }, [animate, done]);
+
+  if (!visible) return null;
 
   return (
     <div className="flex items-start gap-3">

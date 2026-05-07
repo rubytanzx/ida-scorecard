@@ -1522,6 +1522,34 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
         </div>
       )}
 
+      {/* Beam — sweeps across the panel top while narrative is generating */}
+      {(loadPhase === "reasoning" || loadPhase === "skeleton") && (
+        <>
+          <div
+            aria-hidden
+            className="prompt-stroke absolute left-0 right-0 pointer-events-none"
+            style={{ top: 0, height: 3, zIndex: 65 }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute overflow-hidden"
+            style={{ top: 0, left: 0, right: 0, height: 300, zIndex: 64 }}
+          >
+            <div
+              className="prompt-beam absolute"
+              style={{
+                top: 0,
+                left: "50%",
+                width: "min(900px, 200%)",
+                height: 240,
+                transform: "translateX(-50%)",
+                borderRadius: "50%",
+              }}
+            />
+          </div>
+        </>
+      )}
+
       {/* Header */}
       <header className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
