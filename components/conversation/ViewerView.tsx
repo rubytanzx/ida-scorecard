@@ -89,7 +89,7 @@ export default function ViewerView({
   const headerTransition = paneDragging ? "" : "transition-[right] duration-500 ease-in-out";
 
   return (
-    <div className="relative h-screen overflow-hidden bg-white">
+    <div className="relative h-screen overflow-hidden bg-white view-enter">
       {/* ── Header ─────────────────────────────────────────────────────
           Right edge follows whichever artefact panel is open so the
           centered title is centered against the *visible* canvas
