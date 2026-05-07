@@ -64,6 +64,10 @@ interface Props {
    * of h-screen) so this view can be embedded inside another layout, e.g.
    * the shared-link viewer. */
   embedded?: boolean;
+  /** Current narrative creation phase — drives which AI message blocks to render. */
+  narrativePhase?: NarrativePhase;
+  /** Fires when the NarrativePlanningMessage step animation completes. */
+  onNarrativePlanningComplete?: () => void;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -892,7 +896,7 @@ function NarrativeSkeletonMessage() {
             </p>
             <ul className="flex flex-col gap-1.5 text-[12.5px] text-gray-700 pl-1">
               <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
                 <span>
                   Social safety nets: 244M / ~313M{" "}
                   <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
@@ -901,7 +905,7 @@ function NarrativeSkeletonMessage() {
                 </span>
               </li>
               <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
                 <span>
                   Students supported: 325M / ~452M{" "}
                   <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
@@ -910,7 +914,7 @@ function NarrativeSkeletonMessage() {
                 </span>
               </li>
               <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" />
+                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
                 <span>
                   Health services: 370M / ~425M{" "}
                   <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
@@ -919,7 +923,7 @@ function NarrativeSkeletonMessage() {
                 </span>
               </li>
               <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0 mt-[5px]" />
+                <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0 mt-[5px]" aria-hidden="true" />
                 <span>
                   Climate resilience: 244M / ~425M — behind target{" "}
                   <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
@@ -928,7 +932,7 @@ function NarrativeSkeletonMessage() {
                 </span>
               </li>
               <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-red-400 shrink-0 mt-[5px]" />
+                <span className="w-1 h-1 rounded-full bg-red-400 shrink-0 mt-[5px]" aria-hidden="true" />
                 <span>
                   Electricity access: 215M / 576M — significantly behind target{" "}
                   <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
@@ -1069,11 +1073,22 @@ export default function ConversationView({
   title,
   onTitleChange,
   embedded,
+  narrativePhase = "idle" as NarrativePhase,
+  onNarrativePlanningComplete,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
   const signals = flow === "health-gap" ? HEALTH_RELATED_SIGNALS : RELATED_SIGNALS;
   const narratives = useMemo(() => pickNarratives(prompt, 4), [prompt]);
+
+  const narrativeArtefact = artefacts.find((a) => a.kind === "narrative");
+  // Show blocks permanently once the artefact is saved (persistent chat history).
+  const showBlock1 = narrativePhase !== "idle" || !!narrativeArtefact;
+  const showBlock2 =
+    narrativePhase === "skeleton-ready" ||
+    narrativePhase === "generating" ||
+    !!narrativeArtefact;
+  const showBlock3 = narrativePhase === "generating" || !!narrativeArtefact;
 
   // Files dropdown state
   const [filesOpen, setFilesOpen] = useState(false);
@@ -1273,6 +1288,16 @@ export default function ConversationView({
               </div>
             </div>
           </div>
+
+          {/* ── Narrative confirmation flow ── */}
+          {showBlock1 && (
+            <NarrativePlanningMessage
+              animate={narrativePhase === "planning"}
+              onComplete={onNarrativePlanningComplete}
+            />
+          )}
+          {showBlock2 && <NarrativeSkeletonMessage />}
+          {showBlock3 && <NarrativeGeneratingMessage />}
 
           <div className="h-8" />
         </div>
