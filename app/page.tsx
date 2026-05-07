@@ -181,6 +181,7 @@ export default function HomePage() {
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
   const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
+  const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
   // True for ~3.5s after the user picks "Generate · Insightographic" —
   // drives the beam + cycling text loader inside the insightographic pane.
   const [insightographicGenerating, setInsightographicGenerating] = useState(false);
@@ -292,7 +293,9 @@ export default function HomePage() {
     // Brief pause so Block 3 "Got it…" message is visible before panel slides in.
     narrativeConfirmTimerRef.current = window.setTimeout(() => {
       setRightPane("narrative");
-      setNarrativePhase("idle");
+      setNarrativePanelLoading(true);  // panel mounts with loading=true → beam fires
+      setNarrativePhase("idle");       // dots disappear from conversation immediately
+      window.setTimeout(() => setNarrativePanelLoading(false), 4500);
     }, 500);
   };
 
@@ -487,7 +490,7 @@ export default function HomePage() {
             prompt={conversationPrompt}
             onClose={() => setRightPane(null)}
             onGenerate={handleGenerate}
-            loading={narrativePhase === "generating"}
+            loading={narrativePanelLoading}
             generatedKinds={currentArtefacts.map((a) => a.kind)}
             width={rightPaneWidth}
             onResize={(w, dragging) => {

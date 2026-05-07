@@ -896,7 +896,11 @@ function NarrativePlanningMessage({
   );
 }
 
+const SKELETON_LEAD = "Here's the outline for your narrative. Let me know if this looks right:";
+
 function NarrativeSkeletonMessage() {
+  const [leadDone, setLeadDone] = useState(false);
+
   return (
     <div className="flex items-start gap-3">
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
@@ -904,10 +908,13 @@ function NarrativeSkeletonMessage() {
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">
-          Here&rsquo;s the outline for your narrative. Let me know if this looks right:
+          <StreamingText text={SKELETON_LEAD} wordDelay={35} onComplete={() => setLeadDone(true)} />
         </p>
 
-        <div className="flex flex-col gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <div
+          className="flex flex-col gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4 transition-opacity duration-700"
+          style={{ opacity: leadDone ? 1 : 0 }}
+        >
           {/* Context */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
@@ -1024,7 +1031,7 @@ function NarrativeSkeletonMessage() {
   );
 }
 
-function NarrativeGeneratingMessage() {
+function NarrativeGeneratingMessage({ generating }: { generating: boolean }) {
   return (
     <div className="flex items-start gap-3">
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
@@ -1034,11 +1041,13 @@ function NarrativeGeneratingMessage() {
         <p className="text-[13.5px] text-gray-700 leading-relaxed">
           Got it — generating the first draft of your narrative now.
         </p>
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }} />
-        </div>
+        {generating && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1392,7 +1401,7 @@ export default function ConversationView({
             />
           )}
           {showBlock2 && <NarrativeSkeletonMessage />}
-          {showBlock3 && <NarrativeGeneratingMessage />}
+          {showBlock3 && <NarrativeGeneratingMessage generating={narrativePhase === "generating"} />}
 
           <div className="h-8" />
         </div>
