@@ -767,11 +767,12 @@ function NarrativePlanningMessage({
   animate: boolean;
   onComplete?: () => void;
 }) {
-  // Delay appearance so the user message bubble has time to settle first.
+  // Pause after the user's "Create narrative" message before the AI starts —
+  // gives the conversation a more deliberate, reflective rhythm.
   const [visible, setVisible] = useState(!animate);
   useEffect(() => {
     if (!animate) return;
-    const t = setTimeout(() => setVisible(true), 700);
+    const t = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(t);
   }, [animate]);
 
