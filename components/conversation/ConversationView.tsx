@@ -898,8 +898,8 @@ function NarrativePlanningMessage({
 
 const SKELETON_LEAD = "Here's the outline for your narrative. Let me know if this looks right:";
 
-function NarrativeSkeletonMessage() {
-  const [leadDone, setLeadDone] = useState(false);
+function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
+  const [leadDone, setLeadDone] = useState(!animate);
 
   return (
     <div className="flex items-start gap-3">
@@ -908,7 +908,9 @@ function NarrativeSkeletonMessage() {
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">
-          <StreamingText text={SKELETON_LEAD} wordDelay={35} onComplete={() => setLeadDone(true)} />
+          {animate
+            ? <StreamingText text={SKELETON_LEAD} wordDelay={35} onComplete={() => setLeadDone(true)} />
+            : SKELETON_LEAD}
         </p>
 
         <div
@@ -1400,7 +1402,7 @@ export default function ConversationView({
               onComplete={onNarrativePlanningComplete}
             />
           )}
-          {showBlock2 && <NarrativeSkeletonMessage />}
+          {showBlock2 && <NarrativeSkeletonMessage animate={narrativePhase === "skeleton-ready"} />}
           {showBlock3 && <NarrativeGeneratingMessage generating={narrativePhase === "generating"} />}
 
           <div className="h-8" />
