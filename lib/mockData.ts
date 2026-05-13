@@ -16,6 +16,13 @@ export interface StoryTag {
 
 export type ThumbVariant = "people" | "digital" | "planet" | "fcs";
 
+export interface DrivingIndicator {
+  label: string;
+  achieved: string;
+  percentOfTarget: string;
+  color: string;
+}
+
 export interface Story {
   id: string;
   tag: StoryTag;
@@ -39,10 +46,22 @@ export interface Story {
    * prompt as the underlying artefact — turning the story card into an
    * entry point to a published insightographic. */
   viewerPrompt?: string;
+  drivingIndicators?: DrivingIndicator[];
+  narrativeUrl?: string;
 }
 
 export interface FeaturedStory extends Story {
   description: string;
+}
+
+export interface Indicator {
+  id: string;
+  label: string;
+  achieved: string;
+  target: string;
+  exceeded?: boolean;
+  methodologyNote?: string;
+  methodologyUrl?: string;
 }
 
 // ─── Topics Trending ─────────────────────────────────────────────────────────
@@ -99,6 +118,10 @@ export const secondaryStories: Story[] = [
     imageAlt: "Global network connectivity from space",
     lastUpdated: "Mar 9, 2025",
     upvotes: 156, downvotes: 23, connectors: 6,
+    narrativeUrl: "https://scorecard.worldbank.org/en/narratives/digital-connectivity/results-narrative",
+    drivingIndicators: [
+      { label: "Broadband", achieved: "217M", percentOfTarget: "121%", color: "#00A0DF" },
+    ],
   },
   {
     id: "story-3",
@@ -115,6 +138,12 @@ export const secondaryStories: Story[] = [
     imageAlt: "Climate-resilient infrastructure in an LDC setting",
     lastUpdated: "Mar 17, 2025",
     upvotes: 231, downvotes: 5, connectors: 7,
+    narrativeUrl: "https://scorecard.worldbank.org/en/narratives/green-and-blue-planet/results-narrative",
+    drivingIndicators: [
+      { label: "Hectares conserved", achieved: "93M ha", percentOfTarget: "116%", color: "#2E8B57" },
+      { label: "Climate resilience", achieved: "244M", percentOfTarget: "57%", color: "#00A0DF" },
+      { label: "GHG reduction", achieved: "185M tCO₂", percentOfTarget: "93%", color: "#6B4FA0" },
+    ],
   },
 ];
 
@@ -564,4 +593,116 @@ export const scorecardVerticals: ScorecardVertical[] = [
   { id: "sv-3", label: "Planet",         value: 45, color: "#f57c00" },
   { id: "sv-4", label: "Infrastructure", value: 41, color: "#d84315" },
   { id: "sv-5", label: "Digital",        value: 50, color: "#f57c00" },
+];
+
+// ─── Results Band Indicators ──────────────────────────────────────────────────
+
+export const indicators: Indicator[] = [
+  {
+    id: "ind-health-services",
+    label: "Health services",
+    achieved: "370M",
+    target: "of 466M",
+    methodologyNote: "People accessing health services through IDA-supported projects. Includes primary care, maternal health, and community health workers.",
+  },
+  {
+    id: "ind-students",
+    label: "Students",
+    achieved: "325M",
+    target: "of 580M",
+    methodologyNote: "Students benefiting from WBG education investments across primary, secondary, and tertiary levels in IDA countries.",
+  },
+  {
+    id: "ind-safety-nets",
+    label: "Safety nets",
+    achieved: "244M",
+    target: "of 320M",
+    methodologyNote: "People benefiting from social protection programs including cash transfers, food vouchers, and social insurance schemes.",
+  },
+  {
+    id: "ind-climate-resilience",
+    label: "Climate resilience",
+    achieved: "244M",
+    target: "of 425M",
+    methodologyNote: "People with strengthened climate resilience through IDA adaptation projects, early warning systems, and climate-smart infrastructure.",
+  },
+  {
+    id: "ind-gender-equality",
+    label: "Gender equality",
+    achieved: "62M",
+    target: "of 80M",
+    methodologyNote: "Women and girls benefiting from programs explicitly targeting gender gaps in education, health, finance, and labor markets.",
+  },
+  {
+    id: "ind-health-emergencies",
+    label: "Health emergencies",
+    achieved: "87M",
+    target: "of 95M",
+    methodologyNote: "People reached through IDA-financed emergency health response, including disease outbreak containment and health system strengthening in crisis settings.",
+  },
+  {
+    id: "ind-electricity",
+    label: "Electricity access",
+    achieved: "215M",
+    target: "of 576M",
+    methodologyNote: "People gaining first-time or improved electricity access through IDA energy projects, including grid and off-grid solutions.",
+  },
+  {
+    id: "ind-private-capital-mobilized",
+    label: "Private capital mobilized",
+    achieved: "$12B",
+    target: "of $18B",
+    methodologyNote: "Private capital mobilized by IFC and MIGA in IDA-eligible countries, measured at commitment. Excludes sub-national guarantees.",
+  },
+  {
+    id: "ind-displaced-people",
+    label: "Displaced people",
+    achieved: "4.2M",
+    target: "of 5.8M",
+    methodologyNote: "Forcibly displaced people and host communities supported through IDA projects addressing protection, livelihoods, and durable solutions.",
+  },
+  {
+    id: "ind-broadband",
+    label: "Broadband",
+    achieved: "217M",
+    target: "of 180M",
+    exceeded: true,
+    methodologyNote: "People with improved broadband access through IDA digital infrastructure projects. Includes mobile broadband where fixed broadband is unavailable.",
+  },
+  {
+    id: "ind-hectares",
+    label: "Hectares conserved",
+    achieved: "93M ha",
+    target: "of 80M ha",
+    exceeded: true,
+    methodologyNote: "Land area brought under improved natural resource management, including forests, wetlands, and protected marine areas.",
+  },
+  {
+    id: "ind-food-security",
+    label: "Food security",
+    achieved: "180M",
+    target: "of 200M",
+    methodologyNote: "People with improved food security outcomes through IDA agriculture, nutrition, and resilient food systems investments.",
+  },
+  {
+    id: "ind-ghg",
+    label: "GHG reduction",
+    achieved: "185M tCO₂",
+    target: "of 200M tCO₂",
+    methodologyNote: "Greenhouse gas emission reductions attributable to IDA-financed climate mitigation projects, measured over project lifetime.",
+  },
+  {
+    id: "ind-wash",
+    label: "WASH",
+    achieved: "89M",
+    target: "of 120M",
+    methodologyNote: "People with access to improved water supply, sanitation, and hygiene through IDA WASH investments.",
+  },
+  {
+    id: "ind-financial-services",
+    label: "Financial services",
+    achieved: "$28B",
+    target: "of $35B",
+    methodologyNote: "Volume of financial services accessed by households and firms in IDA countries through IFC and IDA-supported financial sector projects.",
+  },
 ];
