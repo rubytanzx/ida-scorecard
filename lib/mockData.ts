@@ -849,62 +849,74 @@ export const indicators: Indicator[] = [
 
 // ─── Trending Across IDA ──────────────────────────────────────────────────────
 
-export interface TrendingStat {
-  value: string;     // "+14.8%"
-  label: string;     // "Job access (YoY)"
-  tone: "positive" | "negative" | "neutral";
+export interface TrendingProgress {
+  pct: number;                   // 0..100, controls the filled bar width
+  tone: "green" | "amber" | "red";
+  footnote: string;              // e.g. "37% of 575.6M expected  •  -6% vs FY24"
+}
+
+export interface TrendingNarrativeLink {
+  label: string;
+  href: string;
 }
 
 export interface TrendingTopCard {
-  tag: "TOP MOMENTUM";
+  tag: string;
   headline: string;
   description: string;
-  stats: TrendingStat[];
-  ctaLabel: string;
+  progress: TrendingProgress;
+  relatedNarratives: TrendingNarrativeLink[];
 }
 
 export interface TrendingSideCard {
-  id: "risk-watch" | "emerging-signal";
-  tag: "RISK WATCH" | "EMERGING SIGNAL";
+  id: string;
+  tag: string;
   headline: string;
-  description: string;
-  sparkline: number[]; // 7 points, 0–1
+  subtitle: string;
+  progress: TrendingProgress;
   ctaLabel: string;
 }
 
 export const trendingTop: TrendingTopCard = {
-  tag: "TOP MOMENTUM",
-  headline:
-    "Economic mobility is accelerating through infrastructure and digital access",
+  tag: "Portfolio",
+  headline: "Electricity access is the scorecard's biggest gap — and FCS is driving it",
   description:
-    "Countries investing in transport and digital infrastructure are seeing stronger gains in jobs, entrepreneurship, and financial inclusion. This pattern holds across income levels, with the strongest improvements in IDA countries.",
-  stats: [
-    { value: "18",      label: "Countries improving",        tone: "neutral"  },
-    { value: "+14.8%",  label: "Job access (YoY)",           tone: "positive" },
-    { value: "+11.2M",  label: "New digital wallets",        tone: "positive" },
-    { value: "+9.1%",   label: "Female labor participation", tone: "positive" },
+    "Electricity access is one of the largest achieved-versus-expected gaps: 86.7M people reached against 205.7M expected. The pattern suggests the issue may not be ambition, but delivery timing, utility performance, and the concentration of expected results in infrastructure-heavy operations that mature slowly.",
+  progress: {
+    pct: 37,
+    tone: "red",
+    footnote: "37% of 575.6M expected  •  -6% vs FY24",
+  },
+  relatedNarratives: [
+    { label: "Energy Access Borders",            href: "#" },
+    { label: "Private Investment in Renewables", href: "#" },
   ],
-  ctaLabel: "Explore this pattern",
 };
 
 export const trendingSides: TrendingSideCard[] = [
   {
-    id: "risk-watch",
-    tag: "RISK WATCH",
-    headline: "Fragility and fiscal pressure remain key constraints",
-    description:
-      "High debt and weak institutional capacity continue to limit service delivery improvements in many fragile and conflict-affected settings.",
-    sparkline: [0.75, 0.70, 0.68, 0.62, 0.55, 0.50, 0.45],
-    ctaLabel: "Explore drivers",
+    id: "social-protection",
+    tag: "Social Protection",
+    headline: "Social protection is IDA21's clearest win — 84% of pipeline, +12% YoY",
+    subtitle: "Pipeline coverage gains outpace every other people-pillar indicator",
+    progress: {
+      pct: 84,
+      tone: "green",
+      footnote: "84% of 291.4M expected  •  +12% vs FY24",
+    },
+    ctaLabel: "View Insight",
   },
   {
-    id: "emerging-signal",
-    tag: "EMERGING SIGNAL",
-    headline: "Water outcomes improving despite infrastructure delivery challenges",
-    description:
-      "Behavior change, better O&M, and service-delivery reforms are driving results in several regions.",
-    sparkline: [0.30, 0.38, 0.45, 0.55, 0.62, 0.70, 0.78],
-    ctaLabel: "Explore countries",
+    id: "gender-reach",
+    tag: "Gender",
+    headline: "Gender reach is accelerating — but the bottom quintile is being missed",
+    subtitle: "Headline beneficiary counts climb while equity inside the cohort flattens",
+    progress: {
+      pct: 45,
+      tone: "amber",
+      footnote: "45% of pipeline  •  urban concentration gap widening",
+    },
+    ctaLabel: "View Insight",
   },
 ];
 

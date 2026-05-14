@@ -1,67 +1,135 @@
 "use client";
 
-import { trendingTop, trendingSides, type TrendingSideCard, type TrendingStat } from "@/lib/mockData";
-import IndicatorSparkline from "./IndicatorSparkline";
+import { IconArrowRight, IconExternalLink } from "@tabler/icons-react";
+import {
+  trendingTop,
+  trendingSides,
+  type TrendingProgress,
+  type TrendingSideCard,
+} from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
 
-function statColor(tone: TrendingStat["tone"]) {
-  if (tone === "positive") return "#067647";
-  if (tone === "negative") return "#B91C1C";
-  return "#0D1A2B";
+const PROGRESS_COLOR: Record<TrendingProgress["tone"], string> = {
+  green: "#22C55E",
+  amber: "#F59E0B",
+  red:   "#DC2626",
+};
+
+function TagPill({ label }: { label: string }) {
+  return (
+    <span
+      style={{
+        alignSelf: "flex-start",
+        fontFamily: F,
+        fontSize: 12,
+        fontWeight: 500,
+        color: "#1D4ED8",
+        background: "#FFFFFF",
+        border: "1px solid #1D4ED8",
+        borderRadius: 999,
+        padding: "3px 12px",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function ProgressBar({ progress }: { progress: TrendingProgress }) {
+  const fill = PROGRESS_COLOR[progress.tone];
+  const pct = Math.max(0, Math.min(100, progress.pct));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        style={{
+          width: "100%",
+          height: 8,
+          background: "#E5E7EB",
+          borderRadius: 999,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: fill,
+            borderRadius: 999,
+          }}
+        />
+      </div>
+      <div style={{ fontSize: 13, color: "#6B7280", fontFamily: F, lineHeight: 1.4 }}>
+        {progress.footnote}
+      </div>
+    </div>
+  );
 }
 
 function SideCard({ card }: { card: TrendingSideCard }) {
-  const isRisk = card.id === "risk-watch";
-  const tagBg = isRisk ? "#FEE2E2" : "#EDE9FE";
-  const tagFg = isRisk ? "#B91C1C" : "#5B21B6";
-  const sparkColor = isRisk ? "#EF4444" : "#7C3AED";
-
   return (
     <article
       style={{
         background: "#FFFFFF",
         border: "1px solid #E5E7EB",
         borderRadius: 12,
-        padding: 18,
+        padding: "22px 24px 18px",
         display: "flex",
         flexDirection: "column",
-        gap: 8,
+        gap: 12,
         fontFamily: F,
+        flex: 1,
+        minHeight: 0,
       }}
     >
-      <span
+      <TagPill label={card.tag} />
+
+      <div>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 20,
+            fontWeight: 600,
+            color: "#111827",
+            lineHeight: 1.35,
+          }}
+        >
+          {card.headline}
+        </h3>
+        <div style={{ marginTop: 4, fontSize: 13, color: "#9CA3AF", lineHeight: 1.4 }}>
+          {card.subtitle}
+        </div>
+      </div>
+
+      <ProgressBar progress={card.progress} />
+
+      <div
         style={{
-          alignSelf: "flex-start",
-          background: tagBg,
-          color: tagFg,
-          fontSize: 10,
-          letterSpacing: 0.6,
-          textTransform: "uppercase",
-          padding: "3px 8px",
-          borderRadius: 6,
-          fontWeight: 600,
+          marginTop: "auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        {card.tag}
-      </span>
-
-      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#111827", lineHeight: 1.4 }}>
-        {card.headline}
-      </h4>
-
-      <p style={{ margin: 0, fontSize: 12, color: "#6B7280", lineHeight: 1.5 }}>
-        {card.description}
-      </p>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
         <a
           href="#"
-          style={{ fontSize: 11, color: "#003F6B", fontWeight: 600, textDecoration: "none" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#1D4ED8",
+            textDecoration: "none",
+          }}
         >
-          {card.ctaLabel} →
+          {card.ctaLabel}
         </a>
-        <IndicatorSparkline points={card.sparkline} width={60} height={24} color={sparkColor} />
+        <IconArrowRight size={18} stroke={1.8} color="#1D4ED8" aria-hidden="true" />
       </div>
     </article>
   );
@@ -94,83 +162,82 @@ export default function TrendingAcrossIDA() {
         </a>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-4">
-        {/* Top Momentum (left, 58%) */}
+      <div className="flex flex-col xl:flex-row gap-4 items-stretch">
+        {/* Top card (left, 58%) */}
         <article
           className="xl:basis-[58%]"
           style={{
             background: "#FFFFFF",
             border: "1px solid #E5E7EB",
             borderRadius: 12,
-            padding: 24,
+            padding: "24px 28px 22px",
             display: "flex",
             flexDirection: "column",
-            gap: 12,
+            gap: 16,
             fontFamily: F,
           }}
         >
-          <span
+          <TagPill label={trendingTop.tag} />
+
+          <h3
             style={{
-              alignSelf: "flex-start",
-              background: "#E6F4EC",
-              color: "#067647",
-              fontSize: 10,
-              letterSpacing: 0.6,
-              textTransform: "uppercase",
-              padding: "3px 8px",
-              borderRadius: 6,
+              margin: 0,
+              fontSize: 28,
               fontWeight: 600,
+              color: "#111827",
+              lineHeight: 1.3,
             }}
           >
-            {trendingTop.tag}
-          </span>
-
-          <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#111827", lineHeight: 1.3, fontFamily: F }}>
             {trendingTop.headline}
           </h3>
 
-          <p style={{ margin: 0, fontSize: 14, color: "#4B5563", lineHeight: 1.55 }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#6B7280", lineHeight: 1.6 }}>
             {trendingTop.description}
           </p>
 
-          <div
-            style={{
-              marginTop: 6,
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 18,
-              borderTop: "1px solid #F3F4F6",
-              paddingTop: 14,
-            }}
-          >
-            {trendingTop.stats.map((s) => (
-              <div key={s.label}>
-                <div style={{ fontSize: 22, fontWeight: 600, color: statColor(s.tone), lineHeight: 1.1 }}>
-                  {s.value}
-                </div>
-                <div style={{ marginTop: 4, fontSize: 11, color: "#6B7280", lineHeight: 1.35 }}>
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProgressBar progress={trendingTop.progress} />
 
-          <a
-            href="#"
-            style={{
-              marginTop: 4,
-              fontSize: 12,
-              color: "#003F6B",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {trendingTop.ctaLabel} →
-          </a>
+          <div style={{ marginTop: 8 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#111827",
+                marginBottom: 10,
+              }}
+            >
+              Related Narratives
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {trendingTop.relatedNarratives.map((n) => (
+                <a
+                  key={n.label}
+                  href={n.href}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 16px",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: 10,
+                    background: "#FFFFFF",
+                    fontSize: 14,
+                    fontWeight: 400,
+                    color: "#374151",
+                    textDecoration: "none",
+                    fontFamily: F,
+                  }}
+                >
+                  {n.label}
+                  <IconExternalLink size={14} stroke={1.8} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+          </div>
         </article>
 
-        {/* Risk Watch + Emerging Signal (right column) */}
-        <div className="flex flex-col gap-3 xl:flex-1">
+        {/* Side stack (right) */}
+        <div className="flex flex-col gap-4 xl:flex-1">
           {trendingSides.map((c) => (
             <SideCard key={c.id} card={c} />
           ))}
