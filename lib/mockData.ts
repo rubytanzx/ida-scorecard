@@ -846,3 +846,225 @@ export const indicators: Indicator[] = [
       "Private capital mobilized by IFC and MIGA in IDA-eligible countries, measured at commitment. Excludes sub-national guarantees. Reporting pending for FY25.",
   },
 ];
+
+// ─── Trending Across IDA ──────────────────────────────────────────────────────
+
+export interface TrendingStat {
+  value: string;     // "+14.8%"
+  label: string;     // "Job access (YoY)"
+  tone: "positive" | "negative" | "neutral";
+}
+
+export interface TrendingTopCard {
+  tag: "TOP MOMENTUM";
+  headline: string;
+  description: string;
+  stats: TrendingStat[];
+  ctaLabel: string;
+}
+
+export interface TrendingSideCard {
+  id: "risk-watch" | "emerging-signal";
+  tag: "RISK WATCH" | "EMERGING SIGNAL";
+  headline: string;
+  description: string;
+  sparkline: number[]; // 7 points, 0–1
+  ctaLabel: string;
+}
+
+export const trendingTop: TrendingTopCard = {
+  tag: "TOP MOMENTUM",
+  headline:
+    "Economic mobility is accelerating through infrastructure and digital access",
+  description:
+    "Countries investing in transport and digital infrastructure are seeing stronger gains in jobs, entrepreneurship, and financial inclusion. This pattern holds across income levels, with the strongest improvements in IDA countries.",
+  stats: [
+    { value: "18",      label: "Countries improving",        tone: "neutral"  },
+    { value: "+14.8%",  label: "Job access (YoY)",           tone: "positive" },
+    { value: "+11.2M",  label: "New digital wallets",        tone: "positive" },
+    { value: "+9.1%",   label: "Female labor participation", tone: "positive" },
+  ],
+  ctaLabel: "Explore this pattern",
+};
+
+export const trendingSides: TrendingSideCard[] = [
+  {
+    id: "risk-watch",
+    tag: "RISK WATCH",
+    headline: "Fragility and fiscal pressure remain key constraints",
+    description:
+      "High debt and weak institutional capacity continue to limit service delivery improvements in many fragile and conflict-affected settings.",
+    sparkline: [0.75, 0.70, 0.68, 0.62, 0.55, 0.50, 0.45],
+    ctaLabel: "Explore drivers",
+  },
+  {
+    id: "emerging-signal",
+    tag: "EMERGING SIGNAL",
+    headline: "Water outcomes improving despite infrastructure delivery challenges",
+    description:
+      "Behavior change, better O&M, and service-delivery reforms are driving results in several regions.",
+    sparkline: [0.30, 0.38, 0.45, 0.55, 0.62, 0.70, 0.78],
+    ctaLabel: "Explore countries",
+  },
+];
+
+// ─── Momentum Groups (What's Changing Right Now) ──────────────────────────────
+
+export interface MomentumRow {
+  label: string;
+  delta: string; // "+11.2%" | "-6.3%" | "New"
+}
+
+export interface MomentumGroup {
+  id: "accelerating" | "slowing" | "emerging";
+  title: string;
+  subtitle: string;
+  rows: MomentumRow[];
+}
+
+export const momentumGroups: MomentumGroup[] = [
+  {
+    id: "accelerating",
+    title: "Accelerating",
+    subtitle: "Outcomes gaining momentum",
+    rows: [
+      { label: "Digital financial inclusion", delta: "+11.2%" },
+      { label: "Primary learning outcomes",   delta: "+8.7%"  },
+      { label: "Women entrepreneurship",      delta: "+7.5%"  },
+    ],
+  },
+  {
+    id: "slowing",
+    title: "Slowing",
+    subtitle: "Momentum losing pace",
+    rows: [
+      { label: "Climate adaptation finance",  delta: "-6.3%" },
+      { label: "Tax revenue mobilization",    delta: "-4.1%" },
+      { label: "Infrastructure delivery",     delta: "-3.8%" },
+    ],
+  },
+  {
+    id: "emerging",
+    title: "Emerging",
+    subtitle: "New signals to watch",
+    rows: [
+      { label: "Green jobs creation",         delta: "New" },
+      { label: "Digital public infrastructure", delta: "New" },
+      { label: "Resilience program scale-up", delta: "New" },
+    ],
+  },
+];
+
+// ─── Counter Intuitive Text Cards ─────────────────────────────────────────────
+
+export interface CounterIntuitiveTextCard {
+  id: string;
+  icon: "chart" | "water" | "female" | "dollar";
+  tone: "green" | "blue" | "purple" | "amber";
+  headline: string;
+  description: string;
+}
+
+export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
+  {
+    id: "ci-1",
+    icon: "chart",
+    tone: "green",
+    headline: "Lower connectivity investments, higher mobile money adoption",
+    description:
+      "Countries with lower connectivity spend saw 23% higher mobile money growth driven by strong policy and demand factors.",
+  },
+  {
+    id: "ci-2",
+    icon: "water",
+    tone: "blue",
+    headline: "Water outcomes improved despite lower infrastructure spend",
+    description:
+      "Service delivery reforms and community management drove better outcomes in 12 countries.",
+  },
+  {
+    id: "ci-3",
+    icon: "female",
+    tone: "purple",
+    headline: "Transport investments unlock greater gains for women",
+    description:
+      "Countries where transport investments preceded financial access saw 2x higher female labor participation gains.",
+  },
+  {
+    id: "ci-4",
+    icon: "dollar",
+    tone: "amber",
+    headline: "Debt increases, but fiscal space improves in some IDA economies",
+    description:
+      "Better revenue administration outperformed borrowing growth in 7 countries.",
+  },
+];
+
+// ─── System Patterns ──────────────────────────────────────────────────────────
+
+export interface SystemPattern {
+  id: string;
+  name: string;
+  description: string;
+  icon: "trend" | "digital" | "human" | "climate" | "inclusion" | "fragility";
+  tint: "green" | "blue" | "teal" | "purple-light" | "purple" | "orange";
+  narrativeCount: number;
+  indicatorCount: number;
+}
+
+export const systemPatterns: SystemPattern[] = [
+  {
+    id: "sp-1",
+    name: "Economic Mobility",
+    description: "Jobs, productivity, and opportunity for all",
+    icon: "trend",
+    tint: "green",
+    narrativeCount: 24,
+    indicatorCount: 18,
+  },
+  {
+    id: "sp-2",
+    name: "Digital Transformation",
+    description: "Digital infrastructure and services at scale",
+    icon: "digital",
+    tint: "blue",
+    narrativeCount: 19,
+    indicatorCount: 14,
+  },
+  {
+    id: "sp-3",
+    name: "Human Capital",
+    description: "Health, education, and skills for resilience",
+    icon: "human",
+    tint: "teal",
+    narrativeCount: 21,
+    indicatorCount: 16,
+  },
+  {
+    id: "sp-4",
+    name: "Climate Resilience",
+    description: "Adaptation, mitigation, and sustainable growth",
+    icon: "climate",
+    tint: "purple-light",
+    narrativeCount: 17,
+    indicatorCount: 13,
+  },
+  {
+    id: "sp-5",
+    name: "Inclusive Participation",
+    description: "Gender, youth, and social inclusion",
+    icon: "inclusion",
+    tint: "purple",
+    narrativeCount: 16,
+    indicatorCount: 12,
+  },
+  {
+    id: "sp-6",
+    name: "Fragility & Institutions",
+    description: "State capacity, governance, and resilience",
+    icon: "fragility",
+    tint: "orange",
+    narrativeCount: 20,
+    indicatorCount: 15,
+  },
+];
