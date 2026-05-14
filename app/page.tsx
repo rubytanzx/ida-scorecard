@@ -350,6 +350,43 @@ export default function HomePage() {
     setRightPane(a.kind);
   };
 
+  // Open the shared-link viewer for a home-page card (e.g. a featured
+  // narrative). If a conversation for that prompt already exists, jump
+  // back into it; otherwise fabricate a stub conversation with a
+  // pre-generated insightographic artefact attached.
+  const handleOpenViewer = (prompt: string, fallbackTitle: string) => {
+    const existing = conversations.find((c) => c.prompt === prompt);
+    if (existing) {
+      setCurrentConversationId(existing.id);
+      setConversationPrompt(prompt);
+      setView("viewer");
+      return;
+    }
+    const id = `seed-${Date.now()}`;
+    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
+    const baseTitle = deriveArtefactTitle(prompt) || fallbackTitle;
+    const insight: Artefact = {
+      id: `${id}-insight`,
+      kind: "insightographic",
+      title: `${baseTitle} · Insightographic`,
+      prompt,
+      createdAt: yesterday,
+    };
+    setConversations((prev) => [
+      ...prev,
+      {
+        id,
+        title: baseTitle,
+        prompt,
+        createdAt: yesterday,
+        artefacts: [insight],
+      },
+    ]);
+    setCurrentConversationId(id);
+    setConversationPrompt(prompt);
+    setView("viewer");
+  };
+
   const handleSelectConversation = (id: string) => {
     const conv = conversations.find((c) => c.id === id);
     if (!conv) return;
@@ -530,7 +567,7 @@ export default function HomePage() {
         </FadeIn>
 
         <FadeIn delay={75}>
-          <FeaturedNarratives />
+          <FeaturedNarratives onOpenInsightographic={handleOpenViewer} />
         </FadeIn>
 
         <FadeIn delay={100}>

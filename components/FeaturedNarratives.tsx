@@ -6,10 +6,28 @@ import { featuredNarratives, type FeaturedNarrative } from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
 
-function Card({ narrative }: { narrative: FeaturedNarrative }) {
+interface Props {
+  /** Called when a card is clicked. Receives the prompt to seed and
+   * the narrative's headline as a fallback artefact title. */
+  onOpenInsightographic?: (prompt: string, fallbackTitle: string) => void;
+}
+
+function Card({
+  narrative,
+  onOpen,
+}: {
+  narrative: FeaturedNarrative;
+  onOpen?: () => void;
+}) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (!onOpen) return;
+    e.preventDefault();
+    onOpen();
+  };
   return (
     <a
       href="#"
+      onClick={handleClick}
       style={{
         position: "relative",
         display: "block",
@@ -17,6 +35,7 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         aspectRatio: "5 / 4",
         textDecoration: "none",
         fontFamily: F,
+        cursor: "pointer",
       }}
     >
       {/* Image + gradient layer — clipped to the card's rounded corners.
@@ -99,7 +118,7 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
   );
 }
 
-export default function FeaturedNarratives() {
+export default function FeaturedNarratives({ onOpenInsightographic }: Props = {}) {
   return (
     <section aria-label="Featured Narratives" style={{ marginBottom: 40 }}>
       <style>{`
@@ -198,7 +217,15 @@ export default function FeaturedNarratives() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {featuredNarratives.map((n) => (
-          <Card key={n.id} narrative={n} />
+          <Card
+            key={n.id}
+            narrative={n}
+            onOpen={
+              onOpenInsightographic
+                ? () => onOpenInsightographic(n.headline, n.headline)
+                : undefined
+            }
+          />
         ))}
       </div>
     </section>
