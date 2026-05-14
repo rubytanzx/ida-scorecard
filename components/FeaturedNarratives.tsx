@@ -15,7 +15,7 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         display: "block",
         borderRadius: 12,
         overflow: "hidden",
-        aspectRatio: "3 / 4",
+        aspectRatio: "5 / 4",
         textDecoration: "none",
         fontFamily: F,
       }}
@@ -28,13 +28,15 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         style={{ objectFit: "cover" }}
       />
 
-      {/* Bottom-to-top dark gradient overlay so the white text reads */}
+      {/* Bottom-anchored dark overlay so the white text reads. Stronger
+          and earlier than a soft gradient so the bottom block is a
+          legible dark wash, not just a fade. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(180deg, rgba(0,0,0,0) 38%, rgba(0,0,0,0.45) 72%, rgba(0,0,0,0.78) 100%)",
+            "linear-gradient(180deg, rgba(0,0,0,0) 32%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.88) 100%)",
         }}
         aria-hidden="true"
       />
