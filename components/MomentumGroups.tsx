@@ -12,6 +12,12 @@ const CARD_BG: Record<MomentumGroup["id"], string> = {
   emerging:     "#1E1B6E", // deep navy
 };
 
+const PROMPT_TEXT_COLOR: Record<MomentumGroup["id"], string> = {
+  accelerating: "#0F766E",
+  slowing:      "#C2410C",
+  emerging:     "#1E1B6E",
+};
+
 interface Props {
   /** When set, clicking a suggested prompt populates the main prompt bar with that text. */
   onPromptClick?: (prompt: string) => void;
@@ -21,48 +27,23 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
   return (
     <section aria-label="Latest Indicator Movements" style={{ marginBottom: 40 }}>
       <style>{`
-        @keyframes momentum-pill-gleam {
-          0%   { background-position: 0% 50%, 0% 50%; }
-          100% { background-position: 0% 50%, 200% 50%; }
-        }
         .mg-prompt {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 5px 11px;
-          border: 1px solid transparent;
+          padding: 6px 12px;
+          border: none;
           border-radius: 999px;
           cursor: pointer;
           font-family: 'Open Sans', sans-serif;
           font-size: 12px;
-          font-weight: 400;
+          font-weight: 500;
           line-height: 1.3;
-          color: rgba(255,255,255,0.95);
-          background:
-            linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) padding-box,
-            linear-gradient(90deg,
-              rgba(255,255,255,0.10) 0%,
-              rgba(255,255,255,0.55) 45%,
-              rgba(255,255,255,0.95) 50%,
-              rgba(255,255,255,0.55) 55%,
-              rgba(255,255,255,0.10) 100%
-            ) border-box;
-          background-size: 100% 100%, 220% 100%;
-          animation: momentum-pill-gleam 5.5s linear infinite;
-          transition: background-color 140ms ease;
+          background: #FFFFFF;
+          transition: background-color 140ms ease, transform 140ms ease;
         }
         .mg-prompt:hover {
-          background:
-            linear-gradient(rgba(255,255,255,0.16), rgba(255,255,255,0.16)) padding-box,
-            linear-gradient(90deg,
-              rgba(255,255,255,0.20) 0%,
-              rgba(255,255,255,0.95) 50%,
-              rgba(255,255,255,0.20) 100%
-            ) border-box;
-          background-size: 100% 100%, 220% 100%;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .mg-prompt { animation: none; }
+          background: rgba(255,255,255,0.9);
         }
         .mg-icon {
           filter: brightness(0) invert(1);
@@ -156,8 +137,9 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
                   type="button"
                   onClick={() => onPromptClick?.(p)}
                   className="mg-prompt"
+                  style={{ color: PROMPT_TEXT_COLOR[g.id] }}
                 >
-                  <IconSparkles size={12} stroke={1.8} color="#FFFFFF" aria-hidden="true" />
+                  <IconSparkles size={12} stroke={1.8} aria-hidden="true" />
                   {p}
                 </button>
               ))}
