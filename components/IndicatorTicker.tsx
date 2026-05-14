@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type Indicator } from "@/lib/mockData";
 import IndicatorSparkline from "./IndicatorSparkline";
 
@@ -20,11 +20,13 @@ function deltaTone(ind: Indicator) {
   return { color: "#EF4444", arrow: "▼", label: `${pct}% of expected` };
 }
 
-function TickerCard({ indicator, onOpen }: { indicator: Indicator; onOpen: () => void }) {
+function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicator; onOpen: () => void; isClone?: boolean }) {
   const tone = deltaTone(indicator);
   return (
     <button
-      onClick={onOpen}
+      onClick={isClone ? undefined : onOpen}
+      aria-hidden={isClone || undefined}
+      tabIndex={isClone ? -1 : 0}
       aria-label={`${indicator.name}: ${indicator.achieved} of ${indicator.expected}`}
       style={{
         flex: "0 0 220px",
@@ -90,14 +92,48 @@ function MethodologyDrawer({
   indicator: Indicator;
   onClose: () => void;
 }) {
+  const drawerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const drawer = drawerRef.current;
+    const focusables = drawer
+      ? Array.from(
+          drawer.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        )
+      : [];
+    focusables[0]?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previouslyFocused?.focus();
+    };
   }, [onClose]);
 
   return (
     <div
+      ref={drawerRef}
       role="dialog"
       aria-modal="true"
       aria-label={`${indicator.name} methodology`}
@@ -223,6 +259,7 @@ export default function IndicatorTicker({ indicators }: Props) {
   return (
     <section aria-label="IDA scorecard indicators" style={{ marginBottom: 32 }}>
       <style>{`
+        .ticker-viewport { overflow: hidden; }
         @keyframes ticker-scroll {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
@@ -233,7 +270,7 @@ export default function IndicatorTicker({ indicators }: Props) {
         .ticker-track:hover { animation-play-state: paused; }
         @media (prefers-reduced-motion: reduce) {
           .ticker-track { animation: none; }
-          .ticker-viewport { overflow-x: auto; }
+          .ticker-viewport { overflow: auto; }
         }
       `}</style>
 
@@ -298,7 +335,6 @@ export default function IndicatorTicker({ indicators }: Props) {
         className="ticker-viewport"
         style={{
           position: "relative",
-          overflow: "hidden",
           background: "#F8F7F4",
           borderRadius: 12,
           padding: "12px 0",
@@ -323,6 +359,7 @@ export default function IndicatorTicker({ indicators }: Props) {
               key={`${ind.id}-${i}`}
               indicator={ind}
               onOpen={() => setOpenId(ind.id)}
+              isClone={i >= indicators.length}
             />
           ))}
         </div>
