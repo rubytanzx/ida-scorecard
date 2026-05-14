@@ -20,6 +20,23 @@ interface Props {
 export default function MomentumGroups({ onPromptClick }: Props = {}) {
   return (
     <section aria-label="Latest Indicator Movements" style={{ marginBottom: 40 }}>
+      {/* Shared clipPath defining the curved-wave shape that sweeps
+          across each card on hover. clipPathUnits=objectBoundingBox so
+          the 0..1 path coords stretch to whatever the overlay's
+          rectangle is. */}
+      <svg
+        width="0"
+        height="0"
+        aria-hidden="true"
+        style={{ position: "absolute", pointerEvents: "none" }}
+      >
+        <defs>
+          <clipPath id="mg-sweep" clipPathUnits="objectBoundingBox">
+            <path d="M 0,0 L 0.55,0 C 0.85,0.33 0.85,0.67 0.55,1 L 0,1 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
       <style>{`
         .mg-card {
           --mg-card-color: #FFFFFF;
@@ -36,18 +53,25 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
         }
         .mg-card-overlay {
           position: absolute;
-          inset: 0;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 200%;
           background: var(--mg-card-color);
-          /* Curved reveal anchored to upper-left, ellipse so the sweep
-             reads as an organic wave rather than a circle. */
-          clip-path: ellipse(0% 0% at 18% 50%);
-          transition: clip-path 700ms cubic-bezier(0.22, 1, 0.36, 1);
+          /* SVG clipPath defined once at section root paints the
+             left 55% of the overlay rectangle plus a single rightward
+             bulge peaking at 85% width. Translating the overlay from
+             -100% -> 0% slides the bulge across the card. */
+          clip-path: url(#mg-sweep);
+          -webkit-clip-path: url(#mg-sweep);
+          transform: translateX(-100%);
+          transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
           pointer-events: none;
           z-index: 0;
         }
         .mg-card:hover .mg-card-overlay,
         .mg-card:focus-within .mg-card-overlay {
-          clip-path: ellipse(180% 180% at 18% 50%);
+          transform: translateX(0);
         }
         @media (prefers-reduced-motion: reduce) {
           .mg-card-overlay { transition: none; }
