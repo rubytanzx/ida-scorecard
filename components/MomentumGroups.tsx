@@ -2,7 +2,6 @@
 
 import type { CSSProperties } from "react";
 import Image from "next/image";
-import { IconSparkles } from "@tabler/icons-react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 import { gleamGreen, gleamAmber, gleamBlue } from "@/lib/cardStyles";
 
@@ -100,31 +99,36 @@ export default function MomentumGroups() {
                   color: "#9CA3AF",
                 }}
               >
-                Suggested prompts
+                Try asking
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  borderLeft: "2px solid #E5E7EB",
+                  paddingLeft: 12,
+                }}
+              >
                 {g.suggestedPrompts.map((p) => (
                   <button
                     key={p}
                     type="button"
                     style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "6px 12px",
-                      fontSize: 12,
-                      fontWeight: 400,
-                      color: "#374151",
-                      fontFamily: F,
-                      background: "#FFFFFF",
-                      border: "1px solid #D1D5DB",
-                      borderRadius: 999,
+                      textAlign: "left",
+                      padding: 0,
+                      background: "transparent",
+                      border: "none",
                       cursor: "pointer",
-                      lineHeight: 1.2,
+                      fontFamily: F,
+                      fontSize: 13,
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                      color: "#6B7280",
+                      lineHeight: 1.45,
                     }}
                   >
-                    <IconSparkles size={12} stroke={1.8} color="#6B7280" aria-hidden="true" />
-                    {p}
+                    &ldquo;{p}&rdquo;
                   </button>
                 ))}
               </div>
