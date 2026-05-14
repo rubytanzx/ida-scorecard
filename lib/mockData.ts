@@ -1163,7 +1163,7 @@ export const featuredNarratives: FeaturedNarrative[] = [
   {
     id: "fn-1",
     outcomeArea: "Protection of the Poorest",
-    headline: "Scaling Social Protection and Employment Support to Unlock Jobs for Youth and People in Poverty",
+    headline: "Closing Sub-Saharan Africa's Poverty Gap Through Targeted Social Protection and Jobs",
     imageSrc: `${NT}/protection%20for%20poorest.jpg`,
     indicators: [
       "Beneficiaries of social safety net programs",
