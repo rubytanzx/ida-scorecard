@@ -19,6 +19,12 @@ const GLEAM: Record<MomentumGroup["id"], CSSProperties> = {
   emerging:     gleamBlue,
 };
 
+const DELTA_COLOR: Record<MomentumGroup["id"], string> = {
+  accelerating: "#16A34A", // green-600
+  slowing:      "#D97706", // amber-600
+  emerging:     "#2563EB", // blue-600
+};
+
 export default function MomentumGroups() {
   return (
     <section aria-label="Latest Indicator Movements" style={{ marginBottom: 40 }}>
@@ -82,7 +88,7 @@ export default function MomentumGroups() {
                   <span style={{ flex: 1, fontSize: 14, color: "#374151", lineHeight: 1.4 }}>
                     {r.label}
                   </span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: DELTA_COLOR[g.id] }}>
                     {r.delta}
                   </span>
                 </li>
