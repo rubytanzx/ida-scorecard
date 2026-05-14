@@ -9,9 +9,10 @@ import InstitutionLogos from "./InstitutionLogos";
 
 interface Props {
   story: FeaturedStory;
+  noImage?: boolean;
 }
 
-export default function FeaturedStoryCard({ story }: Props) {
+export default function FeaturedStoryCard({ story, noImage }: Props) {
   return (
     <article className="group relative flex overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all duration-300">
       {/* Content side */}
@@ -47,7 +48,7 @@ export default function FeaturedStoryCard({ story }: Props) {
       </div>
 
       {/* Image / Thumbnail side */}
-      {story.thumbVariant ? (
+      {!noImage && (story.thumbVariant ? (
         <StoryThumbnail
           variant={story.thumbVariant}
           className="hidden sm:block w-[280px] lg:w-[320px] shrink-0"
@@ -61,7 +62,7 @@ export default function FeaturedStoryCard({ story }: Props) {
             className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
           />
         </div>
-      ) : null}
+      ) : null)}
     </article>
   );
 }
