@@ -7,6 +7,7 @@ import {
   type TrendingProgress,
   type TrendingSideCard,
 } from "@/lib/mockData";
+import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -74,8 +75,7 @@ function SideCard({ card }: { card: TrendingSideCard }) {
   return (
     <article
       style={{
-        background: "#FFFFFF",
-        border: "1px solid #E5E7EB",
+        ...gleamBorder,
         borderRadius: 12,
         padding: "22px 24px 18px",
         display: "flex",
@@ -167,8 +167,7 @@ export default function TrendingAcrossIDA() {
         <article
           className="xl:basis-[58%]"
           style={{
-            background: "#FFFFFF",
-            border: "1px solid #E5E7EB",
+            ...gleamBorder,
             borderRadius: 12,
             padding: "24px 28px 22px",
             display: "flex",

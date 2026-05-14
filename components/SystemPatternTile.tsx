@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { outcomeAreas, type OutcomeArea } from "@/lib/mockData";
+import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -9,8 +10,7 @@ function Tile({ area }: { area: OutcomeArea }) {
   return (
     <article
       style={{
-        background: "#FFFFFF",
-        border: "1px solid #E5E7EB",
+        ...gleamBorder,
         borderRadius: 16,
         padding: "32px 28px",
         minHeight: 220,

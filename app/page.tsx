@@ -512,16 +512,20 @@ export default function HomePage() {
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <SearchHero onPillClick={setPromptValue} />
 
+        {/* Ticker hidden for now — keep import/state intact for a quick re-enable.
+            To bring it back, wrap with the FadeIn delay={25} block again. */}
+        {false && (
+          <FadeIn delay={25}>
+            <IndicatorTicker indicators={indicators} />
+          </FadeIn>
+        )}
+
         <FadeIn delay={25}>
-          <IndicatorTicker indicators={indicators} />
+          <MomentumGroups />
         </FadeIn>
 
         <FadeIn delay={50}>
           <TrendingAcrossIDA />
-        </FadeIn>
-
-        <FadeIn delay={75}>
-          <MomentumGroups />
         </FadeIn>
 
         <FadeIn delay={100}>

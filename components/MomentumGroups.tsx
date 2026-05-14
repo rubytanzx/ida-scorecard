@@ -1,6 +1,7 @@
 "use client";
 
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
+import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -42,8 +43,7 @@ export default function MomentumGroups() {
           <article
             key={g.id}
             style={{
-              background: "#FFFFFF",
-              border: "1px solid #E5E7EB",
+              ...gleamBorder,
               borderRadius: 12,
               padding: "20px 22px 18px",
               display: "flex",

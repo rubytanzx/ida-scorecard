@@ -5,6 +5,7 @@ import {
   counterIntuitiveTextCards,
   type CounterIntuitiveTextCard,
 } from "@/lib/mockData";
+import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -12,8 +13,7 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
   return (
     <article
       style={{
-        background: "#FFFFFF",
-        border: "1px solid #E5E7EB",
+        ...gleamBorder,
         borderRadius: 12,
         padding: "20px 22px 18px",
         display: "flex",
