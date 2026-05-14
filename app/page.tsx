@@ -13,7 +13,6 @@ import SearchHero from "@/components/SearchHero";
 import SectionHeader from "@/components/SectionHeader";
 import FeaturedStoryCard from "@/components/FeaturedStoryCard";
 import StoryCard from "@/components/StoryCard";
-import SidebarSection from "@/components/SidebarSection";
 import InsightChartCard from "@/components/InsightChartCard";
 import CounterIntuitiveCard from "@/components/CounterIntuitiveCard";
 import PatternCard from "@/components/PatternCard";
@@ -665,12 +664,6 @@ export default function HomePage() {
             </section>
           </div>
 
-          {/* ── Right sidebar ── */}
-          <aside className="w-full xl:w-[380px] shrink-0 xl:sticky top-[72px]">
-            <FadeIn delay={200}>
-              <SidebarSection />
-            </FadeIn>
-          </aside>
         </div>
 
         <div className="h-8" />

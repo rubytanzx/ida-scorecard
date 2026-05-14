@@ -6,7 +6,6 @@ import {
   type PulseMetric,
   type BiggestMover,
   type ScorecardVertical,
-  pulseMetrics,
   trackingMetrics,
   biggestMovers,
   scorecardVerticals,
@@ -189,11 +188,6 @@ function VerticalsSection({ verticals }: { verticals: ScorecardVertical[] }) {
 export default function SidebarSection() {
   return (
     <div className="flex flex-col gap-[24px]">
-      <MetricSection
-        title="Trending Scorecard Pulse"
-        subtitle="• FY25 Results · IDA"
-        metrics={pulseMetrics}
-      />
       <MetricSection
         title="Also Tracking"
         metrics={trackingMetrics}
