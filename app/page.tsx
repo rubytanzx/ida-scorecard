@@ -542,7 +542,17 @@ export default function HomePage() {
     <div
       className="flex h-screen overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, #F1F8F8 0%, #E2EFEF 100%)",
+        // Layered teal atmosphere: a white highlight at the top centre
+        // fades into a soft teal wash, with a gentle teal pool at the
+        // bottom and warm tint pools on either flank so the transitions
+        // feel gradual rather than a hard linear sweep.
+        background: [
+          "radial-gradient(ellipse 90% 55% at 50% 0%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 80%)",
+          "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(45,212,191,0.22) 0%, rgba(45,212,191,0) 80%)",
+          "radial-gradient(ellipse 55% 45% at 0% 45%, rgba(15,118,110,0.08) 0%, rgba(15,118,110,0) 80%)",
+          "radial-gradient(ellipse 55% 45% at 100% 55%, rgba(15,118,110,0.08) 0%, rgba(15,118,110,0) 80%)",
+          "linear-gradient(180deg, #EEF6F6 0%, #E2EEEE 100%)",
+        ].join(", "),
       }}
     >
       {/* ── Main scrollable content ── */}
