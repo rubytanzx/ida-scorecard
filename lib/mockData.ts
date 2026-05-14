@@ -920,11 +920,12 @@ export const trendingSides: TrendingSideCard[] = [
   },
 ];
 
-// ─── Momentum Groups (What's Changing Right Now) ──────────────────────────────
+// ─── Momentum Groups (Latest Indicator Movements) ─────────────────────────────
 
 export interface MomentumRow {
   label: string;
-  delta: string; // "+11.2%" | "-6.3%" | "New"
+  delta: string;       // "+11.2%" | "-6.3%" | "New"
+  iconSrc: string;     // path under /public, URL-encoded
 }
 
 export interface MomentumGroup {
@@ -934,15 +935,29 @@ export interface MomentumGroup {
   rows: MomentumRow[];
 }
 
+const OA = "/outcome%20areas";
+
 export const momentumGroups: MomentumGroup[] = [
   {
     id: "accelerating",
     title: "Accelerating",
     subtitle: "Outcomes gaining momentum",
     rows: [
-      { label: "People using broadband internet",        delta: "+108%" },
-      { label: "Renewable Energy Enabled",                delta: "+75%"  },
-      { label: "People using digitally enabled services", delta: "+22%"  },
+      {
+        label: "People using broadband internet",
+        delta: "+108%",
+        iconSrc: `${OA}/Digital%20Connectivity.svg`,
+      },
+      {
+        label: "Renewable Energy Enabled",
+        delta: "+75%",
+        iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,
+      },
+      {
+        label: "People using digitally enabled services",
+        delta: "+22%",
+        iconSrc: `${OA}/Digital%20Services.svg`,
+      },
     ],
   },
   {
@@ -950,9 +965,21 @@ export const momentumGroups: MomentumGroup[] = [
     title: "Slowing",
     subtitle: "Momentum losing pace",
     rows: [
-      { label: "Displaced people provided with services",                delta: "-6.3%" },
-      { label: "People provided with electricity",                       delta: "-4.1%" },
-      { label: "Countries with stronger health emergency responses",     delta: "-3.8%" },
+      {
+        label: "Displaced people provided with services",
+        delta: "-6.3%",
+        iconSrc: `${OA}/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg`,
+      },
+      {
+        label: "People provided with electricity",
+        delta: "-4.1%",
+        iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,
+      },
+      {
+        label: "Countries with stronger health emergency responses",
+        delta: "-3.8%",
+        iconSrc: `${OA}/healthier%20lives.svg`,
+      },
     ],
   },
   {
@@ -960,9 +987,21 @@ export const momentumGroups: MomentumGroup[] = [
     title: "Emerging",
     subtitle: "New signals to watch",
     rows: [
-      { label: "Beneficiaries of social safety net programs", delta: "New" },
-      { label: "Green jobs creation",                          delta: "New" },
-      { label: "Digital public infrastructure",                delta: "New" },
+      {
+        label: "Beneficiaries of social safety net programs",
+        delta: "New",
+        iconSrc: `${OA}/protection%20for%20the%20pooresr.svg`,
+      },
+      {
+        label: "Green jobs creation",
+        delta: "New",
+        iconSrc: `${OA}/More%20and%20Better%20Jobs.svg`,
+      },
+      {
+        label: "Digital public infrastructure",
+        delta: "New",
+        iconSrc: `${OA}/Connected%20Communities.svg`,
+      },
     ],
   },
 ];

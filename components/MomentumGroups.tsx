@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 import { gleamGreen, gleamAmber, gleamBlue } from "@/lib/cardStyles";
 
@@ -64,13 +65,20 @@ export default function MomentumGroups() {
                   key={r.label}
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "baseline",
+                    alignItems: "center",
                     gap: 12,
-                    padding: "14px 0",
+                    padding: "12px 0",
                     borderBottom: i < g.rows.length - 1 ? "1px solid #E5E7EB" : "none",
                   }}
                 >
+                  <Image
+                    src={r.iconSrc}
+                    alt=""
+                    width={28}
+                    height={28}
+                    aria-hidden="true"
+                    style={{ display: "block", flexShrink: 0 }}
+                  />
                   <span style={{ flex: 1, fontSize: 14, color: "#374151", lineHeight: 1.4 }}>
                     {r.label}
                   </span>
