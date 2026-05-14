@@ -989,17 +989,17 @@ export const momentumGroups: MomentumGroup[] = [
     rows: [
       {
         label: "Beneficiaries of social safety net programs",
-        delta: "New",
+        delta: "171.6M",
         iconSrc: `${OA}/protection%20for%20the%20pooresr.svg`,
       },
       {
         label: "Green jobs creation",
-        delta: "New",
+        delta: "24.3M",
         iconSrc: `${OA}/More%20and%20Better%20Jobs.svg`,
       },
       {
         label: "Digital public infrastructure",
-        delta: "New",
+        delta: "87.4M",
         iconSrc: `${OA}/Connected%20Communities.svg`,
       },
     ],
