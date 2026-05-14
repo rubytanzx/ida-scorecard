@@ -44,7 +44,7 @@ export interface Story {
   connectors?: number;
   /** When set, clicking the story opens the shared-link viewer with this
    * prompt as the underlying artefact — turning the story card into an
-   * entry point to a published insightographic. */
+   * entry point to a published infographic. */
   viewerPrompt?: string;
   drivingIndicators?: DrivingIndicator[];
   narrativeUrl?: string;
@@ -101,11 +101,11 @@ export const secondaryStories: Story[] = [
     id: "story-1",
     tag: { label: "Peer Divergence · Sub-Saharan Africa", variant: "peer-divergence" },
     headline: "FY25 IDA delivery reaches 939M in extreme-poverty countries — Infrastructure and Planet trail plan most",
-    workspaceType: "Insightographic",
+    workspaceType: "Infographic",
     workspaceIcon: "bar-chart",
     institutions: ["IDA", "AFE", "AFW"],
     author: { initials: "RT", name: "Ruby Tan", color: "#0891b2" },
-    ctaLabel: "Open shared insightographic",
+    ctaLabel: "Open shared infographic",
     ctaHref: "#",
     imageSrc: "/images/IDA-2.png",
     imageAlt: "Cross-pillar IDA delivery in Sub-Saharan Africa",
@@ -186,9 +186,9 @@ export const changingCards: ChangingCard[] = [
     id: "changing-1",
     tag: { label: "Concentration Risk · FCS", variant: "concentration-risk" },
     headline: "5 IDA-FCS countries account for ~37% of FY25 health-services shortfall",
-    workspaceType: "Insightographic",
+    workspaceType: "Infographic",
     institutions: ["IDA", "FCS", "MENAAP"],
-    ctaLabel: "Open shared insightographic",
+    ctaLabel: "Open shared infographic",
     ctaHref: "#",
     chartType: "grouped-bar",
     chartData: [

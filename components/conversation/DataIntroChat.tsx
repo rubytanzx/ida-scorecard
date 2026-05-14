@@ -14,7 +14,7 @@ interface Props {
   prompt: string;
 }
 
-// ─── Flow detection (mirrors NarrativePanel / InsightographicPanel) ─────────
+// ─── Flow detection (mirrors NarrativePanel / InfographicPanel) ─────────
 
 type FlowId = "africa-poverty" | "health-gap";
 function detectFlow(p: string): FlowId {

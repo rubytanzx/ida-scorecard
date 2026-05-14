@@ -8,8 +8,8 @@ import {
   IconFiles,
   IconNotebook,
 } from "@tabler/icons-react";
-import { InsightographicBody } from "./InsightographicPanel";
-import InsightographicPanel from "./InsightographicPanel";
+import { InfographicBody } from "./InfographicPanel";
+import InfographicPanel from "./InfographicPanel";
 import ViewerChat from "./ViewerChat";
 import NarrativePanel from "./NarrativePanel";
 
@@ -29,11 +29,11 @@ const NARRATIVE_W = 480;
 // In data mode the right pane rotates between two artefacts. The two are
 // kept as discrete objects (rather than threaded through the conversation
 // state) because this is a UX prototype — clarity beats normalization.
-type DataPane = "narrative" | "insightographic" | null;
+type DataPane = "narrative" | "infographic" | null;
 
 interface Artefact {
   id: string;
-  kind: "narrative" | "insightographic";
+  kind: "narrative" | "infographic";
   title: string;
   createdAt: number;
 }
@@ -73,7 +73,7 @@ export default function ViewerView({
   // than a normalized list — the prototype doesn't need persistence.
   const artefacts: Artefact[] = useMemo(
     () => [
-      { id: "art-insight", kind: "insightographic", title: "Insightographic", createdAt: Date.now() - 24 * 60 * 60 * 1000 },
+      { id: "art-insight", kind: "infographic", title: "Infographic", createdAt: Date.now() - 24 * 60 * 60 * 1000 },
       { id: "art-narr",    kind: "narrative",        title: "Narrative",       createdAt: Date.now() - 24 * 60 * 60 * 1000 },
     ],
     []
@@ -104,7 +104,7 @@ export default function ViewerView({
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 leading-none">
-              Shared insightographic
+              Shared infographic
             </span>
             <span className="text-[11px] text-gray-500 truncate">
               from {sharedBy}
@@ -146,7 +146,7 @@ export default function ViewerView({
                   </div>
                   <ul>
                     {artefacts.map((a) => {
-                      const isInsight = a.kind === "insightographic";
+                      const isInsight = a.kind === "infographic";
                       const Icon = isInsight ? IconChartBar : IconNotebook;
                       const active = dataPane === a.kind;
                       return (
@@ -204,16 +204,16 @@ export default function ViewerView({
       {/* ── Body container ────────────────────────────────────────────
           Three layers, absolutely positioned and animated together.
           Mode switch (viewer ↔ data) runs a single 500ms ease-in-out:
-          insightographic exits left, the chat morphs from right rail
+          infographic exits left, the chat morphs from right rail
           into main canvas while its content cross-fades, and the
           narrative panel slides in from the right. Within data mode,
-          the right pane (narrative ↔ insightographic) swaps via each
+          the right pane (narrative ↔ infographic) swaps via each
           panel's own internal translateX. */}
       <div
         className="absolute left-0 right-0 bottom-0"
         style={{ top: HEADER_H }}
       >
-        {/* Insightographic — left/main canvas in viewer mode only */}
+        {/* Infographic — left/main canvas in viewer mode only */}
         <div
           className={`absolute top-0 bottom-0 left-0 overflow-hidden border-r border-gray-100 ${lockedTransition}`}
           style={{
@@ -225,7 +225,7 @@ export default function ViewerView({
         >
           <div className="h-full overflow-y-auto scrollbar-auto-hide">
             <div className="max-w-[640px] mx-auto">
-              <InsightographicBody prompt={prompt} />
+              <InfographicBody prompt={prompt} />
             </div>
           </div>
         </div>
@@ -263,8 +263,8 @@ export default function ViewerView({
             setPaneDragging(dragging);
           }}
         />
-        <InsightographicPanel
-          open={!isViewer && dataPane === "insightographic"}
+        <InfographicPanel
+          open={!isViewer && dataPane === "infographic"}
           prompt={prompt}
           onClose={() => setDataPane(null)}
           onOpenNarrative={() => setDataPane("narrative")}

@@ -11,7 +11,7 @@ import {
   IconMinus as IconMinusSign,
   IconRefresh,
   IconWand,
-  IconChartBar as IconInsightographic,
+  IconChartBar as IconInfographic,
   IconPresentationAnalytics,
   IconFileTypeDoc,
   IconMicrophone2,
@@ -45,7 +45,7 @@ interface Props {
   width: number;
   onResize: (width: number, dragging: boolean) => void;
   /** Fires when the user picks an option from the Generate menu. The parent
-   * decides what to do with the chosen format (e.g. swap to Insightographic
+   * decides what to do with the chosen format (e.g. swap to Infographic
    * panel, queue a download, etc.). */
   onGenerate?: (kind: string) => void;
   /** When true, render skeleton placeholders + an animated geography loader
@@ -1656,7 +1656,7 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
 // ─── Footer with Generate menu ───────────────────────────────────────────────
 
 const GENERATE_OPTIONS = [
-  { id: "insightographic", label: "Insightographic",  desc: "Single-page visual summary",   icon: IconInsightographic },
+  { id: "infographic", label: "Infographic",  desc: "Single-page visual summary",   icon: IconInfographic },
   { id: "powerpoint",      label: "PowerPoint deck",   desc: "Editable slides for briefings", icon: IconPresentationAnalytics },
   { id: "word",            label: "Word document",     desc: "Long-form narrative document",   icon: IconFileTypeDoc },
   { id: "podcast",         label: "Audio podcast",     desc: "Narrated audio summary",         icon: IconMicrophone2 },

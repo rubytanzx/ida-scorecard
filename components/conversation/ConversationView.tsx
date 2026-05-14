@@ -39,7 +39,7 @@ const F = "'Open Sans', sans-serif";
 
 export interface Artefact {
   id: string;
-  kind: "narrative" | "insightographic";
+  kind: "narrative" | "infographic";
   title: string;
   prompt: string;
   createdAt: number;
@@ -1254,7 +1254,7 @@ export default function ConversationView({
                 ) : (
                   <ul className="max-h-[320px] overflow-y-auto">
                     {[...artefacts].reverse().map((a) => {
-                      const isInsight = a.kind === "insightographic";
+                      const isInsight = a.kind === "infographic";
                       const Icon = isInsight ? IconChartBar : IconNotebook;
                       return (
                         <li key={a.id}>

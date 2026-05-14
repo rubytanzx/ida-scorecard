@@ -71,14 +71,14 @@ const DATA_CONTEXT: Record<FlowId, DataContextContent> = {
       "Sure — figures are from the active FY2025 portfolio (end-June 2025). Aggregates pulled from IDA Results data (WBG global, June 2025 cut-off), joined with Client Context indicators for the geographic lens.",
     filterLabel: "Filter by theme:",
     filters: ["People", "Prosperity", "Planet", "Infrastructure", "Digital"],
-    followUp: "Do you want to build a narrative from this insightographic?",
+    followUp: "Do you want to build a narrative from this infographic?",
   },
   "health-gap": {
     intro:
       "Sure — figures are from the active FY2025 health portfolio (end-June 2025). Pulled from Health Services results · project-level data (FY2025, FCS countries), then ranked countries by achievement ratio.",
     filterLabel: "Filter by status:",
     filters: ["All countries", "FCS", "Behind target"],
-    followUp: "Do you want to build a narrative from this insightographic?",
+    followUp: "Do you want to build a narrative from this infographic?",
   },
 };
 
@@ -135,7 +135,7 @@ export default function ViewerChat({ prompt, onOpenNarrative }: Props) {
           key: newKey(),
           role: "ai",
           type: "text",
-          text: "Good question. To dig into the underlying data, ask 'What's behind this data?' — I'll walk you through what drove this insightographic.",
+          text: "Good question. To dig into the underlying data, ask 'What's behind this data?' — I'll walk you through what drove this infographic.",
         }]);
       }
     }, 500);
@@ -365,7 +365,7 @@ function NarrativeCardRow({
       <SCAvatar />
       <div className="flex-1 min-w-0 max-w-[400px] pt-0.5">
         <p className="text-[13.5px] leading-relaxed text-gray-700 mb-3">
-          Here&rsquo;s the narrative behind this insightographic.
+          Here&rsquo;s the narrative behind this infographic.
         </p>
         <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col gap-3 hover:border-gray-300 transition-colors">
           <div className="flex items-center gap-2">

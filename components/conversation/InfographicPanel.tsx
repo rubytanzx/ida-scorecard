@@ -504,7 +504,7 @@ function HealthGapPoster() {
 
 // ─── Reusable body — shared with the public/viewer experience ────────────────
 
-export function InsightographicBody({ prompt }: { prompt: string }) {
+export function InfographicBody({ prompt }: { prompt: string }) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   return flow === "health-gap" ? <HealthGapPoster /> : <AfricaPovertyPoster />;
 }
@@ -519,7 +519,7 @@ const INSIGHT_LOADING_STAGES = [
   "Finalizing",
 ];
 
-function InsightographicLoading() {
+function InfographicLoading() {
   const [stage, setStage] = useState(0);
   useEffect(() => {
     const id = setInterval(() => {
@@ -564,7 +564,7 @@ function InsightographicLoading() {
 
         <div className="flex flex-col items-center gap-1.5">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
-            FY25 Insightographic
+            FY25 Infographic
           </div>
           <div
             key={stage}
@@ -603,7 +603,7 @@ function InsightographicLoading() {
 
 // ─── Panel ────────────────────────────────────────────────────────────────────
 
-export default function InsightographicPanel({
+export default function InfographicPanel({
   open,
   prompt,
   onClose,
@@ -722,9 +722,9 @@ export default function InsightographicPanel({
       {/* Body */}
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
         {loading ? (
-          <InsightographicLoading />
+          <InfographicLoading />
         ) : (
-          <InsightographicBody prompt={prompt} />
+          <InfographicBody prompt={prompt} />
         )}
       </div>
 

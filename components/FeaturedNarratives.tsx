@@ -9,7 +9,7 @@ const F = "'Open Sans', sans-serif";
 interface Props {
   /** Called when a card is clicked. Receives the prompt to seed and
    * the narrative's headline as a fallback artefact title. */
-  onOpenInsightographic?: (prompt: string, fallbackTitle: string) => void;
+  onOpenInfographic?: (prompt: string, fallbackTitle: string) => void;
 }
 
 function Card({
@@ -118,7 +118,7 @@ function Card({
   );
 }
 
-export default function FeaturedNarratives({ onOpenInsightographic }: Props = {}) {
+export default function FeaturedNarratives({ onOpenInfographic }: Props = {}) {
   return (
     <section aria-label="Featured Narratives" style={{ marginBottom: 40 }}>
       <style>{`
@@ -221,8 +221,8 @@ export default function FeaturedNarratives({ onOpenInsightographic }: Props = {}
             key={n.id}
             narrative={n}
             onOpen={
-              onOpenInsightographic
-                ? () => onOpenInsightographic(n.headline, n.headline)
+              onOpenInfographic
+                ? () => onOpenInfographic(n.headline, n.headline)
                 : undefined
             }
           />

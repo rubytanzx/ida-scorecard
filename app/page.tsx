@@ -14,7 +14,7 @@ import AppFooter from "@/components/AppFooter";
 import StoryDetailModal from "@/components/StoryDetailModal";
 import ConversationView from "@/components/conversation/ConversationView";
 import NarrativePanel, { NARRATIVE_PANEL_DEFAULT_WIDTH } from "@/components/conversation/NarrativePanel";
-import InsightographicPanel from "@/components/conversation/InsightographicPanel";
+import InfographicPanel from "@/components/conversation/InfographicPanel";
 import ViewerView from "@/components/conversation/ViewerView";
 import WorkspaceView from "@/components/conversation/WorkspaceView";
 import PromptBar from "@/components/PromptBar";
@@ -167,15 +167,15 @@ export default function HomePage() {
   const [promptValue, setPromptValue] = useState("");
   // Single discriminator for which right-side artefact pane is open.
   // null = closed; only one pane can be visible at a time.
-  type RightPane = "narrative" | "insightographic" | null;
+  type RightPane = "narrative" | "infographic" | null;
   const [rightPane, setRightPane] = useState<RightPane>(null);
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
   const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
-  // True for ~3.5s after the user picks "Generate · Insightographic" —
-  // drives the beam + cycling text loader inside the insightographic pane.
-  const [insightographicGenerating, setInsightographicGenerating] = useState(false);
+  // True for ~3.5s after the user picks "Generate · Infographic" —
+  // drives the beam + cycling text loader inside the infographic pane.
+  const [infographicGenerating, setInfographicGenerating] = useState(false);
   // When a kind that already exists is picked from the Generate menu, we
   // open a confirm dialog instead of regenerating immediately. null = no
   // dialog open; otherwise the kind being asked about.
@@ -214,7 +214,7 @@ export default function HomePage() {
   // `kind` discriminates which right-side pane to open when re-selected.
   interface Artefact {
     id: string;
-    kind: "narrative" | "insightographic";
+    kind: "narrative" | "infographic";
     title: string;
     prompt: string;
     createdAt: number;
@@ -294,56 +294,56 @@ export default function HomePage() {
     setNarrativePhase("idle");
   };
 
-  // Generate format from the narrative panel. Only "insightographic" is
+  // Generate format from the narrative panel. Only "infographic" is
   // wired up to a real pane today — the other formats stay as no-ops until
   // their respective views are built.
-  // Internal — runs the mock generation pass for the insightographic.
-  // `replace` removes any existing insightographic before adding the new
+  // Internal — runs the mock generation pass for the infographic.
+  // `replace` removes any existing infographic before adding the new
   // one, preserving the "one per conversation" rule when regenerating.
-  const runInsightographicGeneration = (replace: boolean) => {
+  const runInfographicGeneration = (replace: boolean) => {
     if (!currentConversationId) return;
     if (replace) {
       setConversations((prev) =>
         prev.map((c) => c.id === currentConversationId
-          ? { ...c, artefacts: c.artefacts.filter((a) => a.kind !== "insightographic") }
+          ? { ...c, artefacts: c.artefacts.filter((a) => a.kind !== "infographic") }
           : c
         )
       );
     }
-    setInsightographicGenerating(true);
-    setRightPane("insightographic");
+    setInfographicGenerating(true);
+    setRightPane("infographic");
     window.setTimeout(() => {
-      const baseTitle = deriveArtefactTitle(conversationPrompt) || "Insightographic";
+      const baseTitle = deriveArtefactTitle(conversationPrompt) || "Infographic";
       const a: Artefact = {
         id: Date.now().toString(),
-        kind: "insightographic",
-        title: `${baseTitle} · Insightographic`,
+        kind: "infographic",
+        title: `${baseTitle} · Infographic`,
         prompt: conversationPrompt,
         createdAt: Date.now(),
       };
       setConversations((prev) =>
         prev.map((c) => c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c)
       );
-      setInsightographicGenerating(false);
+      setInfographicGenerating(false);
     }, 3500);
   };
 
   const handleGenerate = (kind: string) => {
-    if (kind !== "insightographic") return;
+    if (kind !== "infographic") return;
     if (!currentConversationId) return;
-    const existing = currentConversation?.artefacts.find((a) => a.kind === "insightographic");
+    const existing = currentConversation?.artefacts.find((a) => a.kind === "infographic");
     if (existing) {
       // Existing artefact — ask before regenerating.
       setRegenerateConfirm(kind);
       return;
     }
-    runInsightographicGeneration(false);
+    runInfographicGeneration(false);
   };
 
   const confirmRegenerate = () => {
     const kind = regenerateConfirm;
     setRegenerateConfirm(null);
-    if (kind === "insightographic") runInsightographicGeneration(true);
+    if (kind === "infographic") runInfographicGeneration(true);
   };
 
   const handleSelectArtefact = (a: Artefact) => {
@@ -353,7 +353,7 @@ export default function HomePage() {
   // Open the shared-link viewer for a home-page card (e.g. a featured
   // narrative). If a conversation for that prompt already exists, jump
   // back into it; otherwise fabricate a stub conversation with a
-  // pre-generated insightographic artefact attached.
+  // pre-generated infographic artefact attached.
   const handleOpenViewer = (prompt: string, fallbackTitle: string) => {
     const existing = conversations.find((c) => c.prompt === prompt);
     if (existing) {
@@ -367,8 +367,8 @@ export default function HomePage() {
     const baseTitle = deriveArtefactTitle(prompt) || fallbackTitle;
     const insight: Artefact = {
       id: `${id}-insight`,
-      kind: "insightographic",
-      title: `${baseTitle} · Insightographic`,
+      kind: "infographic",
+      title: `${baseTitle} · Infographic`,
       prompt,
       createdAt: yesterday,
     };
@@ -485,8 +485,8 @@ export default function HomePage() {
               setRightPaneDragging(dragging);
             }}
           />
-          <InsightographicPanel
-            open={rightPane === "insightographic"}
+          <InfographicPanel
+            open={rightPane === "infographic"}
             prompt={conversationPrompt}
             onClose={() => setRightPane(null)}
             onOpenNarrative={() => setRightPane("narrative")}
@@ -494,7 +494,7 @@ export default function HomePage() {
               setRightPane(null);
               setView("viewer");
             }}
-            loading={insightographicGenerating}
+            loading={infographicGenerating}
             width={rightPaneWidth}
             onResize={(w, dragging) => {
               setRightPaneWidth(w);
@@ -507,7 +507,7 @@ export default function HomePage() {
       {view === "viewer" ? (
         <ViewerView
           prompt={conversationPrompt}
-          title={currentConversation?.title ?? "Shared insightographic"}
+          title={currentConversation?.title ?? "Shared infographic"}
           onClose={() => setView("home")}
         />
       ) : view === "workspace" ? (
@@ -567,7 +567,7 @@ export default function HomePage() {
         </FadeIn>
 
         <FadeIn delay={75}>
-          <FeaturedNarratives onOpenInsightographic={handleOpenViewer} />
+          <FeaturedNarratives onOpenInfographic={handleOpenViewer} />
         </FadeIn>
 
         <FadeIn delay={100}>
@@ -856,7 +856,7 @@ export default function HomePage() {
                   Replace existing {regenerateConfirm}?
                 </h3>
                 <p className="text-[13px] text-gray-600 mt-1.5 leading-relaxed">
-                  This conversation already has {regenerateConfirm === "insightographic" ? "an" : "a"} {regenerateConfirm}.
+                  This conversation already has {regenerateConfirm === "infographic" ? "an" : "a"} {regenerateConfirm}.
                   Regenerating will overwrite the existing version — it can&rsquo;t be recovered afterwards.
                 </p>
               </div>
