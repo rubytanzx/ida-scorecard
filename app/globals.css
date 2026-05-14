@@ -161,6 +161,33 @@ button {
   50%      { background-position: 58% 50%; }
 }
 
+/* Mild blue/green glow that sits behind the floating prompt bar when
+   it's docked at the bottom of the screen on the home view. Same
+   palette as `.prompt-beam` but softer (smaller blur + lower opacity)
+   so it reads as a subtle ambient wash, not a spotlight. */
+.prompt-bottom-glow {
+  background: linear-gradient(
+    270deg,
+    rgba(255, 255, 255, 0)   0%,
+    rgba(0, 125, 183, 0.32) 28%,
+    rgba(141, 198, 63, 0.40) 50%,
+    rgba(0, 125, 183, 0.32) 72%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 50% 50%;
+  filter: blur(38px);
+  border-radius: 50%;
+  animation:
+    prompt-bottom-glow-fade-in 0.6s ease-out both,
+    prompt-beam-shift 8s ease-in-out 0.6s infinite;
+}
+
+@keyframes prompt-bottom-glow-fade-in {
+  from { opacity: 0;    transform: translateX(-50%) scale(0.94); }
+  to   { opacity: 0.55; transform: translateX(-50%) scale(1); }
+}
+
 /* Page-dimming overlay shown alongside the beam */
 .prompt-dim-overlay {
   background: rgba(255, 255, 255, 0.78);

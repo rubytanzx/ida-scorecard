@@ -222,6 +222,22 @@ export default function PromptBar({
         </div>
       )}
 
+      {/* Mild ambient glow behind the docked prompt bar on the home
+          view. Hidden in conversation/viewer/workspace flows. */}
+      {isBottom && !inConversation && (
+        <div
+          aria-hidden
+          className="prompt-bottom-glow fixed pointer-events-none"
+          style={{
+            left: leftCss,
+            top: `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + 40}px)`,
+            width: widthCss,
+            height: PILL_HEIGHT + 80,
+            zIndex: 49,
+          }}
+        />
+      )}
+
       {/* ── Single bar — same pill, grows taller when expanded ── */}
       <form
         id="madlibs-card"
