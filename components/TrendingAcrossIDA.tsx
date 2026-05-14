@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { IconArrowRight, IconExternalLink } from "@tabler/icons-react";
 import {
   trendingTop,
@@ -38,31 +39,36 @@ function TagPill({ label }: { label: string }) {
 
 function ProgressBar({ progress }: { progress: TrendingProgress }) {
   const fill = PROGRESS_COLOR[progress.tone];
-  const pct = Math.max(0, Math.min(100, progress.pct));
+  const target = Math.max(0, Math.min(100, progress.pct));
+  const remaining = 100 - target;
+  // Animate the fill in on mount: start at 0, then push to target.
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    const t = window.setTimeout(() => setPct(target), 60);
+    return () => window.clearTimeout(t);
+  }, [target]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div
+      <span
+        className="ti-bar"
+        tabIndex={0}
         role="progressbar"
-        aria-valuenow={pct}
+        aria-valuenow={target}
         aria-valuemin={0}
         aria-valuemax={100}
-        style={{
-          width: "100%",
-          height: 8,
-          background: "#E5E7EB",
-          borderRadius: 999,
-          overflow: "hidden",
-        }}
+        aria-label={progress.footnote}
       >
-        <div
-          style={{
-            width: `${pct}%`,
-            height: "100%",
-            background: fill,
-            borderRadius: 999,
-          }}
-        />
-      </div>
+        <span className="ti-bar-track" style={{ background: "#E5E7EB" }}>
+          <span
+            className="ti-bar-fill"
+            style={{ width: `${pct}%`, background: fill }}
+          />
+        </span>
+        <span className="ti-bar-bubble" role="tooltip">
+          <strong style={{ color: fill }}>{target}%</strong> achieved · {remaining}% remaining
+        </span>
+      </span>
       <div style={{ fontSize: 13, color: "#6B7280", fontFamily: F, lineHeight: 1.4 }}>
         {progress.footnote}
       </div>
@@ -107,30 +113,23 @@ function SideCard({ card }: { card: TrendingSideCard }) {
 
       <ProgressBar progress={card.progress} />
 
-      <div
+      <a
+        href="#"
         style={{
           marginTop: "auto",
-          display: "flex",
+          alignSelf: "flex-start",
+          display: "inline-flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 6,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#1D4ED8",
+          textDecoration: "none",
         }}
       >
-        <a
-          href="#"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#1D4ED8",
-            textDecoration: "none",
-          }}
-        >
-          {card.ctaLabel}
-        </a>
-        <IconArrowRight size={18} stroke={1.8} color="#1D4ED8" aria-hidden="true" />
-      </div>
+        {card.ctaLabel}
+        <IconArrowRight size={16} stroke={2} aria-hidden="true" />
+      </a>
     </article>
   );
 }
@@ -138,6 +137,67 @@ function SideCard({ card }: { card: TrendingSideCard }) {
 export default function TrendingAcrossIDA() {
   return (
     <section aria-label="Trending Across IDA" style={{ marginBottom: 40 }}>
+      <style>{`
+        .ti-bar {
+          position: relative;
+          display: block;
+          width: 100%;
+          cursor: pointer;
+          outline: none;
+        }
+        .ti-bar-track {
+          display: block;
+          width: 100%;
+          height: 8px;
+          border-radius: 999px;
+          overflow: hidden;
+          transition: height 140ms ease, transform 140ms ease;
+        }
+        .ti-bar-fill {
+          display: block;
+          height: 100%;
+          border-radius: 999px;
+          transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ti-bar:hover .ti-bar-track,
+        .ti-bar:focus-visible .ti-bar-track {
+          height: 12px;
+        }
+        .ti-bar-bubble {
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          padding: 6px 10px;
+          background: #0D1A2B;
+          color: #FFFFFF;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1.35;
+          white-space: nowrap;
+          border-radius: 6px;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 120ms ease, transform 120ms ease;
+          z-index: 20;
+          box-shadow: 0 4px 12px rgba(13, 26, 43, 0.18);
+        }
+        .ti-bar-bubble::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 4px solid transparent;
+          border-top-color: #0D1A2B;
+        }
+        .ti-bar:hover .ti-bar-bubble,
+        .ti-bar:focus-visible .ti-bar-bubble {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      `}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
         <div>
           <h2
@@ -235,30 +295,23 @@ export default function TrendingAcrossIDA() {
             </div>
           </div>
 
-          <div
+          <a
+            href="#"
             style={{
               marginTop: 8,
-              display: "flex",
+              alignSelf: "flex-start",
+              display: "inline-flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              gap: 6,
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#1D4ED8",
+              textDecoration: "none",
             }}
           >
-            <a
-              href="#"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#1D4ED8",
-                textDecoration: "none",
-              }}
-            >
-              {trendingTop.ctaLabel}
-            </a>
-            <IconArrowRight size={18} stroke={1.8} color="#1D4ED8" aria-hidden="true" />
-          </div>
+            {trendingTop.ctaLabel}
+            <IconArrowRight size={16} stroke={2} aria-hidden="true" />
+          </a>
         </article>
 
         {/* Side stack (right) */}
