@@ -145,10 +145,10 @@ export default function TrendingAcrossIDA() {
               margin: 0,
               color: "rgba(0, 13, 26, 0.96)",
               fontFamily: F,
-              fontSize: 36,
+              fontSize: 26,
               fontWeight: 300,
-              lineHeight: "48px",
-              letterSpacing: "-1.89px",
+              lineHeight: "34px",
+              letterSpacing: "-1.2px",
             }}
           >
             Trending Across IDA

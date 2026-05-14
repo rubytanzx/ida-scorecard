@@ -23,8 +23,8 @@ function Tile({ area }: { area: OutcomeArea }) {
       <Image
         src={area.iconSrc}
         alt=""
-        width={64}
-        height={64}
+        width={48}
+        height={48}
         aria-hidden="true"
         style={{ display: "block" }}
       />
@@ -45,10 +45,10 @@ export default function OutcomeAreaGrid() {
             margin: 0,
             color: "rgba(0, 13, 26, 0.96)",
             fontFamily: F,
-            fontSize: 36,
+            fontSize: 26,
             fontWeight: 300,
-            lineHeight: "48px",
-            letterSpacing: "-1.89px",
+            lineHeight: "34px",
+            letterSpacing: "-1.2px",
           }}
         >
           Explore by Outcome Area
