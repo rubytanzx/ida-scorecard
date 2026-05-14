@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { IconArrowUp, IconSparkles } from "@tabler/icons-react";
+import { IconSparkles } from "@tabler/icons-react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
@@ -26,38 +26,40 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
           100% { background-position: 0% 50%, 200% 50%; }
         }
         .mg-prompt {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 10px;
-          width: 100%;
-          text-align: left;
-          padding: 6px 12px 6px 12px;
+          gap: 6px;
+          padding: 5px 11px;
           border: 1px solid transparent;
           border-radius: 999px;
           cursor: pointer;
           font-family: 'Open Sans', sans-serif;
-          color: #FFFFFF;
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 1.3;
+          color: rgba(255,255,255,0.95);
           background:
-            linear-gradient(rgba(255,255,255,0.10), rgba(255,255,255,0.10)) padding-box,
+            linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) padding-box,
             linear-gradient(90deg,
-              rgba(255,255,255,0.15) 0%,
-              rgba(255,255,255,0.85) 25%,
-              rgba(255,255,255,1) 50%,
-              rgba(255,255,255,0.85) 75%,
-              rgba(255,255,255,0.15) 100%
+              rgba(255,255,255,0.10) 0%,
+              rgba(255,255,255,0.55) 45%,
+              rgba(255,255,255,0.95) 50%,
+              rgba(255,255,255,0.55) 55%,
+              rgba(255,255,255,0.10) 100%
             ) border-box;
-          background-size: 100% 100%, 200% 100%;
-          animation: momentum-pill-gleam 3.6s linear infinite;
+          background-size: 100% 100%, 220% 100%;
+          animation: momentum-pill-gleam 5.5s linear infinite;
+          transition: background-color 140ms ease;
         }
         .mg-prompt:hover {
           background:
-            linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18)) padding-box,
+            linear-gradient(rgba(255,255,255,0.16), rgba(255,255,255,0.16)) padding-box,
             linear-gradient(90deg,
-              rgba(255,255,255,0.25) 0%,
-              rgba(255,255,255,1) 50%,
-              rgba(255,255,255,0.25) 100%
+              rgba(255,255,255,0.20) 0%,
+              rgba(255,255,255,0.95) 50%,
+              rgba(255,255,255,0.20) 100%
             ) border-box;
-          background-size: 100% 100%, 200% 100%;
+          background-size: 100% 100%, 220% 100%;
         }
         @media (prefers-reduced-motion: reduce) {
           .mg-prompt { animation: none; }
@@ -147,7 +149,7 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
               ))}
             </ul>
 
-            <div style={{ marginTop: "auto", paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ marginTop: "auto", paddingTop: 14, display: "flex", flexWrap: "wrap", gap: 6 }}>
               {g.suggestedPrompts.map((p) => (
                 <button
                   key={p}
@@ -155,34 +157,8 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
                   onClick={() => onPromptClick?.(p)}
                   className="mg-prompt"
                 >
-                  <IconSparkles size={14} stroke={1.8} color="#FFFFFF" aria-hidden="true" />
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      fontWeight: 400,
-                      color: "rgba(255,255,255,0.95)",
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    {p}
-                  </span>
-                  <span
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: "50%",
-                      background: "rgba(255,255,255,0.18)",
-                      border: "1px solid rgba(255,255,255,0.4)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <IconArrowUp size={12} stroke={2} color="#FFFFFF" />
-                  </span>
+                  <IconSparkles size={12} stroke={1.8} color="#FFFFFF" aria-hidden="true" />
+                  {p}
                 </button>
               ))}
             </div>
