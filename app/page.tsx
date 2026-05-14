@@ -10,12 +10,6 @@ import {
 import { MCP_CONNECTORS } from "@/data/mockInteraction";
 import AppHeader from "@/components/AppHeader";
 import SearchHero from "@/components/SearchHero";
-import SectionHeader from "@/components/SectionHeader";
-import FeaturedStoryCard from "@/components/FeaturedStoryCard";
-import StoryCard from "@/components/StoryCard";
-import InsightChartCard from "@/components/InsightChartCard";
-import CounterIntuitiveCard from "@/components/CounterIntuitiveCard";
-import PatternCard from "@/components/PatternCard";
 import AppFooter from "@/components/AppFooter";
 import StoryDetailModal from "@/components/StoryDetailModal";
 import ConversationView from "@/components/conversation/ConversationView";
@@ -24,18 +18,13 @@ import InsightographicPanel from "@/components/conversation/InsightographicPanel
 import ViewerView from "@/components/conversation/ViewerView";
 import WorkspaceView from "@/components/conversation/WorkspaceView";
 import PromptBar from "@/components/PromptBar";
-import ResultsBand from "@/components/ResultsBand";
-import FlipStoryCard from "@/components/FlipStoryCard";
+import IndicatorTicker from "@/components/IndicatorTicker";
+import TrendingAcrossIDA from "@/components/TrendingAcrossIDA";
+import MomentumGroups from "@/components/MomentumGroups";
+import CounterIntuitiveFindings from "@/components/CounterIntuitiveTextCard";
+import SystemPatternGrid from "@/components/SystemPatternTile";
 
-import {
-  type Story,
-  featuredStory,
-  secondaryStories,
-  changingCards,
-  counterIntuitiveCards,
-  patternCards,
-  indicators,
-} from "@/lib/mockData";
+import { indicators, secondaryStories } from "@/lib/mockData";
 
 // First ~6 words of the prompt as a working title.
 function deriveArtefactTitle(prompt: string): string {
@@ -169,8 +158,6 @@ export default function HomePage() {
   const [modalStory, setModalStory] = useState<(typeof secondaryStories)[0] | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
-  const story3 = secondaryStories.find((s) => s.id === "story-3") ?? null;
-
   // Conversation flow: "home" → user submits → 3s beam → "conversation".
   // The shared PromptBar stays mounted; only its `mode` prop changes, so
   // it animates from hero-center to bottom-fixed.
@@ -362,43 +349,6 @@ export default function HomePage() {
     setRightPane(a.kind);
   };
 
-  // Open the shared-link viewer for one of the home-page story cards.
-  // If a conversation for this prompt already exists, jump back into it
-  // (so we don't clutter the workspace with duplicates); otherwise fabricate
-  // one with a pre-generated insightographic artefact attached.
-  const handleOpenViewer = (prompt: string, fallbackTitle: string) => {
-    const existing = conversations.find((c) => c.prompt === prompt);
-    if (existing) {
-      setCurrentConversationId(existing.id);
-      setConversationPrompt(prompt);
-      setView("viewer");
-      return;
-    }
-    const id = `seed-${Date.now()}`;
-    const yesterday = Date.now() - 24 * 60 * 60 * 1000;
-    const baseTitle = deriveArtefactTitle(prompt) || fallbackTitle;
-    const insight: Artefact = {
-      id: `${id}-insight`,
-      kind: "insightographic",
-      title: `${baseTitle} · Insightographic`,
-      prompt,
-      createdAt: yesterday,
-    };
-    setConversations((prev) => [
-      ...prev,
-      {
-        id,
-        title: baseTitle,
-        prompt,
-        createdAt: yesterday,
-        artefacts: [insight],
-      },
-    ]);
-    setCurrentConversationId(id);
-    setConversationPrompt(prompt);
-    setView("viewer");
-  };
-
   const handleSelectConversation = (id: string) => {
     const conv = conversations.find((c) => c.id === id);
     if (!conv) return;
@@ -447,10 +397,6 @@ export default function HomePage() {
   }, [menuOpen]);
 
   useEffect(() => { if (!menuOpen) setSubOpen(false); }, [menuOpen]);
-
-  // Suppress unused variable warning — story3 is referenced elsewhere in the
-  // component tree but ESLint can't see that through JSX.
-  void story3;
 
   return (
     <>
@@ -567,104 +513,24 @@ export default function HomePage() {
         <SearchHero onPillClick={setPromptValue} />
 
         <FadeIn delay={25}>
-          <ResultsBand indicators={indicators} />
+          <IndicatorTicker indicators={indicators} />
         </FadeIn>
 
-        {/* Main 2-col layout */}
-        <div className="flex flex-col xl:flex-row gap-8 items-start">
+        <FadeIn delay={50}>
+          <TrendingAcrossIDA />
+        </FadeIn>
 
-          {/* ── Left / Main column ── */}
-          <div className="flex-1 min-w-0 flex flex-col gap-10">
+        <FadeIn delay={75}>
+          <MomentumGroups />
+        </FadeIn>
 
-            {/* Topics Trending */}
-            <section aria-label="Topics Trending">
-              <FadeIn delay={50}>
-                <SectionHeader title="Topics Trending" />
-              </FadeIn>
-              <FadeIn delay={100}>
-                <FeaturedStoryCard story={featuredStory} noImage />
-              </FadeIn>
-              <FadeIn delay={150}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {secondaryStories.map((story) => {
-                    if (story.drivingIndicators && story.narrativeUrl) {
-                      return (
-                        <FlipStoryCard
-                          key={story.id}
-                          story={
-                            story as Story & {
-                              drivingIndicators: NonNullable<Story["drivingIndicators"]>;
-                              narrativeUrl: string;
-                            }
-                          }
-                        />
-                      );
-                    }
-                    if (story.viewerPrompt) {
-                      return (
-                        <div
-                          key={story.id}
-                          className="cursor-pointer"
-                          onClick={() => handleOpenViewer(story.viewerPrompt!, story.headline)}
-                        >
-                          <StoryCard story={{ ...story, href: undefined }} noImage />
-                        </div>
-                      );
-                    }
-                    return <StoryCard key={story.id} story={story} noImage />;
-                  })}
-                </div>
-              </FadeIn>
-            </section>
+        <FadeIn delay={100}>
+          <CounterIntuitiveFindings />
+        </FadeIn>
 
-            {/* What's Changing Right Now */}
-            <section aria-label="What's Changing Right Now">
-              <FadeIn delay={0}>
-                <SectionHeader title="What&apos;s Changing Right Now" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {changingCards.map((card) => (
-                    card.viewerPrompt ? (
-                      <div
-                        key={card.id}
-                        className="cursor-pointer"
-                        onClick={() => handleOpenViewer(card.viewerPrompt!, card.headline)}
-                      >
-                        <InsightChartCard card={card} />
-                      </div>
-                    ) : (
-                      <InsightChartCard key={card.id} card={card} />
-                    )
-                  ))}
-                </div>
-              </FadeIn>
-            </section>
-
-            {/* Counter Intuitive Findings */}
-            <section aria-label="Counter Intuitive Findings">
-              <FadeIn delay={0}>
-                <SectionHeader title="Counter Intuitive Findings" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {counterIntuitiveCards.map((card) => (
-                    <CounterIntuitiveCard key={card.id} card={card} />
-                  ))}
-                </div>
-              </FadeIn>
-            </section>
-
-            {/* Explore by Patterns */}
-            <section aria-label="Explore by Patterns">
-              <FadeIn delay={0}>
-                <SectionHeader title="Explore by Patterns" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {patternCards.map((card) => (
-                    <PatternCard key={card.id} card={card} />
-                  ))}
-                </div>
-              </FadeIn>
-            </section>
-          </div>
-
-        </div>
+        <FadeIn delay={125}>
+          <SystemPatternGrid />
+        </FadeIn>
 
         <div className="h-8" />
       </main>
