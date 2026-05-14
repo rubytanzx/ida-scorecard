@@ -943,7 +943,7 @@ const OA = "/outcome%20areas";
 export const momentumGroups: MomentumGroup[] = [
   {
     id: "accelerating",
-    title: "Accelerating",
+    title: "High-Performing Indicators",
     subtitle: "Outcomes gaining momentum",
     rows: [
       {
@@ -997,7 +997,7 @@ export const momentumGroups: MomentumGroup[] = [
   },
   {
     id: "emerging",
-    title: "Emerging",
+    title: "Emerging Growth Areas",
     subtitle: "New signals to watch",
     rows: [
       {
