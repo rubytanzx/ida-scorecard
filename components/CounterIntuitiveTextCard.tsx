@@ -5,9 +5,28 @@ import { IconArrowRight } from "@tabler/icons-react";
 import {
   counterIntuitiveTextCards,
   type CounterIntuitiveTextCard,
+  type OutcomeAreaRef,
 } from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
+
+function OutcomeAreaIcon({ oa }: { oa: OutcomeAreaRef }) {
+  return (
+    <span className="ci-tt" aria-label={oa.name}>
+      <Image
+        src={oa.iconSrc}
+        alt=""
+        width={32}
+        height={32}
+        aria-hidden="true"
+        style={{ display: "block" }}
+      />
+      <span className="ci-tt-bubble" role="tooltip">
+        {oa.name}
+      </span>
+    </span>
+  );
+}
 
 function Card({ card }: { card: CounterIntuitiveTextCard }) {
   return (
@@ -46,15 +65,7 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {card.linkedOutcomeAreas.map((oa) => (
-            <Image
-              key={oa.iconSrc}
-              src={oa.iconSrc}
-              alt={oa.name}
-              title={oa.name}
-              width={32}
-              height={32}
-              style={{ display: "block", cursor: "help" }}
-            />
+            <OutcomeAreaIcon key={oa.iconSrc} oa={oa} />
           ))}
         </div>
       </div>
@@ -109,6 +120,48 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
 export default function CounterIntuitiveFindings() {
   return (
     <section aria-label="Counter Intuitive Findings" style={{ marginBottom: 40 }}>
+      <style>{`
+        .ci-tt {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .ci-tt-bubble {
+          position: absolute;
+          bottom: calc(100% + 8px);
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          padding: 6px 10px;
+          background: #0D1A2B;
+          color: #FFFFFF;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1.35;
+          white-space: nowrap;
+          border-radius: 6px;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 120ms ease, transform 120ms ease;
+          z-index: 20;
+          box-shadow: 0 4px 12px rgba(13, 26, 43, 0.18);
+        }
+        .ci-tt-bubble::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 4px solid transparent;
+          border-top-color: #0D1A2B;
+        }
+        .ci-tt:hover .ci-tt-bubble,
+        .ci-tt:focus-within .ci-tt-bubble {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      `}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
         <div>
           <h2
