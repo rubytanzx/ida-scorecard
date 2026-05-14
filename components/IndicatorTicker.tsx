@@ -321,63 +321,6 @@ export default function IndicatorTicker({ indicators }: Props) {
         }
       `}</style>
 
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          marginBottom: 18,
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "rgba(0, 13, 26, 0.96)",
-              fontFamily: F,
-              fontSize: 36,
-              fontWeight: 300,
-              lineHeight: "48px",
-              letterSpacing: "-1.89px",
-            }}
-          >
-            Indicators
-          </h2>
-          <div style={{ fontSize: 12, color: "#6B7280", fontFamily: F, marginTop: 2 }}>
-            Real-time pulse of development outcomes
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 14, fontFamily: F }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color: "#067647" }}>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "#10B981",
-                boxShadow: "0 0 0 4px rgba(16,185,129,0.18)",
-              }}
-            />
-            Auto-updating
-          </span>
-          <button
-            style={{
-              fontSize: 12,
-              color: "#003F6B",
-              fontFamily: F,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
-            View all 22 →
-          </button>
-        </div>
-      </div>
-
       {/* Viewport with fade-edge masks — breaks out of the page max-width to span screen edge-to-edge */}
       <div
         className="ticker-viewport"
