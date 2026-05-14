@@ -27,9 +27,10 @@ function TagPill({ label }: { label: string }) {
         fontWeight: 500,
         color: "#1D4ED8",
         background: "#FFFFFF",
-        border: "1px solid #1D4ED8",
-        borderRadius: 999,
-        padding: "3px 12px",
+        border: "1px solid #FFFFFF",
+        borderRadius: 4,
+        padding: "4px 12px",
+        boxShadow: "0 4px 2px 0 rgba(0, 90, 217, 0.08)",
       }}
     >
       {label}
@@ -151,17 +152,12 @@ export default function TrendingAcrossIDA() {
           height: 8px;
           border-radius: 999px;
           overflow: hidden;
-          transition: height 140ms ease, transform 140ms ease;
         }
         .ti-bar-fill {
           display: block;
           height: 100%;
           border-radius: 999px;
           transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .ti-bar:hover .ti-bar-track,
-        .ti-bar:focus-visible .ti-bar-track {
-          height: 12px;
         }
         .ti-bar-bubble {
           position: absolute;

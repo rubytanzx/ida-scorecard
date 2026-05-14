@@ -56,9 +56,10 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
             fontWeight: 500,
             color: "#1D4ED8",
             background: "#FFFFFF",
-            border: "1px solid #1D4ED8",
-            borderRadius: 999,
-            padding: "3px 12px",
+            border: "1px solid #FFFFFF",
+            borderRadius: 4,
+            padding: "4px 12px",
+            boxShadow: "0 4px 2px 0 rgba(0, 90, 217, 0.08)",
           }}
         >
           {card.category}
