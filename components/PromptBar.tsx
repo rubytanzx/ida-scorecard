@@ -257,7 +257,7 @@ export default function PromptBar({
         <motion.div
           layout
           transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.7 }}
-          className={`bg-white border border-gray-200 shadow-sm hover:shadow-md focus-within:border-blue-400 focus-within:shadow-md focus-within:ring-[3px] focus-within:ring-blue-50 ${
+          className={`bg-white border border-gray-200 hover:shadow-md focus-within:border-blue-400 focus-within:shadow-md focus-within:ring-[3px] focus-within:ring-blue-50 ${
             !isBottom && expanded
               ? "rounded-[28px]"
               : "rounded-full hover:border-gray-300 cursor-text"
@@ -265,6 +265,13 @@ export default function PromptBar({
           style={{
             transitionProperty: "border-radius, box-shadow, border-color",
             transitionDuration: "200ms",
+            // Landing-page promptbar: soft blue/green halo glow on the
+            // border so the bar reads as the primary interactive surface.
+            // Inner ring + soft outer aura, no glow once the user enters
+            // conversation/viewer/workspace mode.
+            boxShadow: inConversation
+              ? "0 1px 2px rgba(0,0,0,0.04)"
+              : "0 0 0 1px rgba(0,125,183,0.22), 0 0 24px rgba(141,198,63,0.26), 0 0 56px rgba(0,125,183,0.14), 0 1px 2px rgba(0,0,0,0.04)",
           }}
           onClick={() => {
             if (!isBottom && !inConversation && !expanded) setExpanded(true);
