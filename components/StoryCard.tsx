@@ -12,12 +12,13 @@ import InstitutionLogos from "./InstitutionLogos";
 interface Props {
   story: Story;
   overlay?: boolean;
+  noImage?: boolean;
 }
 
 const cardClass =
   "group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-md transition-all duration-300";
 
-export default function StoryCard({ story, overlay }: Props) {
+export default function StoryCard({ story, overlay, noImage }: Props) {
   const inner = overlay ? (
     <div className="relative h-[280px] bg-gray-900">
       {story.imageSrc && (
@@ -84,7 +85,7 @@ export default function StoryCard({ story, overlay }: Props) {
   ) : (
     <>
       {/* Image / Thumbnail */}
-      {story.thumbVariant ? (
+      {!noImage && (story.thumbVariant ? (
         <StoryThumbnail variant={story.thumbVariant} className="h-[168px]" />
       ) : story.imageSrc ? (
         <div className="relative h-[168px] overflow-hidden bg-gray-100">
@@ -97,7 +98,7 @@ export default function StoryCard({ story, overlay }: Props) {
         </div>
       ) : (
         <div className="h-[168px] bg-gradient-to-br from-slate-100 to-slate-200" />
-      )}
+      ))}
 
       {/* Body */}
       <div className="flex flex-col flex-1 p-4">
