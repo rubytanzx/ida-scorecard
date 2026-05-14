@@ -866,6 +866,7 @@ export interface TrendingTopCard {
   description: string;
   progress: TrendingProgress;
   relatedNarratives: TrendingNarrativeLink[];
+  ctaLabel: string;
 }
 
 export interface TrendingSideCard {
@@ -891,6 +892,7 @@ export const trendingTop: TrendingTopCard = {
     { label: "Energy Access Borders",            href: "#" },
     { label: "Private Investment in Renewables", href: "#" },
   ],
+  ctaLabel: "View Insight",
 };
 
 export const trendingSides: TrendingSideCard[] = [

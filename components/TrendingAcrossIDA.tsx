@@ -234,6 +234,33 @@ export default function TrendingAcrossIDA() {
               ))}
             </div>
           </div>
+
+          <div
+            style={{
+              marginTop: 4,
+              paddingTop: 14,
+              borderTop: "1px solid #F3F4F6",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <a
+              href="#"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#1D4ED8",
+                textDecoration: "none",
+              }}
+            >
+              {trendingTop.ctaLabel}
+            </a>
+            <IconArrowRight size={18} stroke={1.8} color="#1D4ED8" aria-hidden="true" />
+          </div>
         </article>
 
         {/* Side stack (right) */}
