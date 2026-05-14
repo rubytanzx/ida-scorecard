@@ -542,15 +542,16 @@ export default function HomePage() {
     <div
       className="flex h-screen overflow-hidden"
       style={{
-        // Layered teal atmosphere: a white highlight at the top centre
-        // fades into a soft teal wash, with a gentle teal pool at the
-        // bottom and warm tint pools on either flank so the transitions
-        // feel gradual rather than a hard linear sweep.
+        // Layered teal atmosphere with tightly-contained radial pools so
+        // the gradient reads as discrete soft glows rather than a wash
+        // that spreads across the whole canvas. Falloffs end inside
+        // ~45% of each ellipse so the page mostly sits on the flat base
+        // and the highlight/pool/flank tints are localised.
         background: [
-          "radial-gradient(ellipse 90% 55% at 50% 0%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 80%)",
-          "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(45,212,191,0.22) 0%, rgba(45,212,191,0) 80%)",
-          "radial-gradient(ellipse 55% 45% at 0% 45%, rgba(15,118,110,0.08) 0%, rgba(15,118,110,0) 80%)",
-          "radial-gradient(ellipse 55% 45% at 100% 55%, rgba(15,118,110,0.08) 0%, rgba(15,118,110,0) 80%)",
+          "radial-gradient(ellipse 45% 25% at 50% 4%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 60%)",
+          "radial-gradient(ellipse 40% 28% at 50% 96%, rgba(45,212,191,0.30) 0%, rgba(45,212,191,0) 60%)",
+          "radial-gradient(ellipse 28% 30% at 6% 38%, rgba(15,118,110,0.10) 0%, rgba(15,118,110,0) 55%)",
+          "radial-gradient(ellipse 28% 30% at 94% 62%, rgba(15,118,110,0.10) 0%, rgba(15,118,110,0) 55%)",
           "linear-gradient(180deg, #EEF6F6 0%, #E2EEEE 100%)",
         ].join(", "),
       }}
