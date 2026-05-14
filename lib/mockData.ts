@@ -1128,33 +1128,35 @@ export interface FeaturedNarrative {
   indicatorCount: number;
 }
 
+const NT = "/narrative%20thumbnails";
+
 export const featuredNarratives: FeaturedNarrative[] = [
   {
     id: "fn-1",
     outcomeArea: "Protection of the Poorest",
     headline: "Scaling Social Protection and Employment Support to Unlock Jobs for Youth and People in Poverty",
-    imageSrc: "/images/story-1.jpg",
+    imageSrc: `${NT}/protection%20for%20poorest.jpg`,
     indicatorCount: 8,
   },
   {
     id: "fn-2",
     outcomeArea: "No Learning Poverty",
     headline: "Tackling Learning Poverty with Effective Teaching and Focused Student Support",
-    imageSrc: "/images/story-2.jpg",
+    imageSrc: `${NT}/no%20learning%20poverty.jpg`,
     indicatorCount: 8,
   },
   {
     id: "fn-3",
     outcomeArea: "Healthier Lives",
     headline: "Driving Health Systems Reform for Healthier Lives",
-    imageSrc: "/images/story-3.jpg",
+    imageSrc: `${NT}/healthier%20lives.jpg`,
     indicatorCount: 8,
   },
   {
     id: "fn-4",
     outcomeArea: "Effective Macroeconomic and Fiscal Management",
     headline: "Strengthening Capacity to Implement Tax Policy and Debt Management Reforms",
-    imageSrc: "/images/story-featured.jpg",
+    imageSrc: `${NT}/effective%20macroeconomic%20and%20fiscal%20management.jpg`,
     indicatorCount: 8,
   },
 ];
