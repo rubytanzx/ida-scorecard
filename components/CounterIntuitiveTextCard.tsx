@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  IconTrendingUp,
-  IconDroplet,
-  IconGenderFemale,
-  IconCurrencyDollar,
-} from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import {
   counterIntuitiveTextCards,
   type CounterIntuitiveTextCard,
@@ -13,66 +8,77 @@ import {
 
 const F = "'Open Sans', sans-serif";
 
-interface ToneStyle { bg: string; fg: string; }
-const TONES: Record<CounterIntuitiveTextCard["tone"], ToneStyle> = {
-  green:  { bg: "#E6F4EC", fg: "#067647" },
-  blue:   { bg: "#DBEAFE", fg: "#1D4ED8" },
-  purple: { bg: "#EDE9FE", fg: "#5B21B6" },
-  amber:  { bg: "#FEF3C7", fg: "#B45309" },
-};
-
-const ICON_MAP: Record<CounterIntuitiveTextCard["icon"], typeof IconTrendingUp> = {
-  chart:  IconTrendingUp,
-  water:  IconDroplet,
-  female: IconGenderFemale,
-  dollar: IconCurrencyDollar,
-};
-
 function Card({ card }: { card: CounterIntuitiveTextCard }) {
-  const tone = TONES[card.tone];
-  const Icon = ICON_MAP[card.icon];
   return (
     <article
       style={{
         background: "#FFFFFF",
         border: "1px solid #E5E7EB",
         borderRadius: 12,
-        padding: 18,
+        padding: "20px 22px 18px",
         display: "flex",
         flexDirection: "column",
-        gap: 10,
+        gap: 12,
         fontFamily: F,
       }}
     >
-      <div
+      <span
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          background: tone.bg,
-          color: tone.fg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          alignSelf: "flex-start",
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#1D4ED8",
+          background: "#FFFFFF",
+          border: "1px solid #1D4ED8",
+          borderRadius: 999,
+          padding: "3px 12px",
         }}
-        aria-hidden="true"
       >
-        <Icon size={18} stroke={1.8} />
-      </div>
+        {card.category}
+      </span>
 
-      <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#111827", lineHeight: 1.4 }}>
+      <h4
+        style={{
+          margin: 0,
+          fontSize: 18,
+          fontWeight: 600,
+          color: "#111827",
+          lineHeight: 1.35,
+        }}
+      >
         {card.headline}
       </h4>
 
-      <p style={{ margin: 0, fontSize: 12, color: "#6B7280", lineHeight: 1.5 }}>
+      <p
+        style={{
+          margin: 0,
+          fontSize: 13,
+          color: "#6B7280",
+          lineHeight: 1.55,
+          display: "-webkit-box",
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
+      >
         {card.description}
       </p>
 
       <a
         href="#"
-        style={{ marginTop: "auto", fontSize: 11, color: "#003F6B", fontWeight: 600, textDecoration: "none" }}
+        style={{
+          marginTop: "auto",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#1D4ED8",
+          textDecoration: "none",
+        }}
       >
-        Explore insight →
+        Explore
+        <IconArrowRight size={14} stroke={2} />
       </a>
     </article>
   );

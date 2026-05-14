@@ -959,8 +959,7 @@ export const momentumGroups: MomentumGroup[] = [
 
 export interface CounterIntuitiveTextCard {
   id: string;
-  icon: "chart" | "water" | "female" | "dollar";
-  tone: "green" | "blue" | "purple" | "amber";
+  category: string;
   headline: string;
   description: string;
 }
@@ -968,35 +967,31 @@ export interface CounterIntuitiveTextCard {
 export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
   {
     id: "ci-1",
-    icon: "chart",
-    tone: "green",
-    headline: "Lower connectivity investments, higher mobile money adoption",
+    category: "Energy",
+    headline: "Renewable capacity is surging – but electricity access is off-track",
     description:
-      "Countries with lower connectivity spend saw 23% higher mobile money growth driven by strong policy and demand factors.",
+      "33.82 GW enabled (+75%), yet only 37% of electricity access pipeline is met. Capacity supply is concentrated in middle-income IBRD economies, not the IDA countries where access gaps are largest.",
   },
   {
     id: "ci-2",
-    icon: "water",
-    tone: "blue",
-    headline: "Water outcomes improved despite lower infrastructure spend",
+    category: "Education",
+    headline: "Education results exceeded pipeline targets in some FCS countries",
     description:
-      "Service delivery reforms and community management drove better outcomes in 12 countries.",
+      "324.5M students supported — 80% of pipeline — but the learning poverty context indicator is deteriorating. Project enrollment is up while system-level learning outcomes regress.",
   },
   {
     id: "ci-3",
-    icon: "female",
-    tone: "purple",
-    headline: "Transport investments unlock greater gains for women",
+    category: "Fiscal",
+    headline: "More countries implementing debt reforms — but distress rates unchanged",
     description:
-      "Countries where transport investments preceded financial access saw 2x higher female labor participation gains.",
+      "60.3% of at-risk countries implemented reforms — up significantly — but the share in high or moderate debt distress has not shifted in three fiscal years.",
   },
   {
     id: "ci-4",
-    icon: "dollar",
-    tone: "amber",
-    headline: "Debt increases, but fiscal space improves in some IDA economies",
+    category: "Private Sector",
+    headline: "Record private capital mobilized — but IDA-country PCE pipeline is shrinking",
     description:
-      "Better revenue administration outperformed borrowing growth in 7 countries.",
+      "$241.6B mobilized overall, yet private capital enabled in IDA/FCS markets is down 5%. The mobilization headline is driven by IBRD-eligible economies, not the targeted segment.",
   },
 ];
 
