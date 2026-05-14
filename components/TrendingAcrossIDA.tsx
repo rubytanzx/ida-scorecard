@@ -8,6 +8,7 @@ import {
   type TrendingProgress,
   type TrendingSideCard,
 } from "@/lib/mockData";
+import AiTagPill from "./AiTagPill";
 
 const F = "'Open Sans', sans-serif";
 
@@ -16,27 +17,6 @@ const PROGRESS_COLOR: Record<TrendingProgress["tone"], string> = {
   amber: "#F59E0B",
   red:   "#DC2626",
 };
-
-function TagPill({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        alignSelf: "flex-start",
-        fontFamily: F,
-        fontSize: 12,
-        fontWeight: 500,
-        color: "#1D4ED8",
-        background: "#FFFFFF",
-        border: "1px solid #FFFFFF",
-        borderRadius: 4,
-        padding: "4px 12px",
-        boxShadow: "0 4px 2px 0 rgba(0, 90, 217, 0.08)",
-      }}
-    >
-      {label}
-    </span>
-  );
-}
 
 function ProgressBar({ progress }: { progress: TrendingProgress }) {
   const fill = PROGRESS_COLOR[progress.tone];
@@ -93,7 +73,7 @@ function SideCard({ card }: { card: TrendingSideCard }) {
         minHeight: 0,
       }}
     >
-      <TagPill label={card.tag} />
+      <AiTagPill label={card.tag} />
 
       <div>
         <h3
@@ -233,7 +213,7 @@ export default function TrendingAcrossIDA() {
             fontFamily: F,
           }}
         >
-          <TagPill label={trendingTop.tag} />
+          <AiTagPill label={trendingTop.tag} />
 
           <h3
             style={{

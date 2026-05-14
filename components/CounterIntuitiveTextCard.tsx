@@ -7,6 +7,7 @@ import {
   type CounterIntuitiveTextCard,
   type OutcomeAreaRef,
 } from "@/lib/mockData";
+import AiTagPill from "./AiTagPill";
 
 const F = "'Open Sans', sans-serif";
 
@@ -50,20 +51,7 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
           gap: 12,
         }}
       >
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#1D4ED8",
-            background: "#FFFFFF",
-            border: "1px solid #FFFFFF",
-            borderRadius: 4,
-            padding: "4px 12px",
-            boxShadow: "0 4px 2px 0 rgba(0, 90, 217, 0.08)",
-          }}
-        >
-          {card.category}
-        </span>
+        <AiTagPill label={card.category} />
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {card.linkedOutcomeAreas.map((oa) => (
             <OutcomeAreaIcon key={oa.iconSrc} oa={oa} />

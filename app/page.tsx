@@ -21,6 +21,7 @@ import PromptBar from "@/components/PromptBar";
 import IndicatorTicker from "@/components/IndicatorTicker";
 import TrendingAcrossIDA from "@/components/TrendingAcrossIDA";
 import MomentumGroups from "@/components/MomentumGroups";
+import FeaturedNarratives from "@/components/FeaturedNarratives";
 import CounterIntuitiveFindings from "@/components/CounterIntuitiveTextCard";
 import OutcomeAreaGrid from "@/components/SystemPatternTile";
 
@@ -526,6 +527,10 @@ export default function HomePage() {
 
         <FadeIn delay={50}>
           <TrendingAcrossIDA />
+        </FadeIn>
+
+        <FadeIn delay={75}>
+          <FeaturedNarratives />
         </FadeIn>
 
         <FadeIn delay={100}>

@@ -1117,3 +1117,44 @@ export const outcomeAreas: OutcomeArea[] = [
     iconSrc: "/outcome%20areas/More%20Private%20Investment.svg",
   },
 ];
+
+// ─── Featured Narratives ──────────────────────────────────────────────────────
+
+export interface FeaturedNarrative {
+  id: string;
+  outcomeArea: string;   // small label at top of overlay
+  headline: string;      // big headline at bottom of overlay
+  imageSrc: string;      // path under /public
+  indicatorCount: number;
+}
+
+export const featuredNarratives: FeaturedNarrative[] = [
+  {
+    id: "fn-1",
+    outcomeArea: "Protection of the Poorest",
+    headline: "Scaling Social Protection and Employment Support to Unlock Jobs for Youth and People in Poverty",
+    imageSrc: "/images/story-1.jpg",
+    indicatorCount: 8,
+  },
+  {
+    id: "fn-2",
+    outcomeArea: "No Learning Poverty",
+    headline: "Tackling Learning Poverty with Effective Teaching and Focused Student Support",
+    imageSrc: "/images/story-2.jpg",
+    indicatorCount: 8,
+  },
+  {
+    id: "fn-3",
+    outcomeArea: "Healthier Lives",
+    headline: "Driving Health Systems Reform for Healthier Lives",
+    imageSrc: "/images/story-3.jpg",
+    indicatorCount: 8,
+  },
+  {
+    id: "fn-4",
+    outcomeArea: "Effective Macroeconomic and Fiscal Management",
+    headline: "Strengthening Capacity to Implement Tax Policy and Debt Management Reforms",
+    imageSrc: "/images/story-featured.jpg",
+    indicatorCount: 8,
+  },
+];
