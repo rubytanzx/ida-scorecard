@@ -5,7 +5,6 @@ import {
   counterIntuitiveTextCards,
   type CounterIntuitiveTextCard,
 } from "@/lib/mockData";
-import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -13,7 +12,8 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
   return (
     <article
       style={{
-        ...gleamBorder,
+        background: "#FFFFFF",
+        border: "1px solid #E5E7EB",
         borderRadius: 12,
         padding: "20px 22px 18px",
         display: "flex",
@@ -102,11 +102,11 @@ export default function CounterIntuitiveFindings() {
           >
             Counter Intuitive Findings
           </h2>
-          <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#6B7280", fontFamily: F }}>
+          <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#6B7280", fontFamily: F }}>
             Where the data challenges assumptions
           </p>
         </div>
-        <a href="#" style={{ fontSize: 12, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
+        <a href="#" style={{ fontSize: 13, fontWeight: 500, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
           View all →
         </a>
       </div>

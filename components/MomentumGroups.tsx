@@ -1,7 +1,8 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
-import { gleamBorder } from "@/lib/cardStyles";
+import { gleamGreen, gleamAmber, gleamBlue } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -11,29 +12,30 @@ const CTA_LABEL: Record<MomentumGroup["id"], string> = {
   emerging:     "Show me all emerging drivers",
 };
 
+const GLEAM: Record<MomentumGroup["id"], CSSProperties> = {
+  accelerating: gleamGreen,
+  slowing:      gleamAmber,
+  emerging:     gleamBlue,
+};
+
 export default function MomentumGroups() {
   return (
-    <section aria-label="What's Changing Right Now" style={{ marginBottom: 40 }}>
+    <section aria-label="Latest Indicator Movements" style={{ marginBottom: 40 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "rgba(0, 13, 26, 0.96)",
-              fontFamily: F,
-              fontSize: 36,
-              fontWeight: 300,
-              lineHeight: "48px",
-              letterSpacing: "-1.89px",
-            }}
-          >
-            What&apos;s Changing Right Now
-          </h2>
-          <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#6B7280", fontFamily: F }}>
-            Track momentum shifts over time
-          </p>
-        </div>
-        <a href="#" style={{ fontSize: 12, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
+        <h2
+          style={{
+            margin: 0,
+            color: "rgba(0, 13, 26, 0.96)",
+            fontFamily: F,
+            fontSize: 36,
+            fontWeight: 300,
+            lineHeight: "48px",
+            letterSpacing: "-1.89px",
+          }}
+        >
+          Latest Indicator Movements
+        </h2>
+        <a href="#" style={{ fontSize: 13, fontWeight: 500, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
           View all →
         </a>
       </div>
@@ -43,7 +45,7 @@ export default function MomentumGroups() {
           <article
             key={g.id}
             style={{
-              ...gleamBorder,
+              ...GLEAM[g.id],
               borderRadius: 12,
               padding: "20px 22px 18px",
               display: "flex",
@@ -52,7 +54,7 @@ export default function MomentumGroups() {
               fontFamily: F,
             }}
           >
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500, color: "#111827" }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "#111827" }}>
               {g.title}
             </h3>
 

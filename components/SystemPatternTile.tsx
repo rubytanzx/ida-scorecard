@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { outcomeAreas, type OutcomeArea } from "@/lib/mockData";
-import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -10,7 +9,8 @@ function Tile({ area }: { area: OutcomeArea }) {
   return (
     <article
       style={{
-        ...gleamBorder,
+        background: "#FFFFFF",
+        border: "1px solid #E5E7EB",
         borderRadius: 16,
         padding: "32px 28px",
         minHeight: 220,
@@ -29,7 +29,7 @@ function Tile({ area }: { area: OutcomeArea }) {
         style={{ display: "block" }}
       />
 
-      <div style={{ fontSize: 18, fontWeight: 600, color: "#111827", lineHeight: 1.35 }}>
+      <div style={{ fontSize: 18, fontWeight: 600, color: "#111827", lineHeight: 1.4 }}>
         {area.name}
       </div>
     </article>
@@ -53,7 +53,7 @@ export default function OutcomeAreaGrid() {
         >
           Explore by Outcome Area
         </h2>
-        <a href="#" style={{ fontSize: 12, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
+        <a href="#" style={{ fontSize: 13, fontWeight: 500, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
           View all →
         </a>
       </div>

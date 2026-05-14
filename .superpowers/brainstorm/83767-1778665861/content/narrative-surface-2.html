@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Surfacing Narratives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Crimson+Pro:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 48px;
+    gap: 32px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(255,255,255,0.4);
+    align-self: flex-start;
+    max-width: 1100px;
+    width: 100%;
+  }
+  .frame {
+    width: 100%;
+    max-width: 1100px;
+    background: #F8F7F4;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* shared page chrome */
+  .page-nav {
+    background: white;
+    border-bottom: 1px solid #E8E6DF;
+    padding: 0 40px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-logo { font-weight: 800; font-size: 12px; color: #003F6B; letter-spacing: 0.8px; }
+  .page-nav-links { display: flex; gap: 20px; font-size: 11.5px; color: #999; }
+
+  /* metrics stub at top of each frame */
+  .metrics-stub {
+    background: #F8F7F4;
+    padding: 12px 40px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .prompt-stub {
+    width: 460px;
+    max-width: 100%;
+    background: white;
+    border: 1.5px solid #D8D5CC;
+    border-radius: 28px;
+    padding: 9px 16px;
+    font-size: 12px;
+    color: #ccc;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  }
+  .metrics-grid-stub {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .metric-stub {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .metric-stub-num { font-size: 20px; font-weight: 700; color: rgba(0,13,26,0.8); letter-spacing: -0.5px; font-family: 'Open Sans', sans-serif; }
+  .metric-stub-label { font-size: 9.5px; color: rgba(0,13,26,0.45); line-height: 1.3; }
+
+  /* ── Option A: Horizontal scroll strip ── */
+  .narrative-strip {
+    background: white;
+    border-top: 1px solid #E8E6DF;
+    border-bottom: 1px solid #E8E6DF;
+    padding: 14px 40px;
+  }
+  .strip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .strip-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #003F6B;
+  }
+  .strip-see-all { font-size: 10px; color: #003F6B; }
+  .strip-scroll {
+    display: flex;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .narrative-chip {
+    flex-shrink: 0;
+    background: #F0F4F8;
+    border: 1px solid #E0DDD6;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    min-width: 160px;
+  }
+  .narrative-chip:hover { border-color: #003F6B; }
+  .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .chip-text { font-size: 11px; color: #1A1A2E; line-height: 1.3; font-family: 'DM Sans', sans-serif; }
+  .chip-arrow { font-size: 10px; color: #999; margin-left: auto; }
+
+  /* ── Option B: Sidebar ── */
+  .sidebar-layout {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+  }
+  .sidebar-main { padding: 14px 24px 14px 40px; }
+  .sidebar-panel {
+    background: white;
+    border-left: 1px solid #E8E6DF;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sidebar-section-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #003F6B;
+    margin-bottom: 2px;
+  }
+  .sidebar-narrative-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #E8E6DF;
+    cursor: pointer;
+    background: #FAFAF8;
+  }
+  .sidebar-narrative-item:hover { border-color: #003F6B; }
+  .sni-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .sni-text { font-size: 10.5px; color: #333; line-height: 1.35; font-family: 'DM Sans', sans-serif; }
+  .sni-arrow { font-size: 9px; color: #bbb; margin-left: auto; flex-shrink: 0; margin-top: 2px; }
+  .stories-stub { display: flex; flex-direction: column; gap: 8px; }
+  .story-stub { height: 52px; background: white; border-radius: 8px; border: 1px solid #E8E6DF; }
+  .section-stub-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #003F6B; margin-bottom: 8px; }
+
+  /* ── Option C: Section with editorial cards ── */
+  .narratives-section {
+    padding: 20px 40px 24px;
+    background: #F8F7F4;
+  }
+  .ns-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .ns-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1A1A2E;
+  }
+  .ns-subtitle { font-size: 10px; color: #999; }
+  .ns-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .narrative-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid #E8E6DF;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .narrative-card:hover { border-color: #003F6B; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .nc-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #003F6B;
+  }
+  .nc-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .nc-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A1A2E;
+    line-height: 1.4;
+  }
+  .nc-cta {
+    font-size: 10px;
+    color: #003F6B;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .divider { height: 1px; background: #E8E6DF; margin: 0 40px; }
+  .section-label-sm { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #003F6B; padding: 10px 40px 6px; }
+  .story-row-stub { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 0 40px 14px; }
+  .story-card-stub { height: 48px; background: white; border-radius: 8px; border: 1px solid #E8E6DF; }
+
+  /* option labels */
+  .opt-badge {
+    display: inline-block;
+    background: #003F6B;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.3px;
+  }
+  .opt-desc {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.55);
+    max-width: 1100px;
+    width: 100%;
+    line-height: 1.5;
+    padding: 0 2px;
+    font-family: 'DM Sans', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Option A ── -->
+<div style="max-width:1100px;width:100%;"><span class="opt-badge">A · Narrative strip</span></div>
+<div class="opt-desc">A compact horizontal scroll strip sits between the metrics grid and Topics Trending. One chip per outcome area — tap to open the full narrative page. Minimal footprint, always discoverable.</div>
+<div class="frame">
+  <div class="page-nav">
+    <span class="page-logo">IDA SCORECARD</span>
+    <div class="page-nav-links"><span>Explore</span><span>Workspace</span></div>
+  </div>
+  <div class="metrics-stub">
+    <div class="prompt-stub">Ask anything about the scorecard…</div>
+    <div class="metrics-grid-stub">
+      <div class="metric-stub"><span class="metric-stub-num">208M</span><span class="metric-stub-label">Food security</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">379M</span><span class="metric-stub-label">Health services</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">325M</span><span class="metric-stub-label">Education</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">244M</span><span class="metric-stub-label">Safety nets</span></div>
+    </div>
+    <div style="font-size:10px;color:#999;align-self:flex-end;margin-top:-2px;">+ 11 more ↓</div>
+  </div>
+  <!-- Narrative strip -->
+  <div class="narrative-strip">
+    <div class="strip-header">
+      <span class="strip-title">Outcome Narratives</span>
+      <span class="strip-see-all">See all →</span>
+    </div>
+    <div class="strip-scroll">
+      <div class="narrative-chip"><div class="chip-dot" style="background:#2E8B57"></div><span class="chip-text">Sustainable Food Systems</span><span class="chip-arrow">↗</span></div>
+      <div class="narrative-chip"><div class="chip-dot" style="background:#00A0DF"></div><span class="chip-text">Healthier Lives</span><span class="chip-arrow">↗</span></div>
+      <div class="narrative-chip"><div class="chip-dot" style="background:#003F6B"></div><span class="chip-text">No Learning Poverty</span><span class="chip-arrow">↗</span></div>
+      <div class="narrative-chip"><div class="chip-dot" style="background:#6B4FA0"></div><span class="chip-text">Protection for the Poorest</span><span class="chip-arrow">↗</span></div>
+      <div class="narrative-chip"><div class="chip-dot" style="background:#E88B2B"></div><span class="chip-text">More Private Investments</span><span class="chip-arrow">↗</span></div>
+      <div class="narrative-chip"><div class="chip-dot" style="background:#2E8B57"></div><span class="chip-text">Green &amp; Blue Planet</span><span class="chip-arrow">↗</span></div>
+    </div>
+  </div>
+  <div class="section-label-sm">Topics Trending</div>
+  <div class="story-row-stub">
+    <div class="story-card-stub"></div>
+    <div class="story-card-stub"></div>
+    <div class="story-card-stub"></div>
+  </div>
+</div>
+
+<!-- ── Option B ── -->
+<div style="max-width:1100px;width:100%;margin-top:12px;"><span class="opt-badge">B · Sticky sidebar</span></div>
+<div class="opt-desc">Narratives live in the persistent right sidebar alongside the existing sidebar content. Always visible while scrolling — the user never has to go looking. Works well because the sidebar is already sticky.</div>
+<div class="frame">
+  <div class="page-nav">
+    <span class="page-logo">IDA SCORECARD</span>
+    <div class="page-nav-links"><span>Explore</span><span>Workspace</span></div>
+  </div>
+  <div class="sidebar-layout">
+    <div>
+      <div class="metrics-stub" style="padding-left:40px;padding-right:24px;">
+        <div class="prompt-stub">Ask anything about the scorecard…</div>
+        <div class="metrics-grid-stub">
+          <div class="metric-stub"><span class="metric-stub-num">208M</span><span class="metric-stub-label">Food security</span></div>
+          <div class="metric-stub"><span class="metric-stub-num">379M</span><span class="metric-stub-label">Health</span></div>
+          <div class="metric-stub"><span class="metric-stub-num">325M</span><span class="metric-stub-label">Education</span></div>
+          <div class="metric-stub"><span class="metric-stub-num">244M</span><span class="metric-stub-label">Safety nets</span></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="section-label-sm">Topics Trending</div>
+      <div class="story-row-stub" style="padding-left:40px;padding-right:24px;grid-template-columns:1fr 1fr;">
+        <div class="story-card-stub"></div>
+        <div class="story-card-stub"></div>
+        <div class="story-card-stub"></div>
+        <div class="story-card-stub"></div>
+      </div>
+    </div>
+    <div class="sidebar-panel">
+      <div class="sidebar-section-title">Narratives</div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#2E8B57"></div><span class="sni-text">Sustainable Food Systems</span><span class="sni-arrow">↗</span></div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#00A0DF"></div><span class="sni-text">Healthier Lives</span><span class="sni-arrow">↗</span></div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#003F6B"></div><span class="sni-text">No Learning Poverty</span><span class="sni-arrow">↗</span></div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#6B4FA0"></div><span class="sni-text">Protection for Poorest</span><span class="sni-arrow">↗</span></div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#E88B2B"></div><span class="sni-text">More Private Investments</span><span class="sni-arrow">↗</span></div>
+      <div class="sidebar-narrative-item"><div class="sni-dot" style="background:#2E8B57"></div><span class="sni-text">Green &amp; Blue Planet</span><span class="sni-arrow">↗</span></div>
+      <div style="font-size:9.5px;color:#999;text-align:center;margin-top:2px;">+ 5 more narratives</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Option C ── -->
+<div style="max-width:1100px;width:100%;margin-top:12px;"><span class="opt-badge">C · Editorial narrative section</span></div>
+<div class="opt-desc">A full "Read the Story" section lives after Topics Trending — one card per outcome area with a title and direct link to the published narrative page on scorecard.worldbank.org.</div>
+<div class="frame">
+  <div class="page-nav">
+    <span class="page-logo">IDA SCORECARD</span>
+    <div class="page-nav-links"><span>Explore</span><span>Workspace</span></div>
+  </div>
+  <div class="metrics-stub">
+    <div class="prompt-stub">Ask anything about the scorecard…</div>
+    <div class="metrics-grid-stub">
+      <div class="metric-stub"><span class="metric-stub-num">208M</span><span class="metric-stub-label">Food security</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">379M</span><span class="metric-stub-label">Health</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">325M</span><span class="metric-stub-label">Education</span></div>
+      <div class="metric-stub"><span class="metric-stub-num">244M</span><span class="metric-stub-label">Safety nets</span></div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-label-sm">Topics Trending</div>
+  <div class="story-row-stub">
+    <div class="story-card-stub"></div><div class="story-card-stub"></div><div class="story-card-stub"></div>
+  </div>
+  <div class="divider" style="margin-top:4px;"></div>
+  <!-- Narratives section -->
+  <div class="narratives-section">
+    <div class="ns-header">
+      <div>
+        <div class="ns-title">Read the Story</div>
+        <div class="ns-subtitle">Outcome narratives · FY25</div>
+      </div>
+    </div>
+    <div class="ns-grid">
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#2E8B57"></div>People</div>
+        <div class="nc-title">Sustainable Food Systems</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#00A0DF"></div>People</div>
+        <div class="nc-title">Healthier Lives</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#003F6B"></div>People</div>
+        <div class="nc-title">No Learning Poverty</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#6B4FA0"></div>People</div>
+        <div class="nc-title">Protection for the Poorest</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#2E8B57"></div>Planet</div>
+        <div class="nc-title">Green &amp; Blue Planet</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#E88B2B"></div>Finance</div>
+        <div class="nc-title">More Private Investments</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#00A0DF"></div>Digital</div>
+        <div class="nc-title">Digital Connectivity</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+      <div class="narrative-card">
+        <div class="nc-tag"><div class="nc-dot" style="background:#D04040"></div>FCV</div>
+        <div class="nc-title">Better Lives in FCV</div>
+        <div class="nc-cta">Read narrative ↗</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

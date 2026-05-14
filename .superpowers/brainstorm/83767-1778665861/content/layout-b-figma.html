@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Layout B · Figma Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Crimson+Pro:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 24px 48px;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .browser-chrome {
+    width: 100%;
+    max-width: 1100px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+
+  .browser-bar {
+    background: #2a2a3e;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .browser-dots { display: flex; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-url {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Page itself */
+  .page { background: #F8F7F4; }
+
+  /* Nav */
+  .nav {
+    background: white;
+    border-bottom: 1px solid #E8E6DF;
+    padding: 0 40px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #003F6B;
+    letter-spacing: 0.8px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: 12.5px;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-workspace {
+    background: #003F6B;
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  /* Hero: prompt area */
+  .hero {
+    padding: 40px 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: #F8F7F4;
+  }
+  .prompt-bar {
+    width: 100%;
+    max-width: 560px;
+    background: white;
+    border: 1.5px solid #D8D5CC;
+    border-radius: 32px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  }
+  .prompt-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #003F6B 0%, #0b6fd3 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .prompt-icon svg { width: 14px; height: 14px; fill: white; }
+  .prompt-text {
+    flex: 1;
+    font-size: 14px;
+    color: #bbb;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .prompt-kbd {
+    font-size: 10px;
+    color: #ccc;
+    background: #f0eeea;
+    border-radius: 5px;
+    padding: 2px 7px;
+  }
+  .action-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .action-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: white;
+    border: 1px solid #E0DDD6;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    color: #666;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; opacity: 0.5; }
+
+  /* Metrics section */
+  .metrics-section {
+    background: #F8F7F4;
+    padding: 0 40px 32px;
+  }
+  .metrics-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .metrics-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #1A1A2E;
+    letter-spacing: -0.5px;
+  }
+  .metrics-subtitle {
+    font-size: 12px;
+    color: #999;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .metrics-view-all {
+    font-size: 12px;
+    color: #003F6B;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0,63,107,0.3);
+  }
+
+  /* Figma-faithful metric card */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .metric-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: box-shadow 0.15s;
+    cursor: default;
+  }
+  .metric-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  /* Top row: icon + label */
+  .mc-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .mc-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .mc-label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(0,13,26,0.57);
+    line-height: 1.35;
+    flex: 1;
+  }
+
+  /* Bottom row: mini bar + numbers */
+  .mc-bottom {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .mc-bar-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+  .mc-bar {
+    width: 10px;
+    border-radius: 3px 3px 0 0;
+  }
+  .mc-numbers {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+  .mc-achieved-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .mc-num {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: rgba(0,13,26,0.96);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .mc-achieved-tag {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(0,13,26,0.96);
+    white-space: nowrap;
+  }
+  .mc-expected {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11.5px;
+    color: rgba(0,13,26,0.45);
+    white-space: nowrap;
+  }
+
+  /* Fold line */
+  .fold-line {
+    border: none;
+    border-top: 2px dashed rgba(232,139,43,0.5);
+    margin: 0 40px;
+    position: relative;
+  }
+  .fold-label {
+    position: absolute;
+    right: 0;
+    top: -10px;
+    background: #E88B2B;
+    color: white;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.3px;
+  }
+
+  /* Below fold */
+  .below-fold {
+    padding: 20px 40px;
+    opacity: 0.5;
+  }
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #003F6B;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .story-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .story-stub {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #E8E6DF;
+    height: 52px;
+  }
+</style>
+</head>
+<body>
+
+<div class="browser-chrome">
+  <!-- browser chrome -->
+  <div class="browser-bar">
+    <div class="browser-dots">
+      <div class="dot" style="background:#FF5F56"></div>
+      <div class="dot" style="background:#FFBD2E"></div>
+      <div class="dot" style="background:#27C93F"></div>
+    </div>
+    <div class="browser-url">scorecard.worldbank.org</div>
+  </div>
+
+  <div class="page">
+    <!-- Nav -->
+    <nav class="nav">
+      <span class="nav-logo">IDA SCORECARD</span>
+      <div class="nav-links">
+        <span>Explore</span>
+        <span>Projects</span>
+        <span class="nav-workspace">Workspace  ·  0</span>
+      </div>
+    </nav>
+
+    <!-- Hero with prompt -->
+    <div class="hero">
+      <div class="prompt-bar">
+        <div class="prompt-icon">
+          <svg viewBox="0 0 16 16"><path d="M8 1l1.5 4.5H14l-3.6 2.6 1.4 4.4L8 10l-3.8 2.5 1.4-4.4L2 5.5h4.5z"/></svg>
+        </div>
+        <span class="prompt-text">Ask anything about the scorecard…</span>
+        <span class="prompt-kbd">↵</span>
+      </div>
+      <div class="action-pills">
+        <div class="action-pill"><div class="pill-dot" style="background:#2E8B57"></div>What's surging this quarter?</div>
+        <div class="action-pill"><div class="pill-dot" style="background:#E88B2B"></div>Which indicators are stalling?</div>
+        <div class="action-pill"><div class="pill-dot" style="background:#003F6B"></div>Biggest movers vs last FY</div>
+      </div>
+    </div>
+
+    <!-- Metrics section -->
+    <div class="metrics-section">
+      <div class="metrics-header">
+        <div>
+          <div class="metrics-title">Our Results</div>
+          <div class="metrics-subtitle">IDA FY25 · Achieved vs. target</div>
+        </div>
+        <a class="metrics-view-all">View all 15 indicators</a>
+      </div>
+
+      <div class="metric-grid">
+
+        <!-- Card 1: Food security — exceeded (green) -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#F0FAF4;">🌾</div>
+            <div class="mc-label">People with improved food security</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:48px;background:#07ab50;"></div>
+              <div class="mc-bar" style="height:38px;background:#07ab50;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">208M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">175.6M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Health — strong (teal) -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#EBF6FB;">🏥</div>
+            <div class="mc-label">People receiving quality health services</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:39px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">379M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">466.5M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Education -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#FFF8EE;">📚</div>
+            <div class="mc-label">Students supported with better education</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:38px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">325M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">406.2M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Safety nets — near target -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#F3EFFA;">🤝</div>
+            <div class="mc-label">Beneficiaries of social safety net programs</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:46px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">244M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">251.4M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Climate resilience -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#EAFAF1;">🌿</div>
+            <div class="mc-label">Beneficiaries of better climate risk resilience</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:15px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">136M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">424.5M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6: Private capital mobilized (no achieved, just target) -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#FFF3E0;">💼</div>
+            <div class="mc-label">Private capital mobilized</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:28px;background:#E88B2B;"></div>
+              <div class="mc-bar" style="height:48px;background:#E88B2B;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">$242B</span>
+                <span class="mc-achieved-tag">Mobilized</span>
+              </div>
+              <div class="mc-expected">$241.6B Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 7: Broadband -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#EBF6FB;">📡</div>
+            <div class="mc-label">People using broadband internet</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:20px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">177M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">430.8M Expected</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 8: WASH -->
+        <div class="metric-card">
+          <div class="mc-top">
+            <div class="mc-icon" style="background:#EBF6FB;">💧</div>
+            <div class="mc-label">People provided with water, sanitation, and hygiene</div>
+          </div>
+          <div class="mc-bottom">
+            <div class="mc-bar-wrap">
+              <div class="mc-bar" style="height:21px;background:#5d6472;"></div>
+              <div class="mc-bar" style="height:48px;background:#5d6472;opacity:0.25;"></div>
+            </div>
+            <div class="mc-numbers">
+              <div class="mc-achieved-row">
+                <span class="mc-num">75M</span>
+                <span class="mc-achieved-tag">Achieved</span>
+              </div>
+              <div class="mc-expected">175.6M Expected</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Fold -->
+    <hr class="fold-line"><span class="fold-label">↑ visible on load</span>
+
+    <!-- Below fold (faded) -->
+    <div class="below-fold">
+      <div class="section-title">Topics Trending</div>
+      <div class="story-row">
+        <div class="story-stub"></div>
+        <div class="story-stub"></div>
+        <div class="story-stub"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

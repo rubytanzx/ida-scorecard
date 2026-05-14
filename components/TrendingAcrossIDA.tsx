@@ -7,7 +7,6 @@ import {
   type TrendingProgress,
   type TrendingSideCard,
 } from "@/lib/mockData";
-import { gleamBorder } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
 
@@ -75,7 +74,8 @@ function SideCard({ card }: { card: TrendingSideCard }) {
   return (
     <article
       style={{
-        ...gleamBorder,
+        background: "#FFFFFF",
+        border: "1px solid #E5E7EB",
         borderRadius: 12,
         padding: "22px 24px 18px",
         display: "flex",
@@ -92,15 +92,15 @@ function SideCard({ card }: { card: TrendingSideCard }) {
         <h3
           style={{
             margin: 0,
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: 600,
             color: "#111827",
-            lineHeight: 1.35,
+            lineHeight: 1.4,
           }}
         >
           {card.headline}
         </h3>
-        <div style={{ marginTop: 4, fontSize: 13, color: "#9CA3AF", lineHeight: 1.4 }}>
+        <div style={{ marginTop: 4, fontSize: 13, color: "#6B7280", lineHeight: 1.5 }}>
           {card.subtitle}
         </div>
       </div>
@@ -153,11 +153,11 @@ export default function TrendingAcrossIDA() {
           >
             Trending Across IDA
           </h2>
-          <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#6B7280", fontFamily: F }}>
+          <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#6B7280", fontFamily: F }}>
             AI-synthesized patterns from scorecard data and narratives
           </p>
         </div>
-        <a href="#" style={{ fontSize: 12, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
+        <a href="#" style={{ fontSize: 13, fontWeight: 500, color: "#003F6B", fontFamily: F, textDecoration: "none" }}>
           View all patterns →
         </a>
       </div>
@@ -167,7 +167,8 @@ export default function TrendingAcrossIDA() {
         <article
           className="xl:basis-[58%]"
           style={{
-            ...gleamBorder,
+            background: "#FFFFFF",
+            border: "1px solid #E5E7EB",
             borderRadius: 12,
             padding: "24px 28px 22px",
             display: "flex",
@@ -181,7 +182,7 @@ export default function TrendingAcrossIDA() {
           <h3
             style={{
               margin: 0,
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: 600,
               color: "#111827",
               lineHeight: 1.3,

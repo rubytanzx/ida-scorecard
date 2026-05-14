@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Final Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f1117;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 60px;
+    gap: 48px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: rgba(255,255,255,0.35);
+    align-self: flex-start; max-width: 1100px; width: 100%;
+    margin-bottom: -36px;
+  }
+
+  /* browser */
+  .browser { width: 100%; max-width: 1100px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 70px rgba(0,0,0,0.6); }
+  .bbar { background: #1e2130; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .dots { display: flex; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ubar { flex: 1; background: rgba(255,255,255,0.06); border-radius: 5px; padding: 3px 10px; font-size: 10px; color: rgba(255,255,255,0.3); }
+
+  /* page */
+  .page { background: #F8F7F4; }
+  .nav { background: white; border-bottom: 1px solid #ECEAE3; padding: 0 40px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 800; font-size: 13px; color: #003F6B; letter-spacing: 0.8px; }
+  .nav-r { display: flex; gap: 20px; align-items: center; font-size: 12px; color: #aaa; }
+  .nav-cta { background: #003F6B; color: white; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  /* hero */
+  .hero { padding: 28px 40px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .prompt { width: 100%; max-width: 500px; background: white; border: 1.5px solid #D8D5CC; border-radius: 32px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 18px rgba(0,0,0,0.07); }
+  .pi { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg,#003F6B,#0b6fd3); flex-shrink: 0; }
+  .pt { flex: 1; font-size: 12.5px; color: #ccc; }
+  .pk { font-size: 9px; color: #ccc; background: #f0eeea; border-radius: 4px; padding: 2px 6px; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .pill { display: flex; align-items: center; gap: 4px; background: white; border: 1px solid #E0DDD6; border-radius: 20px; padding: 3px 10px; font-size: 10.5px; color: #666; }
+  .pd { width: 5px; height: 5px; border-radius: 50%; opacity: 0.5; }
+
+  /* ── SECTION 1: Our Results ── */
+  .results { padding: 8px 40px 28px; }
+  .rh { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .rtitle { font-family: 'Crimson Pro', serif; font-size: 24px; font-weight: 600; color: #1A1A2E; }
+  .rsub { font-size: 11px; color: #bbb; }
+  .rlink { font-size: 11px; color: #003F6B; font-weight: 500; border-bottom: 1px solid rgba(0,63,107,0.25); }
+
+  /* Minimal number cards — pure impact, no bar charts */
+  .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .num-card {
+    background: white; border-radius: 12px; padding: 16px 14px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    border: 1px solid #ECEAE3;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .num-card:hover { border-color: #C8C4BC; box-shadow: 0 3px 12px rgba(0,0,0,0.07); transform: translateY(-1px); }
+  .nc-group { width: 6px; height: 6px; border-radius: 50%; margin-bottom: 6px; }
+  .nc-num { font-family: 'Open Sans', sans-serif; font-size: 22px; font-weight: 300; color: rgba(0,13,26,0.92); letter-spacing: -0.6px; line-height: 1; }
+  .nc-label { font-family: 'DM Sans', sans-serif; font-size: 10.5px; color: rgba(0,13,26,0.5); line-height: 1.35; }
+  .nc-vs { font-size: 9.5px; color: rgba(0,13,26,0.3); margin-top: 3px; }
+  .nc-flip-hint { position: absolute; bottom: 8px; right: 10px; font-size: 8px; color: #ccc; }
+
+  /* group sub-labels */
+  .group-divider { display: flex; align-items: center; gap: 8px; margin: 14px 0 10px; }
+  .gdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .gname { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
+
+  /* ── SECTION 2: Topics Trending (narrative tiles) ── */
+  .trending { padding: 8px 40px 24px; }
+  .sh { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #003F6B; margin-bottom: 14px; }
+  .story-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+
+  /* Flip card structure */
+  .flip-card { height: 140px; perspective: 800px; cursor: pointer; }
+  .flip-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    transform-style: preserve-3d;
+  }
+  .flip-card:hover .flip-inner { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0;
+    border-radius: 12px; backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    padding: 16px;
+    border: 1px solid #ECEAE3;
+  }
+  .face-front { background: white; }
+  .face-back { background: #003F6B; transform: rotateY(180deg); }
+
+  /* front */
+  .stag { display: inline-block; font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 7px; border-radius: 4px; margin-bottom: 7px; }
+  .sheadline { font-family: 'Crimson Pro', serif; font-size: 14px; font-weight: 600; color: #1A1A2E; line-height: 1.4; }
+  .smeta { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+  .sinst { font-size: 9px; font-weight: 700; color: #003F6B; background: #EBF3FB; padding: 1px 6px; border-radius: 3px; }
+  .sdate { font-size: 9px; color: #bbb; }
+
+  /* back — driving indicators */
+  .back-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.9px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+  .back-indicators { display: flex; flex-direction: column; gap: 6px; }
+  .bi { display: flex; align-items: center; gap: 8px; }
+  .bi-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .bi-label { font-size: 10.5px; color: rgba(255,255,255,0.75); flex: 1; font-family: 'DM Sans', sans-serif; line-height: 1.2; }
+  .bi-num { font-family: 'Open Sans', sans-serif; font-size: 13px; font-weight: 600; color: white; white-space: nowrap; }
+  .bi-pct { font-size: 9px; color: rgba(255,255,255,0.45); white-space: nowrap; }
+  .back-cta { margin-top: 10px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.5); }
+
+  /* small cards */
+  .flip-card-sm { height: 140px; perspective: 800px; cursor: pointer; }
+  .flip-card-sm .face-back { background: #1A1A2E; }
+
+  /* fold */
+  .fold { border: none; border-top: 2px dashed rgba(232,139,43,0.5); margin: 0; position: relative; }
+  .fold-lbl { position: absolute; right: 40px; top: -10px; background: #E88B2B; color: white; font-size: 9px; padding: 1px 8px; border-radius: 4px; font-weight: 700; }
+
+  /* below fold */
+  .bf { padding: 16px 40px 20px; opacity: 0.3; }
+  .bf-title { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #003F6B; margin-bottom: 8px; }
+  .bf-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .bf-stub { height: 48px; background: white; border-radius: 8px; border: 1px solid #E8E6DF; }
+
+  /* annotation callouts */
+  .callout {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(232,139,43,0.12);
+    border: 1px solid rgba(232,139,43,0.4);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: #A0621A;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="section-label">Proposed landing page redesign</div>
+
+<div class="browser">
+  <div class="bbar">
+    <div class="dots"><div class="dot" style="background:#FF5F56"></div><div class="dot" style="background:#FFBD2E"></div><div class="dot" style="background:#27C93F"></div></div>
+    <div class="ubar">scorecard.worldbank.org</div>
+  </div>
+
+  <div class="page">
+    <nav class="nav">
+      <span class="logo">IDA SCORECARD</span>
+      <div class="nav-r"><span>Explore</span><span>Projects</span><span class="nav-cta">Workspace · 0</span></div>
+    </nav>
+
+    <!-- Prompt -->
+    <div class="hero">
+      <div class="prompt">
+        <div class="pi"></div>
+        <span class="pt">Ask anything about the scorecard…</span>
+        <span class="pk">↵</span>
+      </div>
+      <div class="pills">
+        <div class="pill"><div class="pd" style="background:#2E8B57"></div>What's surging?</div>
+        <div class="pill"><div class="pd" style="background:#E88B2B"></div>Stalling indicators</div>
+        <div class="pill"><div class="pd" style="background:#003F6B"></div>Biggest movers vs last FY</div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 1: Our Results — minimal cards ── -->
+    <div class="results">
+      <div class="rh">
+        <div><div class="rtitle">Our Results</div><div class="rsub">IDA FY25 · 22 indicators</div></div>
+        <a class="rlink">Explore all ↗</a>
+      </div>
+
+      <!-- People -->
+      <div class="group-divider"><div class="gdot" style="background:#00A0DF"></div><span class="gname">People</span></div>
+      <div class="num-grid">
+        <div class="num-card"><div class="nc-group" style="background:#00A0DF"></div><div class="nc-num">379M</div><div class="nc-label">Health services</div><div class="nc-vs">of 466M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#00A0DF"></div><div class="nc-num">325M</div><div class="nc-label">Students</div><div class="nc-vs">of 406M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#00A0DF"></div><div class="nc-num">244M</div><div class="nc-label">Safety nets</div><div class="nc-vs">of 251M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#07ab50"></div><div class="nc-num">208M</div><div class="nc-label">Food security</div><div class="nc-vs" style="color:#07ab50">Exceeded target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#00A0DF"></div><div class="nc-num">257M</div><div class="nc-label">Gender equality</div><div class="nc-vs">of 576M target</div><span class="nc-flip-hint">flip ↺</span></div>
+      </div>
+
+      <!-- Planet -->
+      <div class="group-divider"><div class="gdot" style="background:#2E8B57"></div><span class="gname">Planet</span></div>
+      <div class="num-grid" style="grid-template-columns: repeat(5,1fr);">
+        <div class="num-card"><div class="nc-group" style="background:#2E8B57"></div><div class="nc-num">92.7M</div><div class="nc-label">Hectares conserved</div><div class="nc-vs">of 124M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#2E8B57"></div><div class="nc-num">136M</div><div class="nc-label">Climate resilience</div><div class="nc-vs">of 425M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#2E8B57"></div><div class="nc-num">–332M</div><div class="nc-label">tCO₂eq/yr</div><div class="nc-vs" style="color:#07ab50">On target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div style=""></div><div style=""></div>
+      </div>
+
+      <!-- Finance + Digital -->
+      <div class="group-divider"><div class="gdot" style="background:#E88B2B"></div><span class="gname">Finance &amp; Digital</span></div>
+      <div class="num-grid" style="grid-template-columns: repeat(5,1fr);">
+        <div class="num-card"><div class="nc-group" style="background:#E88B2B"></div><div class="nc-num">$242B</div><div class="nc-label">Private capital mobilized</div><div class="nc-vs" style="color:#07ab50">Met target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#E88B2B"></div><div class="nc-num">$162B</div><div class="nc-label">Private capital enabled</div><div class="nc-vs" style="color:#07ab50">Met target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#E88B2B"></div><div class="nc-num">142M</div><div class="nc-label">Financial services</div><div class="nc-vs">of 576M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div class="num-card"><div class="nc-group" style="background:#6B4FA0"></div><div class="nc-num">177M</div><div class="nc-label">Broadband internet</div><div class="nc-vs">of 431M target</div><span class="nc-flip-hint">flip ↺</span></div>
+        <div style=""></div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 2: Topics Trending — narrative tiles with flip ── -->
+    <div class="trending">
+      <div class="sh">Topics Trending</div>
+      <div class="story-grid">
+
+        <!-- Featured narrative tile — hover to flip -->
+        <div class="flip-card" style="height:160px;">
+          <div class="flip-inner">
+            <div class="face face-front">
+              <span class="stag" style="background:#EAF3DE;color:#27500A;">Peer Divergence · FCS</span>
+              <div class="sheadline">IDA countries in FCS delivering 2.3× more health coverage per dollar than non-FCS peers</div>
+              <div class="smeta">
+                <span class="sinst">IDA</span><span class="sinst">FCS</span>
+                <span class="sdate">Mar 19, 2025</span>
+              </div>
+            </div>
+            <div class="face face-back" style="height:160px;">
+              <div class="back-title">Driving indicators</div>
+              <div class="back-indicators">
+                <div class="bi"><div class="bi-dot" style="background:#00A0DF"></div><span class="bi-label">Health services</span><span class="bi-num">379M</span><span class="bi-pct">81% of target</span></div>
+                <div class="bi"><div class="bi-dot" style="background:#00A0DF"></div><span class="bi-label">Health emergencies</span><span class="bi-num">21</span><span class="bi-pct">32% of target</span></div>
+                <div class="bi"><div class="bi-dot" style="background:#00A0DF"></div><span class="bi-label">Displaced people</span><span class="bi-num">12M</span><span class="bi-pct">2% of target</span></div>
+              </div>
+              <div class="back-cta">Read full narrative →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Small tile 1 -->
+        <div class="flip-card-sm flip-card" style="height:160px;">
+          <div class="flip-inner">
+            <div class="face face-front">
+              <span class="stag" style="background:#EEEDFE;color:#3C3489;">Structural Break</span>
+              <div class="sheadline" style="font-size:12.5px;">FY25 IDA delivery reaches 939M in extreme-poverty countries</div>
+              <div class="smeta"><span class="sinst">IDA</span><span class="sinst">AFE</span><span class="sdate">Jan 2025</span></div>
+            </div>
+            <div class="face face-back" style="height:160px;background:#1A1A2E;">
+              <div class="back-title">Driving indicators</div>
+              <div class="back-indicators">
+                <div class="bi"><div class="bi-dot" style="background:#2E8B57"></div><span class="bi-label">Food security</span><span class="bi-num">208M</span><span class="bi-pct">Exceeded</span></div>
+                <div class="bi"><div class="bi-dot" style="background:#00A0DF"></div><span class="bi-label">Safety nets</span><span class="bi-num">244M</span><span class="bi-pct">97%</span></div>
+              </div>
+              <div class="back-cta">Read full narrative →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Small tile 2 -->
+        <div class="flip-card-sm flip-card" style="height:160px;">
+          <div class="flip-inner">
+            <div class="face face-front">
+              <span class="stag" style="background:#FFF3E0;color:#854F0B;">Trend</span>
+              <div class="sheadline" style="font-size:12.5px;">Learning poverty falling fastest in Sub-Saharan Africa</div>
+              <div class="smeta"><span class="sinst">IDA</span><span class="sinst">AFW</span><span class="sdate">Feb 2025</span></div>
+            </div>
+            <div class="face face-back" style="height:160px;background:#1A1A2E;">
+              <div class="back-title">Driving indicators</div>
+              <div class="back-indicators">
+                <div class="bi"><div class="bi-dot" style="background:#00A0DF"></div><span class="bi-label">Students supported</span><span class="bi-num">325M</span><span class="bi-pct">80%</span></div>
+                <div class="bi"><div class="bi-dot" style="background:#6B4FA0"></div><span class="bi-label">Gender equality</span><span class="bi-num">257M</span><span class="bi-pct">45%</span></div>
+              </div>
+              <div class="back-cta">Read full narrative →</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- fold -->
+    <hr class="fold"><span class="fold-lbl">↑ above fold</span>
+
+    <!-- below fold stubs -->
+    <div class="bf">
+      <div class="bf-title">What's Changing Right Now</div>
+      <div class="bf-row"><div class="bf-stub"></div><div class="bf-stub"></div><div class="bf-stub"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- annotation row -->
+<div style="max-width:1100px;width:100%;display:flex;gap:12px;flex-wrap:wrap;padding: 0 4px;">
+  <div class="callout">① Our Results — minimal number cards, grouped by theme</div>
+  <div class="callout">② Hover story card to flip → shows which indicators drive it</div>
+  <div class="callout">③ "flip ↺" hint on number cards → reveals derivation methodology</div>
+  <div class="callout">④ Topics Trending stays below — editorial content preserved</div>
+</div>
+
+</body>
+</html>
