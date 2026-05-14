@@ -1,24 +1,11 @@
 "use client";
 
-import {
-  IconHome,
-  IconWorld,
-  IconDeviceLaptop,
-  IconCoin,
-} from "@tabler/icons-react";
+import Image from "next/image";
 import { outcomeAreas, type OutcomeArea } from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
 
-const ICON_MAP: Record<OutcomeArea["icon"], typeof IconHome> = {
-  protection: IconHome,
-  planet:     IconWorld,
-  digital:    IconDeviceLaptop,
-  investment: IconCoin,
-};
-
 function Tile({ area }: { area: OutcomeArea }) {
-  const Icon = ICON_MAP[area.icon];
   return (
     <article
       style={{
@@ -33,22 +20,14 @@ function Tile({ area }: { area: OutcomeArea }) {
         fontFamily: F,
       }}
     >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: "50%",
-          background: "#FFFFFF",
-          border: `1.5px solid ${area.color}`,
-          color: area.color,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+      <Image
+        src={area.iconSrc}
+        alt=""
+        width={64}
+        height={64}
         aria-hidden="true"
-      >
-        <Icon size={32} stroke={1.5} />
-      </div>
+        style={{ display: "block" }}
+      />
 
       <div style={{ fontSize: 18, fontWeight: 600, color: "#111827", lineHeight: 1.35 }}>
         {area.name}

@@ -1012,33 +1012,28 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
 export interface OutcomeArea {
   id: string;
   name: string;
-  icon: "protection" | "planet" | "digital" | "investment";
-  color: string; // hex for the icon outline + glyph stroke
+  iconSrc: string; // path under public/, URL-encoded
 }
 
 export const outcomeAreas: OutcomeArea[] = [
   {
     id: "oa-1",
     name: "Protection for the Poorest",
-    icon: "protection",
-    color: "#F59E0B",
+    iconSrc: "/outcome%20areas/protection%20for%20the%20pooresr.svg",
   },
   {
     id: "oa-2",
     name: "Green and Blue Planet and Resilient Populations",
-    icon: "planet",
-    color: "#22C55E",
+    iconSrc: "/outcome%20areas/Green%20and%20Blue%20Planet%20and%20Resilient%20Populations.svg",
   },
   {
     id: "oa-3",
     name: "Digital Services",
-    icon: "digital",
-    color: "#374151",
+    iconSrc: "/outcome%20areas/Digital%20Services.svg",
   },
   {
     id: "oa-4",
     name: "More Private Investment",
-    icon: "investment",
-    color: "#1D4ED8",
+    iconSrc: "/outcome%20areas/More%20Private%20Investment.svg",
   },
 ];
