@@ -30,6 +30,7 @@ export default function FlipStoryCard({ story, featured = false }: FlipStoryCard
       onMouseLeave={() => setFlipped(false)}
       onClick={handleClick}
       style={{ perspective: 1000, cursor: "pointer" }}
+      aria-label={`Story: ${story.headline}`}
     >
       {/* Flipper */}
       <div
@@ -138,7 +139,7 @@ export default function FlipStoryCard({ story, featured = false }: FlipStoryCard
           >
             {story.drivingIndicators.map((ind) => (
               <div
-                key={ind.label}
+                key={`${ind.label}-${ind.achieved}`}
                 style={{ display: "flex", alignItems: "center", gap: 8 }}
               >
                 <div
