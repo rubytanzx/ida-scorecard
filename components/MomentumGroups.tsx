@@ -20,7 +20,12 @@ const DELTA_COLOR: Record<MomentumGroup["id"], string> = {
   emerging:     "#2563EB", // blue-600
 };
 
-export default function MomentumGroups() {
+interface Props {
+  /** When set, clicking a suggested prompt populates the main prompt bar with that text. */
+  onPromptClick?: (prompt: string) => void;
+}
+
+export default function MomentumGroups({ onPromptClick }: Props = {}) {
   return (
     <section aria-label="Latest Indicator Movements" style={{ marginBottom: 40 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
@@ -95,6 +100,7 @@ export default function MomentumGroups() {
                 <button
                   key={p}
                   type="button"
+                  onClick={() => onPromptClick?.(p)}
                   style={{
                     display: "flex",
                     alignItems: "center",

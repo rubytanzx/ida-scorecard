@@ -521,7 +521,7 @@ export default function HomePage() {
         )}
 
         <FadeIn delay={25}>
-          <MomentumGroups />
+          <MomentumGroups onPromptClick={setPromptValue} />
         </FadeIn>
 
         <FadeIn delay={50}>
