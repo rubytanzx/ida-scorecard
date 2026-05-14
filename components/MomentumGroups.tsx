@@ -74,7 +74,7 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
                     alignItems: "center",
                     gap: 12,
                     padding: "12px 0",
-                    borderBottom: i < g.rows.length - 1 ? "1px solid #E5E7EB" : "none",
+                    borderBottom: i < g.rows.length - 1 ? "1px solid rgba(13,26,43,0.08)" : "none",
                   }}
                 >
                   <Image
@@ -108,8 +108,8 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
                     width: "100%",
                     textAlign: "left",
                     padding: "8px 10px 8px 12px",
-                    background: "#F9FAFB",
-                    border: "1px solid #F3F4F6",
+                    background: "#FFFFFF",
+                    border: "1px solid #E5E7EB",
                     borderRadius: 10,
                     cursor: "pointer",
                     fontFamily: F,
