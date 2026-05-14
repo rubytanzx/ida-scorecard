@@ -237,9 +237,7 @@ export default function TrendingAcrossIDA() {
 
           <div
             style={{
-              marginTop: 4,
-              paddingTop: 14,
-              borderTop: "1px solid #F3F4F6",
+              marginTop: 8,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
