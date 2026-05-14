@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# superpowers session scratch (brainstorm HTML previews, log/pid files)
+.superpowers/
