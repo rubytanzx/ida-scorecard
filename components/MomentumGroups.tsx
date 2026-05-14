@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import Image from "next/image";
+import { IconArrowUp, IconSparkles } from "@tabler/icons-react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 import { gleamGreen, gleamAmber, gleamBlue } from "@/lib/cardStyles";
 
@@ -90,39 +91,54 @@ export default function MomentumGroups() {
             </ul>
 
             <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: 0.6,
-                  textTransform: "uppercase",
-                  color: "#9CA3AF",
-                }}
-              >
-                Try asking
-              </div>
-              <div style={{ fontSize: 13, lineHeight: 1.55, color: "#9CA3AF" }}>
-                {g.suggestedPrompts.map((p, i) => (
-                  <span key={p}>
-                    {i > 0 && <span style={{ margin: "0 6px", color: "#D1D5DB" }}>·</span>}
-                    <button
-                      type="button"
-                      style={{
-                        padding: 0,
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        fontFamily: F,
-                        fontSize: 13,
-                        fontWeight: 400,
-                        color: "#1D4ED8",
-                      }}
-                    >
-                      {p}
-                    </button>
+              {g.suggestedPrompts.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "8px 10px 8px 12px",
+                    background: "#F9FAFB",
+                    border: "1px solid #F3F4F6",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    fontFamily: F,
+                  }}
+                >
+                  <IconSparkles size={14} stroke={1.8} color="#6B7280" aria-hidden="true" />
+                  <span
+                    style={{
+                      flex: 1,
+                      fontSize: 12,
+                      fontWeight: 400,
+                      color: "#4B5563",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {p}
                   </span>
-                ))}
-              </div>
+                  <span
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "#FFFFFF",
+                      border: "1px solid #E5E7EB",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <IconArrowUp size={12} stroke={2} color="#6B7280" />
+                  </span>
+                </button>
+              ))}
             </div>
           </article>
         ))}
