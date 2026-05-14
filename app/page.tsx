@@ -542,18 +542,40 @@ export default function HomePage() {
     <div
       className="flex h-screen overflow-hidden"
       style={{
-        // Layered teal atmosphere with tightly-contained radial pools so
-        // the gradient reads as discrete soft glows rather than a wash
-        // that spreads across the whole canvas. Falloffs end inside
-        // ~45% of each ellipse so the page mostly sits on the flat base
-        // and the highlight/pool/flank tints are localised.
+        // Subtle "scorecard" texture: clusters of tiny near-transparent
+        // teal squares packed in 3 groups per tile with breathing space
+        // around them. No gradient — flat pale teal surface so the
+        // clusters read as the only decoration.
         background: [
-          "radial-gradient(ellipse 45% 25% at 50% 4%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 60%)",
-          "radial-gradient(ellipse 40% 28% at 50% 96%, rgba(45,212,191,0.30) 0%, rgba(45,212,191,0) 60%)",
-          "radial-gradient(ellipse 28% 30% at 6% 38%, rgba(15,118,110,0.10) 0%, rgba(15,118,110,0) 55%)",
-          "radial-gradient(ellipse 28% 30% at 94% 62%, rgba(15,118,110,0.10) 0%, rgba(15,118,110,0) 55%)",
-          "linear-gradient(180deg, #EEF6F6 0%, #E2EEEE 100%)",
+          `url("data:image/svg+xml;utf8,${encodeURIComponent(
+            `<svg xmlns='http://www.w3.org/2000/svg' width='340' height='340'>
+              <!-- Cluster A: top-left -->
+              <rect x='38' y='44' width='12' height='12' fill='rgba(15,118,110,0.035)'/>
+              <rect x='52' y='38' width='10' height='10' fill='rgba(45,212,191,0.035)'/>
+              <rect x='50' y='60' width='8'  height='8'  fill='rgba(15,118,110,0.03)'/>
+              <rect x='66' y='52' width='14' height='14' fill='rgba(45,212,191,0.03)'/>
+              <rect x='62' y='72' width='10' height='10' fill='rgba(15,118,110,0.04)'/>
+              <rect x='80' y='66' width='8'  height='8'  fill='rgba(45,212,191,0.035)'/>
+              <!-- Cluster B: mid-right -->
+              <rect x='228' y='148' width='12' height='12' fill='rgba(45,212,191,0.035)'/>
+              <rect x='244' y='140' width='10' height='10' fill='rgba(15,118,110,0.03)'/>
+              <rect x='260' y='154' width='14' height='14' fill='rgba(15,118,110,0.04)'/>
+              <rect x='234' y='168' width='10' height='10' fill='rgba(45,212,191,0.03)'/>
+              <rect x='250' y='176' width='8'  height='8'  fill='rgba(15,118,110,0.04)'/>
+              <rect x='270' y='176' width='12' height='12' fill='rgba(45,212,191,0.035)'/>
+              <!-- Cluster C: bottom-centre -->
+              <rect x='140' y='250' width='12' height='12' fill='rgba(15,118,110,0.04)'/>
+              <rect x='156' y='244' width='10' height='10' fill='rgba(45,212,191,0.03)'/>
+              <rect x='172' y='256' width='14' height='14' fill='rgba(15,118,110,0.035)'/>
+              <rect x='148' y='268' width='8'  height='8'  fill='rgba(45,212,191,0.04)'/>
+              <rect x='166' y='276' width='10' height='10' fill='rgba(15,118,110,0.035)'/>
+              <rect x='186' y='280' width='8'  height='8'  fill='rgba(45,212,191,0.035)'/>
+            </svg>`,
+          )}")`,
+          "#EEF5F5",
         ].join(", "),
+        backgroundRepeat: "repeat, no-repeat",
+        backgroundSize: "340px 340px, auto",
       }}
     >
       {/* ── Main scrollable content ── */}

@@ -29,10 +29,10 @@ const CARD_NAME_MAP: Record<string, string> = {
   "data-financial-services": "Financial Services",
   "data-gender-equality": "Gender Equality",
   "data-private-capital": "Private Capital",
-  "ida-section-context":         "Context",
-  "ida-section-intervention":    "Intervention (IDA projects)",
-  "ida-section-evidence":        "Evidence",
-  "ida-section-impact":          "Impact",
+  "ida-section-context":         "The Challenge",
+  "ida-section-intervention":    "Pathways to Outcomes (IDA projects)",
+  "ida-section-evidence":        "Country Examples",
+  "ida-section-impact":          "Lessons Learned",
 };
 
 // Outcome area cards — placed in a column to the right of the OverviewCard (x:80, w:1200)
@@ -407,7 +407,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
             id: "ida-section-context", type: "idaCard",
             position: { x: 80, y: 40 }, draggable: true, selectable: true,
             data: {
-              title: "Context",
+              title: "The Challenge",
               stats: [{ value: "79.6%", label: "W&C Africa learning poverty" }, { value: "90.3%", label: "FCS contexts globally" }],
               body: "Sub-Saharan Africa is home to the world's deepest learning crisis. In Western and Central Africa, 79.6% of children cannot read by end of primary school age. In fragile and conflict-affected states globally, learning poverty reaches 90.3% — a threshold that defines much of Sub-Saharan Africa, where 7 of the 10 highest-burden FCS countries are IDA-eligible. A critical systemic barrier is the absence of reliable education data — without functioning EMIS and accountable governance structures, policymakers cannot identify where children are falling behind or direct resources effectively. Data from 2019, the most recent available.",
               sourcesCount: 3, cta: "Pull country-level breakdown", connector: "IDA",
@@ -417,7 +417,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
             id: "ida-section-intervention", type: "idaCard",
             position: { x: 551, y: 40 }, draggable: true, selectable: true,
             data: {
-              title: "Intervention",
+              title: "Pathways to Outcomes",
               stats: [{ value: "$29.2B", label: "committed across SSA" }, { value: "150", label: "IDA education projects" }],
               body: "IDA's response targets the governance and data systems that underpin education quality. Three interlocking mechanisms are deployed across the portfolio:",
               listItems: [
@@ -432,7 +432,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
             id: "ida-section-evidence", type: "idaCard",
             position: { x: 1022, y: 40 }, draggable: true, selectable: true,
             data: {
-              title: "Evidence",
+              title: "Country Examples",
               stats: [{ value: "42M", label: "students reached · SSA" }, { value: "60%", label: "of portfolio target" }],
               progressItems: [
                 { label: "Achieved vs target", displayValue: "42M / 70.6M", pct: 60 },
@@ -447,7 +447,7 @@ export default function WorkspaceShell({ empty = false, prebuilt = false, mode =
             id: "ida-section-impact", type: "idaCard",
             position: { x: 1493, y: 40 }, draggable: true, selectable: true,
             data: {
-              title: "Impact",
+              title: "Lessons Learned",
               stats: [{ value: "53.6%", label: "global learning poverty" }, { value: "#1", label: "SSA highest-burden region" }],
               body: "Where IDA has strengthened governance systems, results follow at scale. The pathway is clear:",
               showFlow: true,

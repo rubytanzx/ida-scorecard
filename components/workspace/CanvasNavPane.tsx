@@ -30,10 +30,10 @@ const CARD_NAME_MAP: Record<string, string> = {
   "data-financial-services": "Financial Services",
   "data-gender-equality":    "Gender Equality",
   "data-private-capital":    "Private Capital",
-  "ida-section-context":      "Context",
-  "ida-section-intervention": "Intervention (IDA projects)",
-  "ida-section-evidence":     "Evidence",
-  "ida-section-impact":       "Impact",
+  "ida-section-context":      "The Challenge",
+  "ida-section-intervention": "Pathways to Outcomes (IDA projects)",
+  "ida-section-evidence":     "Country Examples",
+  "ida-section-impact":       "Lessons Learned",
 };
 
 const NATURAL_WIDTH: Record<string, number> = {

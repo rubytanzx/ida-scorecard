@@ -670,7 +670,7 @@ interface Section {
 const SECTIONS_AFRICA: Section[] = [
   {
     id: "context",
-    title: "Context",
+    title: "The Challenge",
     body: "IDA-eligible countries (~75 of the world's poorest) face overlapping pressures: rising debt service, climate shocks, and persistent gaps in basic services. The FCS-country poverty rate has been declining, but remains nearly 50% above the LIC average.",
     bullets: [
       "30.4% of FCS-country populations live in extreme poverty (CSC_CLI_EXT_POOR_FCS)",
@@ -681,7 +681,7 @@ const SECTIONS_AFRICA: Section[] = [
   },
   {
     id: "intervention",
-    title: "Intervention",
+    title: "Pathways to Outcomes",
     body: "WBG operations across People, Planet, Infrastructure, and Digital pillars converged on integrated programs in FY25, with safety nets, education, and health systems forming the largest single delivery channels.",
     bullets: [
       "Social safety net programs",
@@ -693,7 +693,7 @@ const SECTIONS_AFRICA: Section[] = [
   },
   {
     id: "evidence",
-    title: "Evidence",
+    title: "Country Examples",
     body: "FY25 headline numbers (IDA Results data · WBG global · June 2025) show measurable scaling against pipeline targets, with two indicators significantly behind plan.",
     bullets: [
       "244M people through safety nets vs ~313M expected (+12% YoY)",
@@ -706,7 +706,7 @@ const SECTIONS_AFRICA: Section[] = [
   },
   {
     id: "impact",
-    title: "Impact",
+    title: "Lessons Learned",
     body: "Direct beneficiary reach in IDA countries grew across all five verticals, but the gap between achievement and pipeline is widest in Infrastructure (41%) and Planet (45%) — flagging the next funding-cycle priorities.",
     bullets: [
       "FCS focus: 2.3× health coverage per dollar vs non-FCS IDA peers",
@@ -920,7 +920,7 @@ function HealthImpactChart() {
 const SECTIONS_HEALTH: Section[] = [
   {
     id: "context",
-    title: "Context",
+    title: "The Challenge",
     body:
       "Universal health coverage in IDA-FCS countries has been roughly flat for half a decade, while the LIC average has nudged up. Conflict-affected populations are seeing service coverage erode rather than expand.",
     bullets: [
@@ -932,7 +932,7 @@ const SECTIONS_HEALTH: Section[] = [
   },
   {
     id: "intervention",
-    title: "Intervention",
+    title: "Pathways to Outcomes",
     body:
       "FY25 IDA-supported HNP delivery is heavily weighted toward primary care and maternal/child health. Workforce-strengthening operations remain a small share of the portfolio mix despite worker shortage being the second-largest driver of the gap.",
     bullets: [
@@ -945,7 +945,7 @@ const SECTIONS_HEALTH: Section[] = [
   },
   {
     id: "evidence",
-    title: "Evidence",
+    title: "Country Examples",
     body:
       "Bottom-5 country breakdown of Health Services results (FCS project data, FY2025). Each is below 50% of plan; collectively they account for ~37% of the global pipeline shortfall.",
     bullets: [
@@ -959,7 +959,7 @@ const SECTIONS_HEALTH: Section[] = [
   },
   {
     id: "impact",
-    title: "Impact",
+    title: "Lessons Learned",
     body:
       "Driver decomposition (Health Services project notes + supplementary methodology note) suggests conflict-related supply chain disruption is the single largest contributor — inputs that IDA can mitigate via shorter procurement cycles and pooled-buyer agreements with WHO.",
     bullets: [
@@ -1035,7 +1035,7 @@ const REASONING_STEPS: Record<FlowId, ReasoningStep[]> = {
     { label: "Determining regional scope",            detail: "Sub-Saharan Africa (AFE + AFW)" },
     { label: "Pulling FY25 portfolio aggregates",     detail: "Time_Period == 2025-06-30" },
     { label: "Cross-referencing context indicators",  detail: "5 Client Context series paired" },
-    { label: "Drafting structured narrative sections",detail: "Context · Intervention · Evidence · Impact" },
+    { label: "Drafting structured narrative sections",detail: "The Challenge · Pathways to Outcomes · Country Examples · Lessons Learned" },
   ],
   "health-gap": [
     { label: "Reading conversation context",          detail: "1 prompt · health · FCS" },
@@ -1043,7 +1043,7 @@ const REASONING_STEPS: Record<FlowId, ReasoningStep[]> = {
     { label: "Computing achievement ratios per country", detail: "Achieved vs. target by country" },
     { label: "Ranking bottom-5 performers",           detail: "5 countries below 50% of plan" },
     { label: "Decomposing gap by driver",             detail: "Conflict supply · workforce · access" },
-    { label: "Drafting structured narrative sections",detail: "Context · Intervention · Evidence · Impact" },
+    { label: "Drafting structured narrative sections",detail: "The Challenge · Pathways to Outcomes · Country Examples · Lessons Learned" },
   ],
 };
 
@@ -1137,7 +1137,7 @@ function NarrativeReasoning({ flow }: { flow: FlowId }) {
 const NARRATIVE_LOADING_STAGES = [
   "Mapping geographic scope",
   "Pulling FY25 portfolio data",
-  "Drafting Context · Intervention · Evidence · Impact",
+  "Drafting The Challenge · Pathways to Outcomes · Country Examples · Lessons Learned",
   "Finalizing summary",
 ];
 
@@ -1265,7 +1265,7 @@ function NarrativeLoading() {
 
       {/* Accordions — collapsed skeletons */}
       <section className="flex flex-col -mx-5">
-        {["Context", "Intervention", "Evidence", "Impact"].map((title, i) => (
+        {["The Challenge", "Pathways to Outcomes", "Country Examples", "Lessons Learned"].map((title, i) => (
           <div
             key={title}
             className="bg-gray-50 border-b border-gray-100 last:border-b-0 px-5 py-3 flex items-center justify-between"

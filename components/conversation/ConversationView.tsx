@@ -674,7 +674,7 @@ const NARRATIVE_PLAN_STEPS: ThoughtStep[] = [
   { type: "filter",  text: "Matching 6 Results indicators",         detail: "SOC_SAF · EDU_SUPP · HEA_SERV · RESI_CLIM · ELC_ACCS · EXT_POOR_FCS" },
   { type: "compute", text: "Filtering to AFE + AFW · FY25 cut-off", detail: "Time_Period == 2025-06-30 · Double_Counting_Flag ≠ Y" },
   { type: "filter",  text: "Pairing 3 Client Context series",       detail: "CSC_CLI_EXT_POOR_FCS · SE_LPV_PRIM · EG_ELC_ACCS_ZS" },
-  { type: "analyze", text: "Structuring narrative sections",        detail: "Context · Intervention · Evidence · Impact" },
+  { type: "analyze", text: "Structuring narrative sections",        detail: "The Challenge · Pathways to Outcomes · Country Examples · Lessons Learned" },
 ];
 
 function StreamingText({
@@ -963,10 +963,10 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
           className="flex flex-col gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4 transition-opacity duration-700"
           style={{ opacity: leadDone ? 1 : 0 }}
         >
-          {/* Context */}
+          {/* The Challenge */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Context
+              The Challenge
             </span>
             <p className="text-[13px] text-gray-800 leading-relaxed">
               Sub-Saharan Africa remains the epicentre of extreme poverty. FCS-country poverty sits
@@ -985,10 +985,10 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
 
           <div className="h-px bg-gray-200" />
 
-          {/* Intervention */}
+          {/* Pathways to Outcomes */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Intervention
+              Pathways to Outcomes
             </span>
             <p className="text-[13px] text-gray-800 leading-relaxed">
               FY25 IDA operations targeted People-pillar programs across AFE + AFW, with safety
@@ -1003,10 +1003,10 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
 
           <div className="h-px bg-gray-200" />
 
-          {/* Evidence */}
+          {/* Country Examples */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Evidence
+              Country Examples
             </span>
             <p className="text-[13px] text-gray-800 leading-relaxed mb-1.5">
               Key FY25 results vs. pipeline targets:
@@ -1062,10 +1062,10 @@ function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
 
           <div className="h-px bg-gray-200" />
 
-          {/* Impact */}
+          {/* Lessons Learned */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Impact
+              Lessons Learned
             </span>
             <p className="text-[13px] text-gray-800 leading-relaxed">
               The People vertical leads at 68% achievement. FCS-country health efficiency is 2.3×

@@ -324,7 +324,7 @@ function DataContextRow({ flow }: { flow: FlowId }) {
 const THINKING_STAGES = [
   "Pulling FY25 portfolio data",
   "Structuring analysis",
-  "Drafting Context · Intervention · Evidence · Impact",
+  "Drafting The Challenge · Pathways to Outcomes · Country Examples · Lessons Learned",
 ];
 
 function ThinkingRow() {

@@ -998,7 +998,7 @@ export const momentumGroups: MomentumGroup[] = [
   },
   {
     id: "slowing",
-    title: "Delivery Challenges",
+    title: "Progress Watch Areas",
     subtitle: "Momentum losing pace",
     rows: [
       {
