@@ -378,18 +378,19 @@ export default function IndicatorTicker({ indicators }: Props) {
         </div>
       </div>
 
-      {/* Viewport with fade-edge masks */}
+      {/* Viewport with fade-edge masks — breaks out of the page max-width to span screen edge-to-edge */}
       <div
         className="ticker-viewport"
         style={{
           position: "relative",
           background: "#F8F7F4",
-          borderRadius: 12,
           padding: "12px 0",
+          marginLeft: "calc(50% - 50vw)",
+          marginRight: "calc(50% - 50vw)",
           WebkitMaskImage:
-            "linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)",
+            "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%)",
           maskImage:
-            "linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)",
+            "linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%)",
         }}
       >
         <div
