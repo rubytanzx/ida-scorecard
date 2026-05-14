@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { IconArrowRight } from "@tabler/icons-react";
 import {
   counterIntuitiveTextCards,
@@ -22,20 +23,41 @@ function Card({ card }: { card: CounterIntuitiveTextCard }) {
         fontFamily: F,
       }}
     >
-      <span
+      <div
         style={{
-          alignSelf: "flex-start",
-          fontSize: 12,
-          fontWeight: 500,
-          color: "#1D4ED8",
-          background: "#FFFFFF",
-          border: "1px solid #1D4ED8",
-          borderRadius: 999,
-          padding: "3px 12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
         }}
       >
-        {card.category}
-      </span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#1D4ED8",
+            background: "#FFFFFF",
+            border: "1px solid #1D4ED8",
+            borderRadius: 999,
+            padding: "3px 12px",
+          }}
+        >
+          {card.category}
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {card.linkedOutcomeAreas.map((oa) => (
+            <Image
+              key={oa.iconSrc}
+              src={oa.iconSrc}
+              alt={oa.name}
+              title={oa.name}
+              width={32}
+              height={32}
+              style={{ display: "block", cursor: "help" }}
+            />
+          ))}
+        </div>
+      </div>
 
       <h4
         style={{

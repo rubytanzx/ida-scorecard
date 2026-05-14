@@ -1024,11 +1024,17 @@ export const momentumGroups: MomentumGroup[] = [
 
 // ─── Counter Intuitive Text Cards ─────────────────────────────────────────────
 
+export interface OutcomeAreaRef {
+  name: string;     // shown in the hover tooltip
+  iconSrc: string;  // path under /public, URL-encoded
+}
+
 export interface CounterIntuitiveTextCard {
   id: string;
   category: string;
   headline: string;
   description: string;
+  linkedOutcomeAreas: OutcomeAreaRef[];
 }
 
 export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
@@ -1038,6 +1044,12 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
     headline: "Renewable capacity is surging – but electricity access is off-track",
     description:
       "33.82 GW enabled (+75%), yet only 37% of electricity access pipeline is met. Capacity supply is concentrated in middle-income IBRD economies, not the IDA countries where access gaps are largest.",
+    linkedOutcomeAreas: [
+      {
+        name: "Affordable, Reliable and Sustainable Energy for All",
+        iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,
+      },
+    ],
   },
   {
     id: "ci-2",
@@ -1045,6 +1057,10 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
     headline: "Education results exceeded pipeline targets in some FCS countries",
     description:
       "324.5M students supported — 80% of pipeline — but the learning poverty context indicator is deteriorating. Project enrollment is up while system-level learning outcomes regress.",
+    linkedOutcomeAreas: [
+      { name: "Learning Poverty",                                  iconSrc: `${OA}/learning%20poverty.svg` },
+      { name: "Better Lives for People in Fragility, Conflict, and Violence", iconSrc: `${OA}/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg` },
+    ],
   },
   {
     id: "ci-3",
@@ -1052,6 +1068,9 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
     headline: "More countries implementing debt reforms — but distress rates unchanged",
     description:
       "60.3% of at-risk countries implemented reforms — up significantly — but the share in high or moderate debt distress has not shifted in three fiscal years.",
+    linkedOutcomeAreas: [
+      { name: "Effective Macroeconomic and Fiscal Management", iconSrc: `${OA}/Effective%20Macroeconomic%20and%20Fiscal%20Management.svg` },
+    ],
   },
   {
     id: "ci-4",
@@ -1059,6 +1078,10 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
     headline: "Record private capital mobilized — but IDA-country PCE pipeline is shrinking",
     description:
       "$241.6B mobilized overall, yet private capital enabled in IDA/FCS markets is down 5%. The mobilization headline is driven by IBRD-eligible economies, not the targeted segment.",
+    linkedOutcomeAreas: [
+      { name: "More Private Investment", iconSrc: `${OA}/More%20Private%20Investment.svg` },
+      { name: "More and Better Jobs",    iconSrc: `${OA}/More%20and%20Better%20Jobs.svg` },
+    ],
   },
 ];
 
