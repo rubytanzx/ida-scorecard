@@ -2,16 +2,11 @@
 
 import type { CSSProperties } from "react";
 import Image from "next/image";
+import { IconSparkles } from "@tabler/icons-react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 import { gleamGreen, gleamAmber, gleamBlue } from "@/lib/cardStyles";
 
 const F = "'Open Sans', sans-serif";
-
-const CTA_LABEL: Record<MomentumGroup["id"], string> = {
-  accelerating: "Show me all accelerating drivers",
-  slowing:      "Show me all slowing drivers",
-  emerging:     "Show me all emerging drivers",
-};
 
 const GLEAM: Record<MomentumGroup["id"], CSSProperties> = {
   accelerating: gleamGreen,
@@ -95,24 +90,45 @@ export default function MomentumGroups() {
               ))}
             </ul>
 
-            <button
-              type="button"
-              style={{
-                alignSelf: "flex-start",
-                marginTop: 4,
-                padding: "8px 16px",
-                fontSize: 13,
-                fontWeight: 400,
-                color: "#374151",
-                fontFamily: F,
-                background: "#FFFFFF",
-                border: "1px solid #D1D5DB",
-                borderRadius: 999,
-                cursor: "pointer",
-              }}
-            >
-              {CTA_LABEL[g.id]}
-            </button>
+            <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: 0.6,
+                  textTransform: "uppercase",
+                  color: "#9CA3AF",
+                }}
+              >
+                Suggested prompts
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {g.suggestedPrompts.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 400,
+                      color: "#374151",
+                      fontFamily: F,
+                      background: "#FFFFFF",
+                      border: "1px solid #D1D5DB",
+                      borderRadius: 999,
+                      cursor: "pointer",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <IconSparkles size={12} stroke={1.8} color="#6B7280" aria-hidden="true" />
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
           </article>
         ))}
       </div>

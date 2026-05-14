@@ -933,6 +933,7 @@ export interface MomentumGroup {
   title: string;
   subtitle: string;
   rows: MomentumRow[];
+  suggestedPrompts: string[];
 }
 
 const OA = "/outcome%20areas";
@@ -959,6 +960,11 @@ export const momentumGroups: MomentumGroup[] = [
         iconSrc: `${OA}/Digital%20Services.svg`,
       },
     ],
+    suggestedPrompts: [
+      "Why is broadband surging?",
+      "Top accelerating countries",
+      "Compare to FY24 baseline",
+    ],
   },
   {
     id: "slowing",
@@ -981,6 +987,11 @@ export const momentumGroups: MomentumGroup[] = [
         iconSrc: `${OA}/healthier%20lives.svg`,
       },
     ],
+    suggestedPrompts: [
+      "What's behind the electricity dip?",
+      "Worst-affected regions",
+      "Where is delivery stuck?",
+    ],
   },
   {
     id: "emerging",
@@ -1002,6 +1013,11 @@ export const momentumGroups: MomentumGroup[] = [
         delta: "87.4M",
         iconSrc: `${OA}/Connected%20Communities.svg`,
       },
+    ],
+    suggestedPrompts: [
+      "Unpack the social safety net gains",
+      "Which countries are leading on jobs?",
+      "What to watch next quarter",
     ],
   },
 ];
