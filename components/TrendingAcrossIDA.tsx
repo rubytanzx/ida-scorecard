@@ -9,6 +9,7 @@ import {
   type TrendingSideCard,
 } from "@/lib/mockData";
 import AiTagPill from "./AiTagPill";
+import OutcomeAreaIcons from "./OutcomeAreaIcons";
 
 const F = "'Open Sans', sans-serif";
 
@@ -73,7 +74,17 @@ function SideCard({ card }: { card: TrendingSideCard }) {
         minHeight: 0,
       }}
     >
-      <AiTagPill label={card.tag} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <AiTagPill label={card.tag} />
+        <OutcomeAreaIcons areas={card.linkedOutcomeAreas} />
+      </div>
 
       <div>
         <h3
@@ -213,7 +224,17 @@ export default function TrendingAcrossIDA() {
             fontFamily: F,
           }}
         >
-          <AiTagPill label={trendingTop.tag} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <AiTagPill label={trendingTop.tag} />
+            <OutcomeAreaIcons areas={trendingTop.linkedOutcomeAreas} />
+          </div>
 
           <h3
             style={{

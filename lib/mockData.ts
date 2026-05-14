@@ -867,6 +867,7 @@ export interface TrendingTopCard {
   progress: TrendingProgress;
   relatedNarratives: TrendingNarrativeLink[];
   ctaLabel: string;
+  linkedOutcomeAreas: OutcomeAreaRef[];
 }
 
 export interface TrendingSideCard {
@@ -876,6 +877,7 @@ export interface TrendingSideCard {
   subtitle: string;
   progress: TrendingProgress;
   ctaLabel: string;
+  linkedOutcomeAreas: OutcomeAreaRef[];
 }
 
 export const trendingTop: TrendingTopCard = {
@@ -893,6 +895,16 @@ export const trendingTop: TrendingTopCard = {
     { label: "Private Investment in Renewables", href: "#" },
   ],
   ctaLabel: "View Insight",
+  linkedOutcomeAreas: [
+    {
+      name: "Affordable, Reliable and Sustainable Energy for All",
+      iconSrc: "/outcome%20areas/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg",
+    },
+    {
+      name: "Better Lives for People in Fragility, Conflict, and Violence",
+      iconSrc: "/outcome%20areas/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg",
+    },
+  ],
 };
 
 export const trendingSides: TrendingSideCard[] = [
@@ -907,6 +919,16 @@ export const trendingSides: TrendingSideCard[] = [
       footnote: "84% of 291.4M expected  •  +12% vs FY24",
     },
     ctaLabel: "View Insight",
+    linkedOutcomeAreas: [
+      {
+        name: "Protection for the Poorest",
+        iconSrc: "/outcome%20areas/protection%20for%20the%20pooresr.svg",
+      },
+      {
+        name: "More and Better Jobs",
+        iconSrc: "/outcome%20areas/More%20and%20Better%20Jobs.svg",
+      },
+    ],
   },
   {
     id: "gender-reach",
@@ -919,6 +941,12 @@ export const trendingSides: TrendingSideCard[] = [
       footnote: "45% of pipeline  •  urban concentration gap widening",
     },
     ctaLabel: "View Insight",
+    linkedOutcomeAreas: [
+      {
+        name: "Gender Equality",
+        iconSrc: "/outcome%20areas/Gender%20Equality.svg",
+      },
+    ],
   },
 ];
 
