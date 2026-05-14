@@ -1,44 +1,13 @@
 "use client";
 
-import {
-  IconTrendingUp,
-  IconAlertTriangle,
-  IconBulb,
-} from "@tabler/icons-react";
 import { momentumGroups, type MomentumGroup } from "@/lib/mockData";
 
 const F = "'Open Sans', sans-serif";
 
-interface GroupTheme {
-  iconBg: string;
-  iconFg: string;
-  valueColor: string;
-  Icon: typeof IconTrendingUp;
-  ctaLabel: string;
-}
-
-const THEMES: Record<MomentumGroup["id"], GroupTheme> = {
-  accelerating: {
-    iconBg: "#E6F4EC",
-    iconFg: "#067647",
-    valueColor: "#067647",
-    Icon: IconTrendingUp,
-    ctaLabel: "See all accelerating",
-  },
-  slowing: {
-    iconBg: "#FEE2E2",
-    iconFg: "#B91C1C",
-    valueColor: "#B91C1C",
-    Icon: IconAlertTriangle,
-    ctaLabel: "See all slowing",
-  },
-  emerging: {
-    iconBg: "#EDE9FE",
-    iconFg: "#5B21B6",
-    valueColor: "#5B21B6",
-    Icon: IconBulb,
-    ctaLabel: "See all emerging",
-  },
+const CTA_LABEL: Record<MomentumGroup["id"], string> = {
+  accelerating: "Show me all accelerating drivers",
+  slowing:      "Show me all slowing drivers",
+  emerging:     "Show me all emerging drivers",
 };
 
 export default function MomentumGroups() {
@@ -69,73 +38,67 @@ export default function MomentumGroups() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {momentumGroups.map((g) => {
-          const t = THEMES[g.id];
-          const Icon = t.Icon;
-          return (
-            <article
-              key={g.id}
+        {momentumGroups.map((g) => (
+          <article
+            key={g.id}
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: 12,
+              padding: "20px 22px 18px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              fontFamily: F,
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500, color: "#111827" }}>
+              {g.title}
+            </h3>
+
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column" }}>
+              {g.rows.map((r, i) => (
+                <li
+                  key={r.label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    gap: 12,
+                    padding: "14px 0",
+                    borderBottom: i < g.rows.length - 1 ? "1px solid #E5E7EB" : "none",
+                  }}
+                >
+                  <span style={{ flex: 1, fontSize: 14, color: "#374151", lineHeight: 1.4 }}>
+                    {r.label}
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+                    {r.delta}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: 12,
-                padding: 18,
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
+                alignSelf: "flex-start",
+                marginTop: 4,
+                padding: "8px 16px",
+                fontSize: 13,
+                fontWeight: 400,
+                color: "#374151",
                 fontFamily: F,
+                background: "#FFFFFF",
+                border: "1px solid #D1D5DB",
+                borderRadius: 999,
+                cursor: "pointer",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background: t.iconBg,
-                    color: t.iconFg,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  aria-hidden="true"
-                >
-                  <Icon size={20} stroke={1.8} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{g.title}</div>
-                  <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>{g.subtitle}</div>
-                </div>
-              </div>
-
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-                {g.rows.map((r) => (
-                  <li
-                    key={r.label}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      fontSize: 12,
-                      color: "#374151",
-                      gap: 12,
-                    }}
-                  >
-                    <span style={{ flex: 1, lineHeight: 1.35 }}>{r.label}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: t.valueColor }}>{r.delta}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href="#"
-                style={{ fontSize: 11, color: "#003F6B", fontWeight: 600, textDecoration: "none" }}
-              >
-                {t.ctaLabel} →
-              </a>
-            </article>
-          );
-        })}
+              {CTA_LABEL[g.id]}
+            </button>
+          </article>
+        ))}
       </div>
     </section>
   );

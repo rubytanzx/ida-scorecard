@@ -928,9 +928,9 @@ export const momentumGroups: MomentumGroup[] = [
     title: "Accelerating",
     subtitle: "Outcomes gaining momentum",
     rows: [
-      { label: "Digital financial inclusion", delta: "+11.2%" },
-      { label: "Primary learning outcomes",   delta: "+8.7%"  },
-      { label: "Women entrepreneurship",      delta: "+7.5%"  },
+      { label: "People using broadband internet",        delta: "+108%" },
+      { label: "Renewable Energy Enabled",                delta: "+75%"  },
+      { label: "People using digitally enabled services", delta: "+22%"  },
     ],
   },
   {
@@ -938,9 +938,9 @@ export const momentumGroups: MomentumGroup[] = [
     title: "Slowing",
     subtitle: "Momentum losing pace",
     rows: [
-      { label: "Climate adaptation finance",  delta: "-6.3%" },
-      { label: "Tax revenue mobilization",    delta: "-4.1%" },
-      { label: "Infrastructure delivery",     delta: "-3.8%" },
+      { label: "Displaced people provided with services",                delta: "-6.3%" },
+      { label: "People provided with electricity",                       delta: "-4.1%" },
+      { label: "Countries with stronger health emergency responses",     delta: "-3.8%" },
     ],
   },
   {
@@ -948,9 +948,9 @@ export const momentumGroups: MomentumGroup[] = [
     title: "Emerging",
     subtitle: "New signals to watch",
     rows: [
-      { label: "Green jobs creation",         delta: "New" },
-      { label: "Digital public infrastructure", delta: "New" },
-      { label: "Resilience program scale-up", delta: "New" },
+      { label: "Beneficiaries of social safety net programs", delta: "New" },
+      { label: "Green jobs creation",                          delta: "New" },
+      { label: "Digital public infrastructure",                delta: "New" },
     ],
   },
 ];
