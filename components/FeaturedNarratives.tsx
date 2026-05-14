@@ -14,32 +14,39 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         position: "relative",
         display: "block",
         borderRadius: 12,
-        overflow: "hidden",
         aspectRatio: "5 / 4",
         textDecoration: "none",
         fontFamily: F,
       }}
     >
-      <Image
-        src={narrative.imageSrc}
-        alt=""
-        fill
-        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-        style={{ objectFit: "cover" }}
-      />
-
-      {/* Bottom-anchored dark overlay so the white text reads. Stronger
-          and earlier than a soft gradient so the bottom block is a
-          legible dark wash, not just a fade. */}
+      {/* Image + gradient layer — clipped to the card's rounded corners.
+          Lives in its own absolutely-positioned wrapper so the tooltip
+          bubble below can escape the card edges without being cropped. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0) 32%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.88) 100%)",
+          borderRadius: 12,
+          overflow: "hidden",
         }}
         aria-hidden="true"
-      />
+      >
+        <Image
+          src={narrative.imageSrc}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+          style={{ objectFit: "cover" }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0) 32%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.88) 100%)",
+          }}
+        />
+      </div>
 
       {/* Text content over the gradient */}
       <div
@@ -65,7 +72,6 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         <span
           className="fn-tt"
           tabIndex={0}
-          aria-label={`${narrative.indicators.length} linked indicators`}
           style={{
             marginTop: 10,
             display: "inline-flex",
@@ -80,40 +86,10 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
           <IconDatabase size={14} stroke={1.8} aria-hidden="true" />
           {narrative.indicators.length} Indicators
           <span className="fn-tt-bubble" role="tooltip">
-            <span
-              style={{
-                display: "block",
-                fontSize: 10,
-                textTransform: "uppercase",
-                letterSpacing: 0.6,
-                color: "rgba(255,255,255,0.6)",
-                marginBottom: 6,
-                fontWeight: 600,
-              }}
-            >
-              Linked indicators
-            </span>
-            <ul
-              style={{
-                listStyle: "none",
-                margin: 0,
-                padding: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-              }}
-            >
+            <span className="fn-tt-bubble-label">Linked indicators</span>
+            <ul className="fn-tt-bubble-list">
               {narrative.indicators.map((name) => (
-                <li
-                  key={name}
-                  style={{
-                    fontSize: 11,
-                    color: "#FFFFFF",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  · {name}
-                </li>
+                <li key={name}>· {name}</li>
               ))}
             </ul>
           </span>
@@ -135,7 +111,7 @@ export default function FeaturedNarratives() {
         .fn-tt-bubble {
           position: absolute;
           left: 0;
-          bottom: calc(100% + 8px);
+          bottom: calc(100% + 10px);
           min-width: 240px;
           max-width: 320px;
           padding: 10px 12px;
@@ -143,13 +119,14 @@ export default function FeaturedNarratives() {
           color: #FFFFFF;
           font-family: 'Open Sans', sans-serif;
           font-weight: 400;
-          border-radius: 8px;
+          border-radius: 6px;
           pointer-events: none;
           opacity: 0;
           transform: translateY(4px);
           transition: opacity 120ms ease, transform 120ms ease;
           z-index: 30;
           box-shadow: 0 8px 20px rgba(13, 26, 43, 0.32);
+          text-align: left;
         }
         .fn-tt-bubble::after {
           content: "";
@@ -163,6 +140,28 @@ export default function FeaturedNarratives() {
         .fn-tt:focus-visible .fn-tt-bubble {
           opacity: 1;
           transform: translateY(0);
+        }
+        .fn-tt-bubble-label {
+          display: block;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.6);
+          margin-bottom: 6px;
+        }
+        .fn-tt-bubble-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .fn-tt-bubble-list li {
+          font-size: 11px;
+          color: #FFFFFF;
+          line-height: 1.4;
         }
       `}</style>
 
