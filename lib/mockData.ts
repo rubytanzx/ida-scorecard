@@ -1122,10 +1122,11 @@ export const outcomeAreas: OutcomeArea[] = [
 
 export interface FeaturedNarrative {
   id: string;
-  outcomeArea: string;   // small label at top of overlay
-  headline: string;      // big headline at bottom of overlay
-  imageSrc: string;      // path under /public
-  indicatorCount: number;
+  outcomeArea: string;       // small label at top of overlay
+  headline: string;          // big headline at bottom of overlay
+  imageSrc: string;          // path under /public
+  /** Names of the IDA Scorecard indicators this narrative draws on. */
+  indicators: string[];
 }
 
 const NT = "/narrative%20thumbnails";
@@ -1136,27 +1137,47 @@ export const featuredNarratives: FeaturedNarrative[] = [
     outcomeArea: "Protection of the Poorest",
     headline: "Scaling Social Protection and Employment Support to Unlock Jobs for Youth and People in Poverty",
     imageSrc: `${NT}/protection%20for%20poorest.jpg`,
-    indicatorCount: 8,
+    indicators: [
+      "Beneficiaries of social safety net programs",
+      "Displaced people and people in host communities provided with services and livelihoods",
+      "People with strengthened food and nutrition security",
+      "People benefiting from actions to advance gender equality",
+      "More and better-paid jobs",
+    ],
   },
   {
     id: "fn-2",
     outcomeArea: "No Learning Poverty",
     headline: "Tackling Learning Poverty with Effective Teaching and Focused Student Support",
     imageSrc: `${NT}/no%20learning%20poverty.jpg`,
-    indicatorCount: 8,
+    indicators: [
+      "Students supported with better education",
+      "People benefiting from actions to advance gender equality",
+      "People receiving quality health, nutrition, and population services",
+    ],
   },
   {
     id: "fn-3",
     outcomeArea: "Healthier Lives",
     headline: "Driving Health Systems Reform for Healthier Lives",
     imageSrc: `${NT}/healthier%20lives.jpg`,
-    indicatorCount: 8,
+    indicators: [
+      "People receiving quality health, nutrition, and population services",
+      "Countries benefitting from strengthened capacity to prevent, detect, and respond to health emergencies",
+      "People provided with water, sanitation, and/or hygiene",
+      "People with strengthened food and nutrition security",
+    ],
   },
   {
     id: "fn-4",
     outcomeArea: "Effective Macroeconomic and Fiscal Management",
     headline: "Strengthening Capacity to Implement Tax Policy and Debt Management Reforms",
     imageSrc: `${NT}/effective%20macroeconomic%20and%20fiscal%20management.jpg`,
-    indicatorCount: 8,
+    indicators: [
+      "Percentage of countries in or at high risk of debt distress that implemented reforms towards debt sustainability",
+      "Countries with tax revenues-to-GDP ratio at or below 15% that have increased collections, considering equity",
+      "Total private capital enabled",
+      "Total private capital mobilized",
+    ],
   },
 ];

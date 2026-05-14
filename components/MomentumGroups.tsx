@@ -95,7 +95,7 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
               ))}
             </ul>
 
-            <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
               {g.suggestedPrompts.map((p) => (
                 <button
                   key={p}

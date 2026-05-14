@@ -60,20 +60,64 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, lineHeight: 1.35 }}>
           {narrative.headline}
         </h3>
-        <div
+
+        {/* Hover trigger: tooltip lists the indicator names */}
+        <span
+          className="fn-tt"
+          tabIndex={0}
+          aria-label={`${narrative.indicators.length} linked indicators`}
           style={{
             marginTop: 10,
             display: "inline-flex",
             alignItems: "center",
+            alignSelf: "flex-start",
             gap: 6,
             fontSize: 12,
             fontWeight: 500,
-            color: "rgba(255,255,255,0.85)",
+            color: "rgba(255,255,255,0.9)",
           }}
         >
           <IconDatabase size={14} stroke={1.8} aria-hidden="true" />
-          {narrative.indicatorCount} Indicators
-        </div>
+          {narrative.indicators.length} Indicators
+          <span className="fn-tt-bubble" role="tooltip">
+            <span
+              style={{
+                display: "block",
+                fontSize: 10,
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+                color: "rgba(255,255,255,0.6)",
+                marginBottom: 6,
+                fontWeight: 600,
+              }}
+            >
+              Linked indicators
+            </span>
+            <ul
+              style={{
+                listStyle: "none",
+                margin: 0,
+                padding: 0,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              {narrative.indicators.map((name) => (
+                <li
+                  key={name}
+                  style={{
+                    fontSize: 11,
+                    color: "#FFFFFF",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  · {name}
+                </li>
+              ))}
+            </ul>
+          </span>
+        </span>
       </div>
     </a>
   );
@@ -82,6 +126,46 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
 export default function FeaturedNarratives() {
   return (
     <section aria-label="Featured Narratives" style={{ marginBottom: 40 }}>
+      <style>{`
+        .fn-tt {
+          position: relative;
+          cursor: help;
+          outline: none;
+        }
+        .fn-tt-bubble {
+          position: absolute;
+          left: 0;
+          bottom: calc(100% + 8px);
+          min-width: 240px;
+          max-width: 320px;
+          padding: 10px 12px;
+          background: #0D1A2B;
+          color: #FFFFFF;
+          font-family: 'Open Sans', sans-serif;
+          font-weight: 400;
+          border-radius: 8px;
+          pointer-events: none;
+          opacity: 0;
+          transform: translateY(4px);
+          transition: opacity 120ms ease, transform 120ms ease;
+          z-index: 30;
+          box-shadow: 0 8px 20px rgba(13, 26, 43, 0.32);
+        }
+        .fn-tt-bubble::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 18px;
+          border: 5px solid transparent;
+          border-top-color: #0D1A2B;
+        }
+        .fn-tt:hover .fn-tt-bubble,
+        .fn-tt:focus-visible .fn-tt-bubble {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      `}</style>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
         <h2
           style={{
