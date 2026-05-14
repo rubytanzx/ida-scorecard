@@ -86,6 +86,26 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
           flex: 1;
         }
 
+        /* Header row: title preceded by a thin coloured stroke that
+           shares the card's brand colour. */
+        .mg-card-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .mg-card-stroke {
+          flex-shrink: 0;
+          width: 4px;
+          height: 22px;
+          border-radius: 2px;
+          background: var(--mg-card-color);
+          transition: background-color 500ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .mg-card:hover .mg-card-stroke,
+        .mg-card:focus-within .mg-card-stroke {
+          background: #FFFFFF;
+        }
+
         /* Text colours flip from dark (white-card default) to white
            (hovered, on the brand fill). Transition timed to feel
            in step with the curved sweep. */
@@ -197,9 +217,12 @@ export default function MomentumGroups({ onPromptClick }: Props = {}) {
           >
             <span className="mg-card-overlay" aria-hidden="true" />
             <div className="mg-card-content">
-              <h3 className="mg-card-title" style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-                {g.title}
-              </h3>
+              <div className="mg-card-header">
+                <span className="mg-card-stroke" aria-hidden="true" />
+                <h3 className="mg-card-title" style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
+                  {g.title}
+                </h3>
+              </div>
 
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column" }}>
                 {g.rows.map((r) => (
