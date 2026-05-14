@@ -89,7 +89,7 @@ export default function MomentumGroups() {
               ))}
             </ul>
 
-            <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
               <div
                 style={{
                   fontSize: 11,
@@ -101,35 +101,26 @@ export default function MomentumGroups() {
               >
                 Try asking
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 6,
-                  borderLeft: "2px solid #E5E7EB",
-                  paddingLeft: 12,
-                }}
-              >
-                {g.suggestedPrompts.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    style={{
-                      textAlign: "left",
-                      padding: 0,
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: F,
-                      fontSize: 13,
-                      fontStyle: "italic",
-                      fontWeight: 400,
-                      color: "#6B7280",
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    &ldquo;{p}&rdquo;
-                  </button>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: "#9CA3AF" }}>
+                {g.suggestedPrompts.map((p, i) => (
+                  <span key={p}>
+                    {i > 0 && <span style={{ margin: "0 6px", color: "#D1D5DB" }}>·</span>}
+                    <button
+                      type="button"
+                      style={{
+                        padding: 0,
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        fontFamily: F,
+                        fontSize: 13,
+                        fontWeight: 400,
+                        color: "#1D4ED8",
+                      }}
+                    >
+                      {p}
+                    </button>
+                  </span>
                 ))}
               </div>
             </div>
