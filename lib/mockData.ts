@@ -54,14 +54,24 @@ export interface FeaturedStory extends Story {
   description: string;
 }
 
+export interface IndicatorSubRow {
+  label: string;
+  achieved: string; // e.g. "1.8M" or "--"
+  expected: string; // e.g. "14M"
+}
+
 export interface Indicator {
   id: string;
-  label: string;
-  achieved: string;
-  target: string;
-  exceeded?: boolean;
-  methodologyNote?: string;
+  name: string;        // Full Active Portfolio Results name from the IDA Scorecard
+  achieved: string;    // e.g. "146.6M" or "--"
+  expected: string;    // e.g. "192.3M" or "-102.7MtCO2eq/year"
+  /** Numeric ratio of achieved/expected used to drive sparkline tint. Null when achieved is "--". */
+  ratio: number | null;
+  sparkline: number[]; // 5 mocked points (0–1 range)
+  methodologyNote: string;
   methodologyUrl?: string;
+  subRows?: IndicatorSubRow[];
+  comingSoon?: boolean; // true for "More and better-paid jobs"
 }
 
 // ─── Topics Trending ─────────────────────────────────────────────────────────
@@ -599,151 +609,240 @@ export const scorecardVerticals: ScorecardVertical[] = [
 
 export const indicators: Indicator[] = [
   {
-    id: "ind-food-security",
-    label: "People With Improved Food Security",
-    achieved: "208.8M",
-    target: "of 175.6M",
-    exceeded: true,
-    methodologyNote: "People with improved food security outcomes through IDA agriculture, nutrition, and resilient food systems investments.",
-  },
-  {
-    id: "ind-wash",
-    label: "People Provided With Water, Sanitation, and/or Hygiene",
-    achieved: "75.5M",
-    target: "of 175.6M",
-    methodologyNote: "People with access to improved water supply, sanitation, and hygiene through IDA WASH investments.",
-  },
-  {
-    id: "ind-hectares",
-    label: "Hectares of Conserved Land and Water",
-    achieved: "92.7M",
-    target: "of 124.1M",
-    methodologyNote: "Land area brought under improved natural resource management, including forests, wetlands, and protected marine areas.",
-  },
-  {
-    id: "ind-ghg",
-    label: "Greenhouse Gas Emissions",
-    achieved: "-331.8MtCO₂eq",
-    target: "reduction target",
-    methodologyNote: "Net greenhouse gas emission reductions attributable to IDA-financed climate mitigation projects, measured over project lifetime.",
-  },
-  {
-    id: "ind-climate-resilience",
-    label: "Beneficiaries of Better Climate Risk Resilience",
-    achieved: "136M",
-    target: "of 424.5M",
-    methodologyNote: "People with strengthened climate resilience through IDA adaptation projects, early warning systems, and climate-smart infrastructure.",
-  },
-  {
     id: "ind-safety-nets",
-    label: "Beneficiaries of Social Safety Net Programs",
-    achieved: "244.1M",
-    target: "of 251.4M",
-    methodologyNote: "People benefiting from social protection programs including cash transfers, food vouchers, and social insurance schemes.",
+    name: "Beneficiaries of social safety net programs",
+    achieved: "171.6M",
+    expected: "176.2M",
+    ratio: 171.6 / 176.2,
+    sparkline: [0.52, 0.61, 0.70, 0.82, 0.97],
+    methodologyNote:
+      "People benefiting from social protection programs including cash transfers, food vouchers, and social insurance schemes.",
   },
   {
     id: "ind-students",
-    label: "Students Supported With Better Education",
-    achieved: "324.5M",
-    target: "of 406.2M",
-    methodologyNote: "Students benefiting from WBG education investments across primary, secondary, and tertiary levels in IDA countries.",
+    name: "Students supported with better education",
+    achieved: "100.8M",
+    expected: "174.7M",
+    ratio: 100.8 / 174.7,
+    sparkline: [0.31, 0.38, 0.45, 0.52, 0.58],
+    methodologyNote:
+      "Students benefiting from WBG education investments across primary, secondary, and tertiary levels in IDA countries.",
   },
   {
     id: "ind-health-services",
-    label: "People Receiving Quality Health Services",
-    achieved: "378.9M",
-    target: "of 466.5M",
-    methodologyNote: "People accessing health services through IDA-supported projects. Includes primary care, maternal health, and community health workers.",
+    name: "People receiving quality health, nutrition, and population services",
+    achieved: "225.4M",
+    expected: "268.6M",
+    ratio: 225.4 / 268.6,
+    sparkline: [0.55, 0.62, 0.71, 0.78, 0.84],
+    methodologyNote:
+      "People accessing quality health, nutrition, and population services through IDA-supported projects. Includes primary care, maternal health, and community health workers.",
   },
   {
     id: "ind-health-emergencies",
-    label: "Countries With Stronger Responses to Health Emergencies",
-    achieved: "21",
-    target: "of 66",
-    methodologyNote: "Countries that have strengthened their capacity to prepare for and respond to health emergencies through IDA-financed programs.",
-  },
-  {
-    id: "ind-displaced-people",
-    label: "Displaced People Provided With Services",
-    achieved: "12.1M",
-    target: "of 575.6M",
-    methodologyNote: "Forcibly displaced people and host communities supported through IDA projects addressing protection, livelihoods, and durable solutions.",
-  },
-  {
-    id: "ind-gender-equality",
-    label: "People Benefiting From Advances in Gender Equality",
-    achieved: "256.7M",
-    target: "of 575.6M",
-    methodologyNote: "Women and girls benefiting from programs explicitly targeting gender gaps in education, health, finance, and labor markets.",
-  },
-  {
-    id: "ind-private-capital-enabled",
-    label: "Private Capital Enabled",
-    achieved: "$161.7B",
-    target: "target",
-    methodologyNote: "Total private capital enabled through IDA-supported projects. Includes IFC upstream work and WBG advisory engagements that facilitate private investment.",
-  },
-  {
-    id: "ind-financial-services",
-    label: "People and Businesses Using Financial Services",
-    achieved: "141.8M",
-    target: "of 575.6M",
-    methodologyNote: "People and businesses accessing financial services in IDA countries through IFC and IDA-supported financial sector projects.",
-  },
-  {
-    id: "ind-private-capital-mobilized",
-    label: "Private Capital Mobilized",
-    achieved: "$241.6B",
-    target: "target",
-    methodologyNote: "Private capital mobilized by IFC and MIGA in IDA-eligible countries, measured at commitment. Excludes sub-national guarantees.",
-  },
-  {
-    id: "ind-broadband",
-    label: "People Using Broadband Internet",
-    achieved: "176.6M",
-    target: "of 430.8M",
-    methodologyNote: "People with improved broadband access through IDA digital infrastructure projects. Includes mobile broadband where fixed broadband is unavailable.",
-  },
-  {
-    id: "ind-digital-services",
-    label: "People Using Digitally Enabled Services",
-    achieved: "216.8M",
-    target: "of 430.8M",
-    methodologyNote: "People using government or commercial services delivered through digital platforms supported by IDA-financed digital economy projects.",
-  },
-  {
-    id: "ind-electricity",
-    label: "People Provided With Electricity",
-    achieved: "214.5M",
-    target: "of 575.6M",
-    methodologyNote: "People gaining first-time or improved electricity access through IDA energy projects, including grid and off-grid solutions.",
-  },
-  {
-    id: "ind-renewable-energy",
-    label: "Renewable Energy Enabled",
-    achieved: "33.82GW",
-    target: "of 108.89GW",
-    methodologyNote: "Gigawatts of renewable energy capacity enabled through IDA-financed energy projects, including solar, wind, hydro, and geothermal.",
-  },
-  {
-    id: "ind-transport",
-    label: "People With Improved Access to Transportation",
-    achieved: "176.3M",
-    target: "of 523.5M",
-    methodologyNote: "People benefiting from improved transport infrastructure and services through IDA-financed sustainable transport projects.",
-  },
-  {
-    id: "ind-tax",
-    label: "Countries With Increased Tax Collections, Considering Equity",
-    achieved: "20",
-    target: "of 34",
-    methodologyNote: "IDA countries that have increased tax-to-GDP ratios through WBG-supported fiscal reform programs, with equity considerations applied.",
+    name: "Countries benefitting from strengthened capacity to prevent, detect, and respond to health emergencies",
+    achieved: "14",
+    expected: "42",
+    ratio: 14 / 42,
+    sparkline: [0.10, 0.14, 0.22, 0.28, 0.33],
+    methodologyNote:
+      "IDA countries that have strengthened their capacity to prepare for and respond to health emergencies through IDA-financed programs.",
   },
   {
     id: "ind-debt",
-    label: "Countries in or at High Risk of Debt Distress That Implemented Reforms",
-    achieved: "60.3%",
-    target: "of 65.5%",
-    methodologyNote: "Share of IDA countries in or at high risk of debt distress that have implemented debt sustainability reforms supported by WBG programs.",
+    name: "Percentage of countries in or at high risk of debt distress that implemented reforms towards debt sustainability",
+    achieved: "76.7%",
+    expected: "83.7%",
+    ratio: 76.7 / 83.7,
+    sparkline: [0.60, 0.66, 0.71, 0.74, 0.92],
+    methodologyNote:
+      "Share of IDA countries in or at high risk of debt distress that have implemented debt sustainability reforms supported by WBG programs.",
+  },
+  {
+    id: "ind-tax",
+    name: "Countries with tax revenues-to-GDP ratio at or below 15% (including social security contributions) that have increased collections, considering equity",
+    achieved: "18",
+    expected: "26",
+    ratio: 18 / 26,
+    sparkline: [0.40, 0.48, 0.55, 0.63, 0.69],
+    methodologyNote:
+      "IDA countries that have increased tax-to-GDP ratios through WBG-supported fiscal reform programs, with equity considerations applied.",
+  },
+  {
+    id: "ind-ghg",
+    name: "Net greenhouse gas emissions (GHG)",
+    achieved: "--",
+    expected: "-102.7MtCO2eq/year",
+    ratio: null,
+    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    methodologyNote:
+      "Net greenhouse gas emission reductions attributable to IDA-financed climate mitigation projects, measured over project lifetime. Reporting pending for FY25.",
+  },
+  {
+    id: "ind-climate-resilience",
+    name: "Beneficiaries with enhanced resilience to climate risks",
+    achieved: "104M",
+    expected: "268.1M",
+    ratio: 104 / 268.1,
+    sparkline: [0.18, 0.24, 0.30, 0.36, 0.39],
+    methodologyNote:
+      "People with strengthened climate resilience through IDA adaptation projects, early-warning systems, and climate-smart infrastructure.",
+  },
+  {
+    id: "ind-hectares",
+    name: "Hectares of terrestrial and aquatic areas under enhanced conservation/management",
+    achieved: "39.3M",
+    expected: "59.3M",
+    ratio: 39.3 / 59.3,
+    sparkline: [0.45, 0.52, 0.58, 0.62, 0.66],
+    methodologyNote:
+      "Land and aquatic area brought under enhanced natural-resource management, including forests, wetlands, and protected marine areas.",
+  },
+  {
+    id: "ind-wash",
+    name: "People provided with water, sanitation, and/or hygiene, and the number provided with safely managed services",
+    achieved: "41.3M",
+    expected: "90.1M",
+    ratio: 41.3 / 90.1,
+    sparkline: [0.20, 0.28, 0.36, 0.42, 0.46],
+    methodologyNote:
+      "People with access to improved water supply, sanitation, and hygiene through IDA WASH investments. The total figure is broken out by safely managed services as a sub-row.",
+    subRows: [
+      { label: "Total", achieved: "41.3M", expected: "90.1M" },
+      { label: "Safely managed", achieved: "1.8M", expected: "14M" },
+    ],
+  },
+  {
+    id: "ind-food-security",
+    name: "People with strengthened food and nutrition security",
+    achieved: "146.6M",
+    expected: "192.3M",
+    ratio: 146.6 / 192.3,
+    sparkline: [0.45, 0.55, 0.65, 0.72, 0.76],
+    methodologyNote:
+      "People with improved food and nutrition security outcomes through IDA agriculture, nutrition, and resilient food-systems investments.",
+  },
+  {
+    id: "ind-transport",
+    name: "People that benefit from improved access to sustainable transport infrastructure and services",
+    achieved: "84.3M",
+    expected: "277.5M",
+    ratio: 84.3 / 277.5,
+    sparkline: [0.16, 0.22, 0.26, 0.29, 0.30],
+    methodologyNote:
+      "People benefiting from improved transport infrastructure and services through IDA-financed sustainable transport projects.",
+  },
+  {
+    id: "ind-electricity",
+    name: "People provided with access to electricity",
+    achieved: "86.7M",
+    expected: "205.7M",
+    ratio: 86.7 / 205.7,
+    sparkline: [0.20, 0.28, 0.34, 0.40, 0.42],
+    methodologyNote:
+      "People gaining first-time or improved electricity access through IDA energy projects, including grid and off-grid solutions.",
+  },
+  {
+    id: "ind-renewable-energy",
+    name: "GW of renewable energy capacity enabled",
+    achieved: "4.8GW",
+    expected: "26.64GW",
+    ratio: 4.8 / 26.64,
+    sparkline: [0.10, 0.14, 0.16, 0.17, 0.18],
+    methodologyNote:
+      "Gigawatts of renewable energy capacity enabled through IDA-financed energy projects, including solar, wind, hydro, and geothermal.",
+  },
+  {
+    id: "ind-broadband",
+    name: "People using broadband internet",
+    achieved: "64.8M",
+    expected: "142.1M",
+    ratio: 64.8 / 142.1,
+    sparkline: [0.20, 0.28, 0.36, 0.42, 0.46],
+    methodologyNote:
+      "People with improved broadband access through IDA digital infrastructure projects. Includes mobile broadband where fixed broadband is unavailable.",
+  },
+  {
+    id: "ind-digital-services",
+    name: "People using digitally enabled services",
+    achieved: "25M",
+    expected: "76.4M",
+    ratio: 25 / 76.4,
+    sparkline: [0.15, 0.20, 0.26, 0.30, 0.33],
+    methodologyNote:
+      "People using government or commercial services delivered through digital platforms supported by IDA-financed digital economy projects.",
+  },
+  {
+    id: "ind-gender-equality",
+    name: "People benefiting from actions to advance gender equality, and the number benefitting from actions that expand and enable economic opportunities",
+    achieved: "191.8M",
+    expected: "307.2M",
+    ratio: 191.8 / 307.2,
+    sparkline: [0.42, 0.50, 0.56, 0.60, 0.62],
+    methodologyNote:
+      "Women and girls benefiting from programs explicitly targeting gender gaps in education, health, finance, and labor markets. Sub-rows break out beneficiaries of economic-opportunity actions specifically.",
+    subRows: [
+      { label: "Total", achieved: "191.8M", expected: "307.2M" },
+      {
+        label: "Beneficiaries of actions to expand and enable economic opportunities",
+        achieved: "67.7M",
+        expected: "128.1M",
+      },
+    ],
+  },
+  {
+    id: "ind-financial-services",
+    name: "People and businesses using financial services, including the number of women",
+    achieved: "44.4M",
+    expected: "26M",
+    ratio: 44.4 / 26,
+    sparkline: [0.55, 0.72, 0.88, 1.0, 1.0],
+    methodologyNote:
+      "People and businesses accessing financial services in IDA countries through IFC and IDA-supported financial sector projects. Sub-rows isolate the female beneficiary count.",
+    subRows: [
+      { label: "Total", achieved: "44.4M", expected: "26M" },
+      { label: "Female", achieved: "19.2M", expected: "10.6M" },
+    ],
+  },
+  {
+    id: "ind-jobs",
+    name: "More and better-paid jobs (Coming soon)",
+    achieved: "--",
+    expected: "--",
+    ratio: null,
+    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    methodologyNote:
+      "Final methodology under consultation. First IDA-wide report on jobs outcomes expected in FY26.",
+    comingSoon: true,
+  },
+  {
+    id: "ind-displaced-people",
+    name: "Displaced people and people in host communities provided with services and livelihoods",
+    achieved: "9.2M",
+    expected: "34.7M",
+    ratio: 9.2 / 34.7,
+    sparkline: [0.15, 0.18, 0.22, 0.25, 0.27],
+    methodologyNote:
+      "Forcibly displaced people and host communities supported through IDA projects addressing protection, livelihoods, and durable solutions.",
+  },
+  {
+    id: "ind-private-capital-enabled",
+    name: "Total private capital enabled",
+    achieved: "--",
+    expected: "$25.8B",
+    ratio: null,
+    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    methodologyNote:
+      "Total private capital enabled through IDA-supported projects. Includes IFC upstream work and WBG advisory engagements that facilitate private investment. Reporting pending for FY25.",
+  },
+  {
+    id: "ind-private-capital-mobilized",
+    name: "Total private capital mobilized",
+    achieved: "--",
+    expected: "$17.1B",
+    ratio: null,
+    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    methodologyNote:
+      "Private capital mobilized by IFC and MIGA in IDA-eligible countries, measured at commitment. Excludes sub-national guarantees. Reporting pending for FY25.",
   },
 ];
