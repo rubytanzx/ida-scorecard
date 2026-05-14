@@ -1164,7 +1164,7 @@ export const featuredNarratives: FeaturedNarrative[] = [
     id: "fn-1",
     outcomeArea: "Protection of the Poorest",
     headline: "Closing Sub-Saharan Africa's Poverty Gap Through Targeted Social Protection and Jobs",
-    imageSrc: `${NT}/protection%20for%20poorest.jpg`,
+    imageSrc: `${NT}/sub%20africa%20poverty.png`,
     indicators: [
       "Beneficiaries of social safety net programs",
       "Displaced people and people in host communities provided with services and livelihoods",

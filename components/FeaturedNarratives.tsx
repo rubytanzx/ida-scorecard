@@ -43,7 +43,7 @@ function Card({ narrative }: { narrative: FeaturedNarrative }) {
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(0,0,0,0) 32%, rgba(0,0,0,0.55) 58%, rgba(0,0,0,0.88) 100%)",
+              "linear-gradient(180deg, rgba(0,0,0,0) 18%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.78) 70%, rgba(0,0,0,0.92) 100%)",
           }}
         />
       </div>
