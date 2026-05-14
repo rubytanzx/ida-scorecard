@@ -265,13 +265,14 @@ export default function PromptBar({
           style={{
             transitionProperty: "border-radius, box-shadow, border-color",
             transitionDuration: "200ms",
-            // Landing-page promptbar: soft blue/green halo glow on the
-            // border so the bar reads as the primary interactive surface.
-            // Inner ring + soft outer aura, no glow once the user enters
-            // conversation/viewer/workspace mode.
+            // Landing-page promptbar: soft teal halo glow on the
+            // border so the bar reads as the primary interactive surface,
+            // matching the page's pale-teal gradient. Inner ring + soft
+            // outer aura, collapsed to a flat shadow once the user
+            // enters conversation/viewer/workspace mode.
             boxShadow: inConversation
               ? "0 1px 2px rgba(0,0,0,0.04)"
-              : "0 0 0 1px rgba(0,125,183,0.22), 0 0 24px rgba(141,198,63,0.26), 0 0 56px rgba(0,125,183,0.14), 0 1px 2px rgba(0,0,0,0.04)",
+              : "0 0 0 1px rgba(15,118,110,0.22), 0 0 24px rgba(45,212,191,0.32), 0 0 56px rgba(15,118,110,0.14), 0 1px 2px rgba(0,0,0,0.04)",
           }}
           onClick={() => {
             if (!isBottom && !inConversation && !expanded) setExpanded(true);
