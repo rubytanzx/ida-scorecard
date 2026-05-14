@@ -24,7 +24,7 @@ function IndicatorCard({ indicator }: { indicator: Indicator }) {
       onMouseLeave={() => setFlipped(false)}
       onClick={handleClick}
       style={{ perspective: 600, cursor: "pointer" }}
-      aria-label={`${indicator.label}: ${indicator.achieved}`}
+      aria-label={`${indicator.name}: ${indicator.achieved}`}
     >
       {/* Flipper */}
       <div
@@ -61,7 +61,7 @@ function IndicatorCard({ indicator }: { indicator: Indicator }) {
               lineHeight: 1.3,
             }}
           >
-            {indicator.label}
+            {indicator.name}
           </div>
           <div
             style={{
@@ -74,27 +74,15 @@ function IndicatorCard({ indicator }: { indicator: Indicator }) {
           >
             {indicator.achieved}
           </div>
-          {indicator.exceeded ? (
-            <div
-              style={{
-                fontSize: 8,
-                color: "#07ab50",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              ↑ Exceeded
-            </div>
-          ) : (
-            <div
-              style={{
-                fontSize: 8,
-                color: "#9CA3AF",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              {indicator.target}
-            </div>
-          )}
+          <div
+            style={{
+              fontSize: 8,
+              color: "#9CA3AF",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            of {indicator.expected}
+          </div>
         </div>
 
         {/* Back face */}
