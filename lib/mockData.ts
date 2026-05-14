@@ -1007,71 +1007,38 @@ export const counterIntuitiveTextCards: CounterIntuitiveTextCard[] = [
   },
 ];
 
-// ─── System Patterns ──────────────────────────────────────────────────────────
+// ─── Outcome Areas (Explore by Outcome Area) ─────────────────────────────────
 
-export interface SystemPattern {
+export interface OutcomeArea {
   id: string;
   name: string;
-  description: string;
-  icon: "trend" | "digital" | "human" | "climate" | "inclusion" | "fragility";
-  tint: "green" | "blue" | "teal" | "purple-light" | "purple" | "orange";
-  narrativeCount: number;
-  indicatorCount: number;
+  icon: "protection" | "planet" | "digital" | "investment";
+  color: string; // hex for the icon outline + glyph stroke
 }
 
-export const systemPatterns: SystemPattern[] = [
+export const outcomeAreas: OutcomeArea[] = [
   {
-    id: "sp-1",
-    name: "Economic Mobility",
-    description: "Jobs, productivity, and opportunity for all",
-    icon: "trend",
-    tint: "green",
-    narrativeCount: 24,
-    indicatorCount: 18,
+    id: "oa-1",
+    name: "Protection for the Poorest",
+    icon: "protection",
+    color: "#F59E0B",
   },
   {
-    id: "sp-2",
-    name: "Digital Transformation",
-    description: "Digital infrastructure and services at scale",
+    id: "oa-2",
+    name: "Green and Blue Planet and Resilient Populations",
+    icon: "planet",
+    color: "#22C55E",
+  },
+  {
+    id: "oa-3",
+    name: "Digital Services",
     icon: "digital",
-    tint: "blue",
-    narrativeCount: 19,
-    indicatorCount: 14,
+    color: "#374151",
   },
   {
-    id: "sp-3",
-    name: "Human Capital",
-    description: "Health, education, and skills for resilience",
-    icon: "human",
-    tint: "teal",
-    narrativeCount: 21,
-    indicatorCount: 16,
-  },
-  {
-    id: "sp-4",
-    name: "Climate Resilience",
-    description: "Adaptation, mitigation, and sustainable growth",
-    icon: "climate",
-    tint: "purple-light",
-    narrativeCount: 17,
-    indicatorCount: 13,
-  },
-  {
-    id: "sp-5",
-    name: "Inclusive Participation",
-    description: "Gender, youth, and social inclusion",
-    icon: "inclusion",
-    tint: "purple",
-    narrativeCount: 16,
-    indicatorCount: 12,
-  },
-  {
-    id: "sp-6",
-    name: "Fragility & Institutions",
-    description: "State capacity, governance, and resilience",
-    icon: "fragility",
-    tint: "orange",
-    narrativeCount: 20,
-    indicatorCount: 15,
+    id: "oa-4",
+    name: "More Private Investment",
+    icon: "investment",
+    color: "#1D4ED8",
   },
 ];

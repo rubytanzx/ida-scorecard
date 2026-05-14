@@ -22,7 +22,7 @@ import IndicatorTicker from "@/components/IndicatorTicker";
 import TrendingAcrossIDA from "@/components/TrendingAcrossIDA";
 import MomentumGroups from "@/components/MomentumGroups";
 import CounterIntuitiveFindings from "@/components/CounterIntuitiveTextCard";
-import SystemPatternGrid from "@/components/SystemPatternTile";
+import OutcomeAreaGrid from "@/components/SystemPatternTile";
 
 import { indicators, secondaryStories } from "@/lib/mockData";
 
@@ -529,7 +529,7 @@ export default function HomePage() {
         </FadeIn>
 
         <FadeIn delay={125}>
-          <SystemPatternGrid />
+          <OutcomeAreaGrid />
         </FadeIn>
 
         <div className="h-8" />
