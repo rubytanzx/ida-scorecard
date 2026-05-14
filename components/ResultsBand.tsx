@@ -202,9 +202,8 @@ export default function ResultsBand({ indicators, onViewAll }: ResultsBandProps)
 
       {/* Indicator grid */}
       <div
+        className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(8, 1fr)",
           gap: 8,
           background: "#F8F7F4",
           borderRadius: 12,

@@ -612,17 +612,6 @@ export default function HomePage() {
                         </div>
                       );
                     }
-                    if (story.id === "story-3") {
-                      return (
-                        <div
-                          key={story.id}
-                          className="cursor-pointer"
-                          onClick={() => setModalStory(story)}
-                        >
-                          <StoryCard story={{ ...story, href: undefined }} noImage />
-                        </div>
-                      );
-                    }
                     return <StoryCard key={story.id} story={story} noImage />;
                   })}
                 </div>
