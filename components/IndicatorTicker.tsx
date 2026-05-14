@@ -20,13 +20,10 @@ function tintBg(color: string) {
 }
 
 function deltaTone(ind: Indicator) {
-  if (ind.ratio === null) {
-    return { color: "#9CA3AF", arrow: "•", label: ind.comingSoon ? "Coming soon" : "Pending" };
-  }
-  const pct = Math.round(ind.ratio * 100);
-  if (ind.ratio >= 0.85) return { color: "#10B981", arrow: "▲", label: `${pct}% of expected` };
-  if (ind.ratio >= 0.5)  return { color: "#F59E0B", arrow: "▲", label: `${pct}% of expected` };
-  return { color: "#EF4444", arrow: "▼", label: `${pct}% of expected` };
+  if (ind.ratio === null) return { color: "#9CA3AF" };
+  if (ind.ratio >= 0.85) return { color: "#10B981" };
+  if (ind.ratio >= 0.5)  return { color: "#F59E0B" };
+  return { color: "#EF4444" };
 }
 
 function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicator; onOpen: () => void; isClone?: boolean }) {
@@ -39,7 +36,7 @@ function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicat
       aria-label={`${indicator.name}: ${indicator.achieved} of ${indicator.expected}`}
       style={{
         flex: "0 0 500px",
-        height: 56,
+        minHeight: 64,
         background: "#FFFFFF",
         border: "1px solid #E5E7EB",
         borderRadius: 8,
@@ -72,13 +69,17 @@ function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicat
 
       {/* Name */}
       <div
+        title={indicator.name}
         style={{
-          flex: 1,
-          minWidth: 0,
+          flex: "0 0 180px",
+          maxWidth: 180,
           fontSize: 14,
           fontWeight: 400,
           color: "#4B5563",
-          whiteSpace: "nowrap",
+          lineHeight: 1.35,
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
           overflow: "hidden",
           textOverflow: "ellipsis",
         }}
@@ -96,29 +97,35 @@ function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicat
 
       {/* Right stat block */}
       <div style={{ textAlign: "right", flexShrink: 0, width: 160, lineHeight: 1.2 }}>
-        <div style={{ fontSize: 13 }}>
-          <strong
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: indicator.achieved === "--" ? "#9CA3AF" : "#0D1A2B",
-            }}
-          >
-            {indicator.achieved === "--" ? "—" : indicator.achieved}
-          </strong>{" "}
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: indicator.achieved === "--" ? "#9CA3AF" : "#0D1A2B",
-            }}
-          >
-            Achieved
-          </span>
+        {/* Achieved line */}
+        <div
+          style={{
+            color: indicator.achieved === "--" ? "#9CA3AF" : "#121D28",
+            textAlign: "right",
+            fontFamily: F,
+            fontSize: 14,
+            fontWeight: 600,
+            lineHeight: "normal",
+          }}
+        >
+          {indicator.achieved === "--" ? "—" : indicator.achieved} Achieved
         </div>
-        <div style={{ fontSize: 12, color: tone.color, marginTop: 1 }}>
-          <strong style={{ fontWeight: 600 }}>{indicator.expected}</strong>{" "}
-          <span>Expected</span>
+        {/* Expected line */}
+        <div
+          style={{
+            color: indicator.ratio === null ? "#9CA3AF" : "#00B29C",
+            textAlign: "right",
+            fontFamily: F,
+            fontSize: 12,
+            fontWeight: 400,
+            lineHeight: "normal",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            marginTop: 1,
+          }}
+        >
+          {indicator.expected} Expected
         </div>
       </div>
     </button>

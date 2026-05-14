@@ -614,7 +614,7 @@ export const indicators: Indicator[] = [
     achieved: "171.6M",
     expected: "176.2M",
     ratio: 171.6 / 176.2,
-    sparkline: [0.52, 0.61, 0.70, 0.82, 0.97],
+    sparkline: [0.55, 0.62, 0.58, 0.68, 0.65, 0.74, 0.71, 0.82, 0.88, 0.95],
     methodologyNote:
       "People benefiting from social protection programs including cash transfers, food vouchers, and social insurance schemes.",
   },
@@ -624,7 +624,7 @@ export const indicators: Indicator[] = [
     achieved: "100.8M",
     expected: "174.7M",
     ratio: 100.8 / 174.7,
-    sparkline: [0.31, 0.38, 0.45, 0.52, 0.58],
+    sparkline: [0.32, 0.38, 0.35, 0.42, 0.40, 0.47, 0.45, 0.52, 0.56, 0.58],
     methodologyNote:
       "Students benefiting from WBG education investments across primary, secondary, and tertiary levels in IDA countries.",
   },
@@ -634,7 +634,7 @@ export const indicators: Indicator[] = [
     achieved: "225.4M",
     expected: "268.6M",
     ratio: 225.4 / 268.6,
-    sparkline: [0.55, 0.62, 0.71, 0.78, 0.84],
+    sparkline: [0.54, 0.61, 0.57, 0.66, 0.72, 0.69, 0.75, 0.79, 0.76, 0.84],
     methodologyNote:
       "People accessing quality health, nutrition, and population services through IDA-supported projects. Includes primary care, maternal health, and community health workers.",
   },
@@ -644,7 +644,7 @@ export const indicators: Indicator[] = [
     achieved: "14",
     expected: "42",
     ratio: 14 / 42,
-    sparkline: [0.10, 0.14, 0.22, 0.28, 0.33],
+    sparkline: [0.10, 0.15, 0.12, 0.20, 0.18, 0.25, 0.22, 0.28, 0.30, 0.33],
     methodologyNote:
       "IDA countries that have strengthened their capacity to prepare for and respond to health emergencies through IDA-financed programs.",
   },
@@ -654,7 +654,7 @@ export const indicators: Indicator[] = [
     achieved: "76.7%",
     expected: "83.7%",
     ratio: 76.7 / 83.7,
-    sparkline: [0.60, 0.66, 0.71, 0.74, 0.92],
+    sparkline: [0.60, 0.67, 0.63, 0.70, 0.74, 0.71, 0.78, 0.76, 0.85, 0.92],
     methodologyNote:
       "Share of IDA countries in or at high risk of debt distress that have implemented debt sustainability reforms supported by WBG programs.",
   },
@@ -664,7 +664,7 @@ export const indicators: Indicator[] = [
     achieved: "18",
     expected: "26",
     ratio: 18 / 26,
-    sparkline: [0.40, 0.48, 0.55, 0.63, 0.69],
+    sparkline: [0.40, 0.46, 0.43, 0.51, 0.56, 0.52, 0.60, 0.64, 0.61, 0.69],
     methodologyNote:
       "IDA countries that have increased tax-to-GDP ratios through WBG-supported fiscal reform programs, with equity considerations applied.",
   },
@@ -674,7 +674,7 @@ export const indicators: Indicator[] = [
     achieved: "--",
     expected: "-102.7MtCO2eq/year",
     ratio: null,
-    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    sparkline: [0.48, 0.52, 0.50, 0.49, 0.51, 0.50, 0.48, 0.52, 0.50, 0.51],
     methodologyNote:
       "Net greenhouse gas emission reductions attributable to IDA-financed climate mitigation projects, measured over project lifetime. Reporting pending for FY25.",
   },
@@ -684,7 +684,7 @@ export const indicators: Indicator[] = [
     achieved: "104M",
     expected: "268.1M",
     ratio: 104 / 268.1,
-    sparkline: [0.18, 0.24, 0.30, 0.36, 0.39],
+    sparkline: [0.18, 0.23, 0.20, 0.27, 0.25, 0.31, 0.29, 0.35, 0.33, 0.39],
     methodologyNote:
       "People with strengthened climate resilience through IDA adaptation projects, early-warning systems, and climate-smart infrastructure.",
   },
@@ -694,7 +694,7 @@ export const indicators: Indicator[] = [
     achieved: "39.3M",
     expected: "59.3M",
     ratio: 39.3 / 59.3,
-    sparkline: [0.45, 0.52, 0.58, 0.62, 0.66],
+    sparkline: [0.45, 0.51, 0.48, 0.55, 0.59, 0.56, 0.62, 0.60, 0.64, 0.66],
     methodologyNote:
       "Land and aquatic area brought under enhanced natural-resource management, including forests, wetlands, and protected marine areas.",
   },
@@ -704,7 +704,7 @@ export const indicators: Indicator[] = [
     achieved: "41.3M",
     expected: "90.1M",
     ratio: 41.3 / 90.1,
-    sparkline: [0.20, 0.28, 0.36, 0.42, 0.46],
+    sparkline: [0.20, 0.26, 0.23, 0.31, 0.36, 0.33, 0.39, 0.43, 0.41, 0.46],
     methodologyNote:
       "People with access to improved water supply, sanitation, and hygiene through IDA WASH investments. The total figure is broken out by safely managed services as a sub-row.",
     subRows: [
@@ -718,7 +718,7 @@ export const indicators: Indicator[] = [
     achieved: "146.6M",
     expected: "192.3M",
     ratio: 146.6 / 192.3,
-    sparkline: [0.45, 0.55, 0.65, 0.72, 0.76],
+    sparkline: [0.45, 0.53, 0.49, 0.58, 0.63, 0.60, 0.68, 0.65, 0.72, 0.76],
     methodologyNote:
       "People with improved food and nutrition security outcomes through IDA agriculture, nutrition, and resilient food-systems investments.",
   },
@@ -728,7 +728,7 @@ export const indicators: Indicator[] = [
     achieved: "84.3M",
     expected: "277.5M",
     ratio: 84.3 / 277.5,
-    sparkline: [0.16, 0.22, 0.26, 0.29, 0.30],
+    sparkline: [0.16, 0.21, 0.18, 0.24, 0.22, 0.27, 0.25, 0.29, 0.27, 0.30],
     methodologyNote:
       "People benefiting from improved transport infrastructure and services through IDA-financed sustainable transport projects.",
   },
@@ -738,7 +738,7 @@ export const indicators: Indicator[] = [
     achieved: "86.7M",
     expected: "205.7M",
     ratio: 86.7 / 205.7,
-    sparkline: [0.20, 0.28, 0.34, 0.40, 0.42],
+    sparkline: [0.20, 0.27, 0.24, 0.32, 0.30, 0.36, 0.34, 0.39, 0.37, 0.42],
     methodologyNote:
       "People gaining first-time or improved electricity access through IDA energy projects, including grid and off-grid solutions.",
   },
@@ -748,7 +748,7 @@ export const indicators: Indicator[] = [
     achieved: "4.8GW",
     expected: "26.64GW",
     ratio: 4.8 / 26.64,
-    sparkline: [0.10, 0.14, 0.16, 0.17, 0.18],
+    sparkline: [0.10, 0.13, 0.11, 0.15, 0.14, 0.16, 0.15, 0.17, 0.16, 0.18],
     methodologyNote:
       "Gigawatts of renewable energy capacity enabled through IDA-financed energy projects, including solar, wind, hydro, and geothermal.",
   },
@@ -758,7 +758,7 @@ export const indicators: Indicator[] = [
     achieved: "64.8M",
     expected: "142.1M",
     ratio: 64.8 / 142.1,
-    sparkline: [0.20, 0.28, 0.36, 0.42, 0.46],
+    sparkline: [0.20, 0.27, 0.24, 0.33, 0.38, 0.35, 0.42, 0.40, 0.44, 0.46],
     methodologyNote:
       "People with improved broadband access through IDA digital infrastructure projects. Includes mobile broadband where fixed broadband is unavailable.",
   },
@@ -768,7 +768,7 @@ export const indicators: Indicator[] = [
     achieved: "25M",
     expected: "76.4M",
     ratio: 25 / 76.4,
-    sparkline: [0.15, 0.20, 0.26, 0.30, 0.33],
+    sparkline: [0.15, 0.19, 0.17, 0.22, 0.26, 0.23, 0.29, 0.27, 0.31, 0.33],
     methodologyNote:
       "People using government or commercial services delivered through digital platforms supported by IDA-financed digital economy projects.",
   },
@@ -778,7 +778,7 @@ export const indicators: Indicator[] = [
     achieved: "191.8M",
     expected: "307.2M",
     ratio: 191.8 / 307.2,
-    sparkline: [0.42, 0.50, 0.56, 0.60, 0.62],
+    sparkline: [0.42, 0.48, 0.45, 0.52, 0.55, 0.52, 0.58, 0.56, 0.60, 0.62],
     methodologyNote:
       "Women and girls benefiting from programs explicitly targeting gender gaps in education, health, finance, and labor markets. Sub-rows break out beneficiaries of economic-opportunity actions specifically.",
     subRows: [
@@ -796,7 +796,7 @@ export const indicators: Indicator[] = [
     achieved: "44.4M",
     expected: "26M",
     ratio: 44.4 / 26,
-    sparkline: [0.55, 0.72, 0.88, 1.0, 1.0],
+    sparkline: [0.56, 0.65, 0.72, 0.80, 0.76, 0.88, 0.92, 0.97, 1.00, 1.00],
     methodologyNote:
       "People and businesses accessing financial services in IDA countries through IFC and IDA-supported financial sector projects. Sub-rows isolate the female beneficiary count.",
     subRows: [
@@ -810,7 +810,7 @@ export const indicators: Indicator[] = [
     achieved: "--",
     expected: "--",
     ratio: null,
-    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    sparkline: [0.50, 0.53, 0.51, 0.49, 0.52, 0.50, 0.53, 0.51, 0.49, 0.52],
     methodologyNote:
       "Final methodology under consultation. First IDA-wide report on jobs outcomes expected in FY26.",
     comingSoon: true,
@@ -821,7 +821,7 @@ export const indicators: Indicator[] = [
     achieved: "9.2M",
     expected: "34.7M",
     ratio: 9.2 / 34.7,
-    sparkline: [0.15, 0.18, 0.22, 0.25, 0.27],
+    sparkline: [0.15, 0.19, 0.17, 0.21, 0.20, 0.23, 0.22, 0.25, 0.24, 0.27],
     methodologyNote:
       "Forcibly displaced people and host communities supported through IDA projects addressing protection, livelihoods, and durable solutions.",
   },
@@ -831,7 +831,7 @@ export const indicators: Indicator[] = [
     achieved: "--",
     expected: "$25.8B",
     ratio: null,
-    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    sparkline: [0.51, 0.49, 0.52, 0.50, 0.48, 0.51, 0.50, 0.53, 0.49, 0.51],
     methodologyNote:
       "Total private capital enabled through IDA-supported projects. Includes IFC upstream work and WBG advisory engagements that facilitate private investment. Reporting pending for FY25.",
   },
@@ -841,7 +841,7 @@ export const indicators: Indicator[] = [
     achieved: "--",
     expected: "$17.1B",
     ratio: null,
-    sparkline: [0.50, 0.50, 0.50, 0.50, 0.50],
+    sparkline: [0.49, 0.51, 0.50, 0.53, 0.50, 0.48, 0.51, 0.50, 0.52, 0.49],
     methodologyNote:
       "Private capital mobilized by IFC and MIGA in IDA-eligible countries, measured at commitment. Excludes sub-national guarantees. Reporting pending for FY25.",
   },
