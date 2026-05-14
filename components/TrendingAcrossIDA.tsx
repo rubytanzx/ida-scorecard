@@ -126,7 +126,14 @@ function SideCard({ card }: { card: TrendingSideCard }) {
   );
 }
 
-export default function TrendingAcrossIDA() {
+interface Props {
+  /** Called when the user clicks the top card; receives the headline so
+   * the home page can hand it off to its search-complete handler and
+   * jump into the conversation flow. */
+  onOpenTopCard?: (prompt: string) => void;
+}
+
+export default function TrendingAcrossIDA({ onOpenTopCard }: Props = {}) {
   return (
     <section aria-label="Trending Across IDA" style={{ marginBottom: 40 }}>
       <style>{`
@@ -210,13 +217,25 @@ export default function TrendingAcrossIDA() {
       </div>
 
       <div className="flex flex-col xl:flex-row gap-4 items-stretch">
-        {/* Top card (left, 58%) */}
+        {/* Top card (left, 58%) — clickable; hands the headline back to
+            the home page so it can open the conversation flow. */}
         <article
           className="xl:basis-[58%]"
+          onClick={() => onOpenTopCard?.(trendingTop.headline)}
+          role={onOpenTopCard ? "button" : undefined}
+          tabIndex={onOpenTopCard ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (!onOpenTopCard) return;
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpenTopCard(trendingTop.headline);
+            }
+          }}
           style={{
             background: "#FFFFFF",
             border: "1px solid #E5E7EB",
             borderRadius: 12,
+            cursor: onOpenTopCard ? "pointer" : "default",
             padding: "24px 28px 22px",
             display: "flex",
             flexDirection: "column",
@@ -270,6 +289,7 @@ export default function TrendingAcrossIDA() {
                 <a
                   key={n.label}
                   href={n.href}
+                  onClick={(e) => e.stopPropagation()}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

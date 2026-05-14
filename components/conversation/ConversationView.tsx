@@ -77,10 +77,15 @@ interface Props {
 // Flow detection — keyword-driven. Anything mentioning "health services target"
 // resolves to the health-gap flow; anything with "extreme poverty" resolves to
 // the africa-poverty flow. Falls back to africa-poverty otherwise (the default).
-export type FlowId = "africa-poverty" | "health-gap";
+export type FlowId = "africa-poverty" | "health-gap" | "electricity-fcs";
 
 export function detectFlow(prompt: string): FlowId {
   const t = prompt.toLowerCase();
+  if (
+    t.includes("electricity") ||
+    t.includes("energy access") ||
+    (t.includes("fcs") && t.includes("driving"))
+  ) return "electricity-fcs";
   if (
     t.includes("health services target") ||
     t.includes("health & nutrition") ||
@@ -124,17 +129,19 @@ const CHART_DATA: ChartRow[] = [
 type SignalDirection = "down" | "flat" | "up";
 
 interface SignalCard {
-  tag: string;
-  direction: SignalDirection;
+  iconSrc: string;
   label: string;
   value: string;
 }
 
+// Shorthand for the outcome-area SVG directory (URL-encoded space).
+const OA = "/outcome%20areas";
+
 const RELATED_SIGNALS: SignalCard[] = [
-  { tag: "IDA AVG", direction: "down", label: "Extreme poverty rate (FCS)",  value: "30.4%" },
-  { tag: "LIC AVG", direction: "down", label: "Learning poverty (primary)",  value: "70%"   },
-  { tag: "FLAT",    direction: "flat", label: "UHC service coverage index",   value: "45/100" },
-  { tag: "+2x",     direction: "up",   label: "Broadband users (vs FY24)",    value: "217M"   },
+  { iconSrc: `${OA}/protection%20for%20the%20pooresr.svg`,                                                              label: "Extreme poverty rate (FCS)",   value: "30.4%"  },
+  { iconSrc: `${OA}/learning%20poverty.svg`,                                                                            label: "Learning poverty (primary)",   value: "70%"    },
+  { iconSrc: `${OA}/healthier%20lives.svg`,                                                                             label: "UHC service coverage index",    value: "45/100" },
+  { iconSrc: `${OA}/Digital%20Connectivity.svg`,                                                                        label: "Broadband users (vs FY24)",     value: "217M"   },
 ];
 
 // ─── Health-gap flow data ────────────────────────────────────────────────────
@@ -161,10 +168,17 @@ const HEALTH_COUNTRY_DATA: HealthCountryRow[] = [
 ];
 
 const HEALTH_RELATED_SIGNALS: SignalCard[] = [
-  { tag: "FCS",     direction: "down", label: "Avg health-service achievement (FCS)", value: "44%" },
-  { tag: "FLAT",    direction: "flat", label: "UHC service coverage index — FCS",     value: "32/100" },
-  { tag: "RISING",  direction: "down", label: "Stunting prevalence (FCS, under-5)",   value: "33.6%" },
-  { tag: "DECLINE", direction: "down", label: "Health worker density (per 1k, FCS)",   value: "0.8" },
+  { iconSrc: `${OA}/healthier%20lives.svg`,                                                                             label: "Avg health-service achievement (FCS)", value: "44%"     },
+  { iconSrc: `${OA}/healthier%20lives.svg`,                                                                             label: "UHC service coverage index — FCS",     value: "32/100"  },
+  { iconSrc: `${OA}/Sustainable%20Food%20Systems.svg`,                                                                  label: "Stunting prevalence (FCS, under-5)",   value: "33.6%"   },
+  { iconSrc: `${OA}/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg`,             label: "Health worker density (per 1k, FCS)",  value: "0.8"     },
+];
+
+const ELECTRICITY_FCS_SIGNALS: SignalCard[] = [
+  { iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,                            label: "Electricity access pipeline met",      value: "37%"     },
+  { iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,                            label: "Renewable energy capacity enabled",    value: "33.82 GW"},
+  { iconSrc: `${OA}/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg`,             label: "Avg electricity reach in FCV countries", value: "21%"   },
+  { iconSrc: `${OA}/Connected%20Communities.svg`,                                                                       label: "Households still unconnected (FCS)",   value: "78M"     },
 ];
 
 // ─── Per-flow content map ────────────────────────────────────────────────────
@@ -201,6 +215,31 @@ const FLOW_CONTENT: Record<FlowId, FlowContent> = {
       "Social Safety Nets results · FY2025 global aggregate",
       "Education Support results · FY2025 project data, FCS countries",
       "Social Safety Nets methodology note — beneficiary counting rules",
+    ],
+  },
+  "electricity-fcs": {
+    title: "Electricity access — FY25 delivery gap",
+    defaultPrompt:
+      "Electricity access is the scorecard's biggest gap — and FCS is driving it",
+    leadAnswer:
+      "Yes — only 37% of the FY25 electricity access pipeline has been met. The shortfall is concentrated in fragile and conflict-affected states, where utility performance and delivery timing — not ambition — are the binding constraints.",
+    bodyText:
+      "Globally, IDA-financed electricity projects reached 215M people in FY25 against a 576M pipeline target. The biggest absolute and proportional gaps sit in FCS economies: average country-level achievement in FCV settings is roughly 21%, less than half the IDA average. Renewable energy capacity continues to grow (33.82 GW enabled, +75%), but supply is concentrated in middle-income IBRD markets rather than the IDA countries where access gaps are widest.",
+    filterCaption:
+      "FY25 IDA results — filter by outcome theme to locate the electricity gap:",
+    chartTitle: "FY25 Results vs pipeline — IDA headline indicators",
+    signalsHeader: "Related Signals",
+    continueExploring: [
+      "Which FCS countries are furthest behind on electricity?",
+      "How is renewable capacity distributed across IDA?",
+      "What's the FY26 electricity pipeline for fragile states?",
+      "Show me private capital flows into IDA energy projects",
+    ],
+    sources: [
+      "Electricity access results · FY2025 project data",
+      "Renewable energy methodology note — FY25",
+      "FCS portfolio overview — energy operations",
+      "WBG energy strategy — FY25 progress",
     ],
   },
   "health-gap": {
@@ -350,23 +389,19 @@ function NarrativeCard({ n }: { n: Narrative }) {
 }
 
 function SignalCard({ s }: { s: SignalCard }) {
-  const tagStyle =
-    s.direction === "down" ? "bg-red-50 text-red-700"   :
-    s.direction === "flat" ? "bg-amber-50 text-amber-700" :
-                             "bg-emerald-50 text-emerald-700";
-  const Arrow =
-    s.direction === "down" ? IconArrowDown :
-    s.direction === "flat" ? IconMinus :
-                             IconArrowUpRight;
-
   return (
-    <div className="flex flex-col gap-2 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
-      <span className={`inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${tagStyle}`}>
-        <Arrow size={10} stroke={2.5} />
-        {s.tag}
-      </span>
-      <span className="text-[11.5px] text-gray-500 leading-tight">{s.label}</span>
-      <span className="text-[18px] font-bold text-gray-900 leading-none">{s.value}</span>
+    <div className="flex items-center gap-3 px-3.5 py-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+      <Image
+        src={s.iconSrc}
+        alt=""
+        width={32}
+        height={32}
+        aria-hidden="true"
+        className="shrink-0"
+        style={{ display: "block" }}
+      />
+      <span className="flex-1 text-[12.5px] text-gray-700 leading-snug">{s.label}</span>
+      <span className="text-[15px] font-semibold text-gray-900 leading-none whitespace-nowrap">{s.value}</span>
     </div>
   );
 }
@@ -626,6 +661,13 @@ const THOUGHT_STEPS_HEALTH: ThoughtStep[] = [
   { type: "analyze", text: "Layering UHC index and stunting context indicators to identify driver patterns",            detail: "UHC Coverage · Stunting" },
 ];
 
+const THOUGHT_STEPS_ELECTRICITY: ThoughtStep[] = [
+  { type: "search",  text: "Scanning Electricity Access results · project-level rows for FY2025",                       detail: "612 project rows scanned" },
+  { type: "compute", text: "Computing achieved/expected pipeline ratio across IDA portfolio",                            detail: "215M reached vs 576M expected" },
+  { type: "filter",  text: "Cross-referencing renewable energy capacity and FCS country status",                         detail: "FCV countries flagged · 21% avg" },
+  { type: "analyze", text: "Identifying delivery-side drivers — utility performance, project maturation, supply mix",    detail: "Capacity vs access concentration" },
+];
+
 const NARRATIVE_PLAN_STEPS: ThoughtStep[] = [
   { type: "search",  text: "Reading conversation context",          detail: "africa-poverty signal · 1 query" },
   { type: "search",  text: "Loading indicator catalogue",           detail: "IDA_Scorecard_Metadata_1.xlsx · 21 Results indicators" },
@@ -659,7 +701,10 @@ function StreamingText({
 }
 
 function ThoughtProcess({ flow, onComplete }: { flow: FlowId; onComplete?: () => void }) {
-  const steps = flow === "health-gap" ? THOUGHT_STEPS_HEALTH : THOUGHT_STEPS_AFRICA;
+  const steps =
+    flow === "health-gap"     ? THOUGHT_STEPS_HEALTH      :
+    flow === "electricity-fcs" ? THOUGHT_STEPS_ELECTRICITY :
+                                THOUGHT_STEPS_AFRICA;
   const [visibleCount, setVisibleCount] = useState(0);
   const [open, setOpen] = useState(true);
   const done = visibleCount >= steps.length;
@@ -1159,7 +1204,10 @@ export default function ConversationView({
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
-  const signals = flow === "health-gap" ? HEALTH_RELATED_SIGNALS : RELATED_SIGNALS;
+  const signals =
+    flow === "health-gap"      ? HEALTH_RELATED_SIGNALS    :
+    flow === "electricity-fcs" ? ELECTRICITY_FCS_SIGNALS   :
+                                 RELATED_SIGNALS;
   const narratives = useMemo(() => pickNarratives(prompt, 4), [prompt]);
 
   const [thoughtDone, setThoughtDone] = useState(false);
@@ -1354,10 +1402,11 @@ export default function ConversationView({
                     <PovertyChart title={content.chartTitle} />
                   )}
 
-                  {/* Related Signals */}
+                  {/* Related Signals — horizontal indicator-row format, two
+                      per row so the icon + label + value all fit comfortably. */}
                   <div className="flex flex-col gap-2 mt-2">
                     <h5 className="text-[12px] font-semibold text-gray-500">{content.signalsHeader}</h5>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {signals.map((s, i) => <SignalCard key={i} s={s} />)}
                     </div>
                   </div>

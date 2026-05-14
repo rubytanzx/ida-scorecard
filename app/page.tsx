@@ -563,7 +563,7 @@ export default function HomePage() {
         </FadeIn>
 
         <FadeIn delay={50}>
-          <TrendingAcrossIDA />
+          <TrendingAcrossIDA onOpenTopCard={handleSearchComplete} />
         </FadeIn>
 
         <FadeIn delay={75}>
