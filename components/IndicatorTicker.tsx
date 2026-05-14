@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IconUsers } from "@tabler/icons-react";
 import { type Indicator } from "@/lib/mockData";
 import IndicatorSparkline from "./IndicatorSparkline";
 
@@ -9,6 +10,14 @@ interface Props {
 }
 
 const F = "'Open Sans', sans-serif";
+
+function tintBg(color: string) {
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, 0.12)`;
+}
 
 function deltaTone(ind: Indicator) {
   if (ind.ratio === null) {
@@ -29,57 +38,88 @@ function TickerCard({ indicator, onOpen, isClone = false }: { indicator: Indicat
       tabIndex={isClone ? -1 : 0}
       aria-label={`${indicator.name}: ${indicator.achieved} of ${indicator.expected}`}
       style={{
-        flex: "0 0 220px",
-        height: 90,
+        flex: "0 0 500px",
+        height: 56,
         background: "#FFFFFF",
         border: "1px solid #E5E7EB",
-        borderRadius: 10,
-        padding: "10px 12px",
+        borderRadius: 8,
+        padding: "10px 16px",
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 16,
         cursor: "pointer",
         textAlign: "left",
         fontFamily: F,
       }}
     >
+      {/* Icon circle */}
+      <div
+        aria-hidden="true"
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          background: tintBg(tone.color),
+          color: tone.color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <IconUsers size={18} stroke={1.5} />
+      </div>
+
+      {/* Name */}
       <div
         style={{
-          fontSize: 10,
-          fontWeight: 500,
-          color: "#6B7280",
-          lineHeight: 1.3,
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
+          flex: 1,
+          minWidth: 0,
+          fontSize: 14,
+          fontWeight: 400,
+          color: "#4B5563",
+          whiteSpace: "nowrap",
           overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {indicator.name}
       </div>
 
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div>
-          <div
+      {/* Sparkline */}
+      <IndicatorSparkline
+        points={indicator.sparkline}
+        width={120}
+        height={32}
+        color={tone.color}
+      />
+
+      {/* Right stat block */}
+      <div style={{ textAlign: "right", flexShrink: 0, width: 160, lineHeight: 1.2 }}>
+        <div style={{ fontSize: 13 }}>
+          <strong
             style={{
-              fontSize: 22,
-              fontWeight: 600,
+              fontSize: 15,
+              fontWeight: 700,
               color: indicator.achieved === "--" ? "#9CA3AF" : "#0D1A2B",
-              lineHeight: 1,
             }}
           >
             {indicator.achieved === "--" ? "—" : indicator.achieved}
-          </div>
-          <div style={{ marginTop: 2, fontSize: 10, color: tone.color, fontWeight: 500 }}>
-            {tone.arrow} {tone.label}
-          </div>
+          </strong>{" "}
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: indicator.achieved === "--" ? "#9CA3AF" : "#0D1A2B",
+            }}
+          >
+            Achieved
+          </span>
         </div>
-        <IndicatorSparkline
-          points={indicator.sparkline}
-          width={60}
-          height={16}
-          color={tone.color}
-        />
+        <div style={{ fontSize: 12, color: tone.color, marginTop: 1 }}>
+          <strong style={{ fontWeight: 600 }}>{indicator.expected}</strong>{" "}
+          <span>Expected</span>
+        </div>
       </div>
     </button>
   );
@@ -265,7 +305,7 @@ export default function IndicatorTicker({ indicators }: Props) {
           to   { transform: translateX(-50%); }
         }
         .ticker-track {
-          animation: ticker-scroll 120s linear infinite;
+          animation: ticker-scroll 180s linear infinite;
         }
         .ticker-track:hover { animation-play-state: paused; }
         @media (prefers-reduced-motion: reduce) {
@@ -280,22 +320,23 @@ export default function IndicatorTicker({ indicators }: Props) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-end",
-          marginBottom: 10,
+          marginBottom: 18,
         }}
       >
         <div>
-          <div
+          <h2
             style={{
-              fontSize: 10,
-              color: "#9CA3AF",
-              letterSpacing: 1,
-              textTransform: "uppercase",
+              margin: 0,
+              color: "rgba(0, 13, 26, 0.96)",
               fontFamily: F,
-              fontWeight: 500,
+              fontSize: 36,
+              fontWeight: 300,
+              lineHeight: "48px",
+              letterSpacing: "-1.89px",
             }}
           >
             Indicators
-          </div>
+          </h2>
           <div style={{ fontSize: 12, color: "#6B7280", fontFamily: F, marginTop: 2 }}>
             Real-time pulse of development outcomes
           </div>

@@ -44,9 +44,19 @@ const THEMES: Record<MomentumGroup["id"], GroupTheme> = {
 export default function MomentumGroups() {
   return (
     <section aria-label="What's Changing Right Now" style={{ marginBottom: 40 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#0D1A2B", fontFamily: F }}>
+          <h2
+            style={{
+              margin: 0,
+              color: "rgba(0, 13, 26, 0.96)",
+              fontFamily: F,
+              fontSize: 36,
+              fontWeight: 300,
+              lineHeight: "48px",
+              letterSpacing: "-1.89px",
+            }}
+          >
             What&apos;s Changing Right Now
           </h2>
           <p style={{ margin: "2px 0 0 0", fontSize: 12, color: "#6B7280", fontFamily: F }}>

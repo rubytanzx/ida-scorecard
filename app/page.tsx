@@ -501,7 +501,7 @@ export default function HomePage() {
           onNarrativePlanningComplete={handleNarrativePlanningComplete}
         />
       ) : (
-    <div className="flex h-screen overflow-hidden bg-white">
+    <div className="flex h-screen overflow-hidden bg-[#F5F7F9]">
       {/* ── Main scrollable content ── */}
       <div ref={homeScrollRef} className="flex-1 min-w-0 overflow-y-auto flex flex-col">
       <AppHeader
