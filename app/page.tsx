@@ -25,13 +25,17 @@ import InsightographicPanel from "@/components/conversation/InsightographicPanel
 import ViewerView from "@/components/conversation/ViewerView";
 import WorkspaceView from "@/components/conversation/WorkspaceView";
 import PromptBar from "@/components/PromptBar";
+import ResultsBand from "@/components/ResultsBand";
+import FlipStoryCard from "@/components/FlipStoryCard";
 
 import {
+  type Story,
   featuredStory,
   secondaryStories,
   changingCards,
   counterIntuitiveCards,
   patternCards,
+  indicators,
 } from "@/lib/mockData";
 
 // First ~6 words of the prompt as a working title.
@@ -563,6 +567,10 @@ export default function HomePage() {
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <SearchHero onPillClick={setPromptValue} />
 
+        <FadeIn delay={25}>
+          <ResultsBand indicators={indicators} />
+        </FadeIn>
+
         {/* Main 2-col layout */}
         <div className="flex flex-col xl:flex-row gap-8 items-start">
 
@@ -575,11 +583,24 @@ export default function HomePage() {
                 <SectionHeader title="Topics Trending" />
               </FadeIn>
               <FadeIn delay={100}>
-                <FeaturedStoryCard story={featuredStory} />
+                <FeaturedStoryCard story={featuredStory} noImage />
               </FadeIn>
               <FadeIn delay={150}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   {secondaryStories.map((story) => {
+                    if (story.drivingIndicators && story.narrativeUrl) {
+                      return (
+                        <FlipStoryCard
+                          key={story.id}
+                          story={
+                            story as Story & {
+                              drivingIndicators: NonNullable<Story["drivingIndicators"]>;
+                              narrativeUrl: string;
+                            }
+                          }
+                        />
+                      );
+                    }
                     if (story.viewerPrompt) {
                       return (
                         <div
@@ -587,7 +608,7 @@ export default function HomePage() {
                           className="cursor-pointer"
                           onClick={() => handleOpenViewer(story.viewerPrompt!, story.headline)}
                         >
-                          <StoryCard story={{ ...story, href: undefined }} />
+                          <StoryCard story={{ ...story, href: undefined }} noImage />
                         </div>
                       );
                     }
@@ -598,11 +619,11 @@ export default function HomePage() {
                           className="cursor-pointer"
                           onClick={() => setModalStory(story)}
                         >
-                          <StoryCard story={{ ...story, href: undefined }} />
+                          <StoryCard story={{ ...story, href: undefined }} noImage />
                         </div>
                       );
                     }
-                    return <StoryCard key={story.id} story={story} />;
+                    return <StoryCard key={story.id} story={story} noImage />;
                   })}
                 </div>
               </FadeIn>
