@@ -181,11 +181,27 @@ export default function PromptBar({
   const handleMadLibsSubmit = (prompt: string) => {
     setExpanded(false);
     onChange(prompt);
+    // Landing-page create-narrative mode owns its own completion callback —
+    // run the beam visualisation, then dispatch to it instead of onComplete.
+    if (onCreateNarrativeSubmit) {
+      onSubmit?.();
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      timers.current.push(setTimeout(() => {
+        setSubmitted(false);
+        requestAnimationFrame(() => setSubmitted(true));
+      }, 0));
+      timers.current.push(setTimeout(() => onCreateNarrativeSubmit(prompt), holdMs));
+      return;
+    }
     triggerBeam(prompt);
   };
 
   const handleMadLibsAllPlaced = (prompt: string) => {
     onChange(prompt);
+    // In create-narrative mode we keep MadLibs visible so the user can still
+    // add or remove pills; let the explicit submit drive completion.
+    if (onCreateNarrativeSubmit) return;
     setExpanded(false);
   };
 
@@ -319,19 +335,20 @@ export default function PromptBar({
               : "0 0 0 1px rgba(15,118,110,0.22), 0 0 24px rgba(45,212,191,0.32), 0 0 56px rgba(15,118,110,0.14), 0 1px 2px rgba(0,0,0,0.04)",
           }}
           onClick={() => {
-            if (hasChip) return;
+            // In refining mode (basic input) we never auto-expand. In
+            // create-narrative mode we DO render MadLibs (the user wants the
+            // Geography/Financing pills available), so let the click set
+            // expanded=true if it isn't already — but skip the expand path
+            // entirely once MadLibs is already mounted to avoid a re-render.
+            if (refiningChip) return;
+            if (createNarrativeChip) {
+              if (!expanded) setExpanded(true);
+              return;
+            }
             if (!isBottom && !inConversation && !expanded) setExpanded(true);
           }}
         >
-          {!isBottom && expanded ? (
-            <MadLibsInput
-              initialText={value}
-              onSubmit={handleMadLibsSubmit}
-              onDismiss={() => setExpanded(false)}
-              onAllPlaced={handleMadLibsAllPlaced}
-            />
-          ) : (
-            <div className="flex flex-col">
+          <div className="flex flex-col">
             {refiningChip && (
               <div className="flex items-center gap-2 px-4 pt-3 pb-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(167,139,250,0.10)] border border-violet-300 text-[11.5px] font-medium text-violet-800 max-w-full">
@@ -370,6 +387,19 @@ export default function PromptBar({
                 </span>
               </div>
             )}
+            {!isBottom && (expanded || createNarrativeChip) ? (
+              <MadLibsInput
+                initialText={value}
+                onSubmit={handleMadLibsSubmit}
+                onDismiss={() => {
+                  // In create-narrative mode there's no separate "collapse"
+                  // state to fall back to — leave the bar in MadLibs so the
+                  // user can keep editing. In regular mode, dismiss as usual.
+                  if (!createNarrativeChip) setExpanded(false);
+                }}
+                onAllPlaced={handleMadLibsAllPlaced}
+              />
+            ) : (
             <div className={`flex items-center gap-2 px-4 ${hasChip ? "pb-3 pt-1" : "py-2.5"}`}>
               <IconPlus size={15} className="text-gray-400 shrink-0" />
               <input
@@ -414,8 +444,8 @@ export default function PromptBar({
                 </button>
               </div>
             </div>
-            </div>
-          )}
+            )}
+          </div>
         </motion.div>
       </form>
     </>
