@@ -76,42 +76,28 @@ export default function NarrativeSkeletonChoice({
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">{leadText}</p>
 
-        {/* 3D deck carousel — one focal card at centre, neighbours tilt
-            back into space. Click a side card to bring it to focus. */}
-        <div
-          className="group relative h-[460px] flex items-center justify-center"
-          style={{ perspective: "1400px" }}
-        >
+        {/* Flat carousel — cards sit side-by-side at the same depth. Side
+            cards peek out and a left/right gradient overlay fades them into
+            the page so the focal card reads as the centre of attention. */}
+        <div className="group relative h-[460px] flex items-center justify-center overflow-hidden">
           {skeletons.map((s, i) => {
             const offset = i - activeIndex;
             const abs = Math.abs(offset);
-            const dir = offset === 0 ? 0 : offset > 0 ? 1 : -1;
             const isFocal = offset === 0;
-            // Hide cards further than 2 away — keeps the deck visually tidy.
             const hidden = abs > 2;
-            const cardTransform =
-              `translateX(${dir * (abs === 1 ? 170 : 290)}px)` +
-              ` rotateY(${-dir * (abs === 1 ? 22 : 30)}deg)` +
-              ` translateZ(${-abs * 80}px)` +
-              ` scale(${1 - abs * 0.06})`;
+            // Flat horizontal offset — no rotation, no Z, no scale.
+            const cardTransform = `translateX(${offset * 340}px)`;
             return (
               <div
                 key={s.id}
                 style={{
                   transform: cardTransform,
-                  // Keep cards fully opaque so they don't look see-through.
-                  // Depth is communicated by 3D transform + scale + a small
-                  // brightness drop on non-focal cards. mountedIn drives the
-                  // initial fade-in only.
                   opacity: hidden ? 0 : mountedIn ? 1 : 0,
-                  filter: isFocal ? "none" : `brightness(${1 - abs * 0.06})`,
                   pointerEvents: hidden ? "none" : "auto",
                   zIndex: 10 - abs,
                   transition:
                     "transform 500ms cubic-bezier(0.22,1,0.36,1)," +
-                    " opacity 400ms ease-out," +
-                    " filter 400ms ease-out",
-                  transformStyle: "preserve-3d",
+                    " opacity 400ms ease-out",
                   willChange: "transform, opacity",
                 }}
                 className="absolute"
@@ -132,6 +118,19 @@ export default function NarrativeSkeletonChoice({
               </div>
             );
           })}
+
+          {/* Side fade overlays — solid-white → transparent gradients sit
+              above the side cards and dissolve them into the page. */}
+          <div
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-32 pointer-events-none z-20"
+            style={{ background: "linear-gradient(to right, #fff 0%, #fff 25%, rgba(255,255,255,0) 100%)" }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-y-0 right-0 w-32 pointer-events-none z-20"
+            style={{ background: "linear-gradient(to left, #fff 0%, #fff 25%, rgba(255,255,255,0) 100%)" }}
+          />
 
           {/* Edge arrows — fade in on container hover. Disabled at endpoints. */}
           <CarouselArrow
@@ -322,12 +321,12 @@ function CarouselArrow({
       onClick={onClick}
       disabled={disabled}
       className={
-        "absolute top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center" +
+        "absolute top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center" +
         " rounded-full bg-white border border-gray-200 shadow-md text-gray-600" +
         " opacity-0 group-hover:opacity-100 transition-opacity" +
         " hover:text-gray-900 hover:border-gray-300" +
         " disabled:opacity-0 disabled:cursor-default" +
-        (direction === "left" ? " left-0" : " right-0")
+        (direction === "left" ? " left-2" : " right-2")
       }
     >
       <Icon size={16} />
