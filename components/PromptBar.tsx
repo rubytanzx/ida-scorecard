@@ -209,10 +209,10 @@ export default function PromptBar({
                 disabled={narrativeConfirmDisabled}
                 aria-disabled={narrativeConfirmDisabled}
                 className={
-                  "flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full shadow-sm active:scale-[0.98] transition-colors" +
+                  "flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full shadow-sm transition-colors" +
                   (narrativeConfirmDisabled
                     ? " text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed"
-                    : " text-white bg-blue-600 border border-blue-600 hover:bg-blue-700")
+                    : " text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 active:scale-[0.98]")
                 }
               >
                 <IconCheck size={12} />
