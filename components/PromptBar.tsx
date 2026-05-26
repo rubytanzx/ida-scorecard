@@ -60,6 +60,10 @@ interface Props {
 
 const HERO_TOP = 112;
 const PILL_HEIGHT = 48;
+// Extra height added to the docked bar when a refining chip is rendered above
+// the input row. Used to shift the bar (and its accessory chips/glow) upward
+// so the bottom edge stays within the viewport.
+const REFINING_EXTRA = 38;
 const BOTTOM_GAP = 24;
 
 export default function PromptBar({
@@ -97,6 +101,7 @@ export default function PromptBar({
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const isBottom = mode === "bottom";
+  const extraHeight = refiningChip ? REFINING_EXTRA : 0;
 
   useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
 
@@ -204,7 +209,7 @@ export default function PromptBar({
           style={{
             left: leftCss,
             transform: "translateX(-50%)",
-            top: `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + 36}px)`,
+            top: `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + 36 + extraHeight}px)`,
             width: widthCss,
             zIndex: 50,
             transitionTimingFunction: suppressTransition ? undefined : "cubic-bezier(0.22, 1, 0.36, 1)",
@@ -256,9 +261,9 @@ export default function PromptBar({
           className="prompt-bottom-glow fixed pointer-events-none"
           style={{
             left: leftCss,
-            top: `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + 40}px)`,
+            top: `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + 40 + extraHeight}px)`,
             width: widthCss,
-            height: PILL_HEIGHT + 80,
+            height: PILL_HEIGHT + 80 + extraHeight,
             zIndex: 49,
           }}
         />
@@ -273,7 +278,7 @@ export default function PromptBar({
           left: leftCss,
           transform: "translateX(-50%)",
           top: isBottom
-            ? `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP}px)`
+            ? `calc(100vh - ${PILL_HEIGHT + BOTTOM_GAP + extraHeight}px)`
             : `${HERO_TOP}px`,
           width: !isBottom && expanded ? expandedWidthCss : widthCss,
           zIndex: 50,
