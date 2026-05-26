@@ -82,6 +82,15 @@ button {
   background: #94a3b8;
 }
 
+/* Fully hidden scrollbar — used by paginated carousels where the dots
+   communicate position, so the native scrollbar would be redundant. */
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* Recharts tweaks */
 .recharts-tooltip-wrapper {
   outline: none !important;

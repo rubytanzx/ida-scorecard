@@ -17,6 +17,7 @@ import NarrativePanel, { NARRATIVE_PANEL_DEFAULT_WIDTH } from "@/components/conv
 import InfographicPanel from "@/components/conversation/InfographicPanel";
 import SkeletonPreviewPanel from "@/components/conversation/SkeletonPreviewPanel";
 import { detectFlow } from "@/components/conversation/ConversationView";
+import { FLOW_SKELETONS } from "@/components/conversation/NarrativeSkeletons";
 import ViewerView from "@/components/conversation/ViewerView";
 import WorkspaceView from "@/components/conversation/WorkspaceView";
 import PromptBar from "@/components/PromptBar";
@@ -154,8 +155,27 @@ const AI_SUGGESTIONS = [
   "Show me WB projects contributing to health outcomes",
 ];
 
-// 4-phase state machine for the narrative creation flow.
-export type NarrativePhase = "idle" | "planning" | "skeleton-ready" | "generating";
+// State machine for the narrative creation flow:
+//   idle              — nothing happening yet
+//   planning          — AI thinking; planning steps animate in
+//   skeleton-ready    — 4 angle cards shown; user picks one
+//   refining          — user clicked "Make changes" in preview; prompt-bar
+//                       shows a reference chip and accepts feedback
+//   refined-ready     — refined-skeleton widget shown inline; user can
+//                       Proceed or iterate ("Make changes" again)
+//   interactive-choice — AI asks which interactive elements to include;
+//                       user multi-selects chips, then Proceeds
+//   generating        — opening the final NarrativePanel
+export type NarrativePhase =
+  | "idle"
+  | "planning"
+  | "skeleton-ready"
+  | "refining"
+  | "refined-ready"
+  | "interactive-choice"
+  | "generating";
+
+export type InteractiveElement = "map" | "charts" | "tables" | "timeline";
 
 export default function HomePage() {
   const [modalStory, setModalStory] = useState<(typeof secondaryStories)[0] | null>(null);
@@ -177,6 +197,15 @@ export default function HomePage() {
   const [selectedSkeletonId, setSelectedSkeletonId] = useState<string | null>(null);
   // Which skeleton is being previewed in the right pane (null when no preview open).
   const [previewSkeletonId, setPreviewSkeletonId] = useState<string | null>(null);
+  // Which skeleton the user is currently refining via "Make changes". Drives
+  // both the reference chip in the prompt bar and the refined-widget content.
+  const [refiningSkeletonId, setRefiningSkeletonId] = useState<string | null>(null);
+  // History of refinement turns — each entry is the text the user submitted.
+  // Renders as user-bubble + AI-response + refined-skeleton widget per turn.
+  const [refinementTurns, setRefinementTurns] = useState<string[]>([]);
+  // Interactive-elements multi-select. Persists after Proceed so generated
+  // narratives could (later) branch on it.
+  const [interactiveElements, setInteractiveElements] = useState<InteractiveElement[]>([]);
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
   // True for ~3.5s after the user picks "Generate · Infographic" —
   // drives the beam + cycling text loader inside the infographic pane.
@@ -273,10 +302,91 @@ export default function HomePage() {
     setNarrativePhase("skeleton-ready");
   };
 
+  // The original prompt-bar "Yes, create narrative" path. Instead of jumping
+  // straight to generation, route through the interactive-elements question
+  // so both this path and the preview-panel Proceed path converge.
   const handleNarrativeConfirm = () => {
+    if (!currentConversationId || selectedSkeletonId == null) return;
+    setNarrativePhase("interactive-choice");
+  };
+
+  const handleNarrativeMakeChanges = () => {
+    setSelectedSkeletonId(null);
+    setNarrativePhase("idle");
+  };
+
+  // Opens the skeleton-preview panel for a given angle. If another pane is
+  // already open we replace it — only one right pane at a time.
+  const handlePreviewSkeleton = (id: string) => {
+    setPreviewSkeletonId(id);
+    setRightPane("skeleton-preview");
+  };
+
+  // Preview-panel "Proceed to Create Full Narrative" — commits this angle
+  // as the selection, closes the panel, and advances to the
+  // interactive-elements question.
+  const handleProceedFromPreview = (id: string) => {
+    setSelectedSkeletonId(id);
+    setRightPane(null);
+    setPreviewSkeletonId(null);
+    setRefiningSkeletonId(null);
+    setRefinementTurns([]);
+    setNarrativePhase("interactive-choice");
+  };
+
+  // Preview-panel "Make changes" — closes the panel and switches the
+  // prompt bar into refining mode for this angle.
+  const handleMakeChangesFromPreview = (id: string) => {
+    setRefiningSkeletonId(id);
+    setSelectedSkeletonId(id);
+    setRightPane(null);
+    setPreviewSkeletonId(null);
+    setRefinementTurns([]);
+    setNarrativePhase("refining");
+  };
+
+  // User submitted feedback while in the refining phase. Append the turn
+  // and advance to refined-ready so the AI response + widget render.
+  const handleSubmitRefinement = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setRefinementTurns((prev) => [...prev, trimmed]);
+    setPromptValue("");
+    setNarrativePhase("refined-ready");
+  };
+
+  // Inline refined-widget "Make changes" — loop back into refining mode
+  // (chip stays, history stays). The next submit appends another turn.
+  const handleMakeChangesFromRefined = () => {
+    setNarrativePhase("refining");
+  };
+
+  // Inline refined-widget "Proceed to Create Full Narrative" — advances
+  // to the interactive-elements question.
+  const handleProceedFromRefined = () => {
+    setNarrativePhase("interactive-choice");
+  };
+
+  // Cancel the refining session entirely (user dismissed the chip). Returns
+  // to skeleton-ready with the original selection cleared.
+  const handleCancelRefining = () => {
+    setRefiningSkeletonId(null);
+    setRefinementTurns([]);
+    setNarrativePhase("skeleton-ready");
+  };
+
+  // Multi-select toggle for the interactive-elements picker.
+  const handleToggleInteractiveElement = (el: InteractiveElement) => {
+    setInteractiveElements((prev) =>
+      prev.includes(el) ? prev.filter((x) => x !== el) : [...prev, el],
+    );
+  };
+
+  // Final "Proceed" — runs the same path as the old narrative-confirm:
+  // creates the artefact, opens NarrativePanel, fires the beam.
+  const handleProceedFromInteractive = () => {
     if (!currentConversationId) return;
     setNarrativePhase("generating");
-    // Save the artefact now so the panel has it when it opens.
     const a: Artefact = {
       id: Date.now().toString(),
       kind: "narrative",
@@ -290,25 +400,12 @@ export default function HomePage() {
         c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c
       )
     );
-    // Brief pause so Block 3 "Got it…" message is visible before panel slides in.
     narrativeConfirmTimerRef.current = window.setTimeout(() => {
       setRightPane("narrative");
-      setNarrativePanelLoading(true);  // panel mounts with loading=true → beam fires
-      setNarrativePhase("idle");       // dots disappear from conversation immediately
+      setNarrativePanelLoading(true);
+      setNarrativePhase("idle");
       window.setTimeout(() => setNarrativePanelLoading(false), 4500);
     }, 500);
-  };
-
-  const handleNarrativeMakeChanges = () => {
-    setSelectedSkeletonId(null);
-    setNarrativePhase("idle");
-  };
-
-  // Opens the skeleton-preview panel for a given angle. If another pane is
-  // already open we replace it — only one right pane at a time.
-  const handlePreviewSkeleton = (id: string) => {
-    setPreviewSkeletonId(id);
-    setRightPane("skeleton-preview");
   };
 
   // Generate format from the narrative panel. Only "infographic" is
@@ -476,6 +573,20 @@ export default function HomePage() {
         onNarrativeConfirm={handleNarrativeConfirm}
         onNarrativeMakeChanges={handleNarrativeMakeChanges}
         narrativeConfirmDisabled={narrativePhase === "skeleton-ready" && selectedSkeletonId === null}
+        refiningChip={
+          narrativePhase === "refining" && refiningSkeletonId
+            ? {
+                title:
+                  FLOW_SKELETONS[detectFlow(conversationPrompt)].find(
+                    (s) => s.id === refiningSkeletonId,
+                  )?.title ?? "narrative angle",
+                onDismiss: handleCancelRefining,
+              }
+            : undefined
+        }
+        onRefineSubmit={
+          narrativePhase === "refining" ? handleSubmitRefinement : undefined
+        }
         inConversation={view === "conversation"}
         onSubmit={() => {
           // Scroll the home view back to the top on submit so the beam runs
@@ -532,10 +643,8 @@ export default function HomePage() {
               setRightPane(null);
               setPreviewSkeletonId(null);
             }}
-            onSelectAngle={(id) => setSelectedSkeletonId(id)}
-            alreadySelected={
-              previewSkeletonId != null && previewSkeletonId === selectedSkeletonId
-            }
+            onProceed={(id) => handleProceedFromPreview(id)}
+            onMakeChanges={(id) => handleMakeChangesFromPreview(id)}
           />
         </>
       )}
@@ -576,6 +685,13 @@ export default function HomePage() {
           selectedSkeletonId={selectedSkeletonId}
           onSelectSkeleton={setSelectedSkeletonId}
           onPreviewSkeleton={handlePreviewSkeleton}
+          refiningSkeletonId={refiningSkeletonId}
+          refinementTurns={refinementTurns}
+          onRefinedProceed={handleProceedFromRefined}
+          onRefinedMakeChanges={handleMakeChangesFromRefined}
+          interactiveElements={interactiveElements}
+          onToggleInteractiveElement={handleToggleInteractiveElement}
+          onProceedFromInteractive={handleProceedFromInteractive}
         />
       ) : (
     <div

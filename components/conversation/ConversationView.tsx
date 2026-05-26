@@ -35,6 +35,9 @@ import {
 } from "recharts";
 import type { NarrativePhase } from "../../app/page";
 import NarrativeSkeletonChoice from "./NarrativeSkeletonChoice";
+import SkeletonRefinedMessage from "./SkeletonRefinedMessage";
+import InteractiveElementsMessage from "./InteractiveElementsMessage";
+import type { InteractiveElement } from "../../app/page";
 
 const F = "'Open Sans', sans-serif";
 
@@ -77,6 +80,20 @@ interface Props {
   onSelectSkeleton?: (id: string | null) => void;
   /** Called when the user clicks the expand icon on a skeleton card. */
   onPreviewSkeleton?: (id: string) => void;
+  /** Which skeleton angle the user is refining (drives the refined widget). */
+  refiningSkeletonId?: string | null;
+  /** History of user-submitted refinement texts. */
+  refinementTurns?: string[];
+  /** Fires when the user clicks "Proceed" inside the inline refined widget. */
+  onRefinedProceed?: () => void;
+  /** Fires when the user clicks "Make changes" inside the inline refined widget. */
+  onRefinedMakeChanges?: () => void;
+  /** Interactive-elements multi-select state. */
+  interactiveElements?: InteractiveElement[];
+  /** Toggle an interactive element on/off. */
+  onToggleInteractiveElement?: (el: InteractiveElement) => void;
+  /** Fires when the user clicks "Proceed" in the interactive-elements message. */
+  onProceedFromInteractive?: () => void;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -1077,6 +1094,13 @@ export default function ConversationView({
   selectedSkeletonId = null,
   onSelectSkeleton,
   onPreviewSkeleton,
+  refiningSkeletonId = null,
+  refinementTurns = [],
+  onRefinedProceed,
+  onRefinedMakeChanges,
+  interactiveElements = [],
+  onToggleInteractiveElement,
+  onProceedFromInteractive,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
@@ -1104,6 +1128,19 @@ export default function ConversationView({
   const showBlock1 = narrativePhase !== "idle" || !!narrativeArtefact;
   const showBlock2 =
     narrativePhase === "skeleton-ready" ||
+    narrativePhase === "refining" ||
+    narrativePhase === "refined-ready" ||
+    narrativePhase === "interactive-choice" ||
+    narrativePhase === "generating" ||
+    !!narrativeArtefact;
+  const showRefinementBlock =
+    refiningSkeletonId != null &&
+    (refinementTurns.length > 0 ||
+      narrativePhase === "refined-ready" ||
+      narrativePhase === "interactive-choice" ||
+      narrativePhase === "generating");
+  const showInteractiveBlock =
+    narrativePhase === "interactive-choice" ||
     narrativePhase === "generating" ||
     !!narrativeArtefact;
   const showBlock3 = narrativePhase === "generating" || !!narrativeArtefact;
@@ -1349,6 +1386,24 @@ export default function ConversationView({
               onSelect={(id) => onSelectSkeleton?.(id)}
               onPreview={(id) => onPreviewSkeleton?.(id)}
               animate={narrativePhase === "skeleton-ready"}
+            />
+          )}
+          {showRefinementBlock && refiningSkeletonId && (
+            <SkeletonRefinedMessage
+              flow={flow}
+              skeletonId={refiningSkeletonId}
+              turns={refinementTurns}
+              active={narrativePhase === "refined-ready"}
+              onProceed={() => onRefinedProceed?.()}
+              onMakeChanges={() => onRefinedMakeChanges?.()}
+            />
+          )}
+          {showInteractiveBlock && (
+            <InteractiveElementsMessage
+              selected={interactiveElements}
+              active={narrativePhase === "interactive-choice"}
+              onToggle={(el) => onToggleInteractiveElement?.(el)}
+              onProceed={() => onProceedFromInteractive?.()}
             />
           )}
           {showBlock3 && <NarrativeGeneratingMessage generating={narrativePhase === "generating"} />}

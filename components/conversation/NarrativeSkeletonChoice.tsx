@@ -7,8 +7,8 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { IconArrowsMaximize } from "@tabler/icons-react";
+import { useEffect, useRef, useState } from "react";
+import { IconArrowsMaximize, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import {
   FLOW_SKELETONS,
   type NarrativeSkeleton,
@@ -62,6 +62,48 @@ export default function NarrativeSkeletonChoice({
     return () => timers.forEach(clearTimeout);
   }, [animate, skeletons.length]);
 
+  // Pagination — track which card the carousel is centred on. The scroll
+  // listener picks the index of the card whose left edge is closest to the
+  // scroll-container's left edge (allowing for the 8px gutter bleed).
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const cards = cardsRef.current?.children;
+      if (!cards) return;
+      const scrollerLeft = el.getBoundingClientRect().left;
+      let bestIdx = 0;
+      let bestDist = Number.POSITIVE_INFINITY;
+      for (let i = 0; i < cards.length; i++) {
+        const c = cards[i] as HTMLElement;
+        const d = Math.abs(c.getBoundingClientRect().left - scrollerLeft);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = i;
+        }
+      }
+      setActiveIndex(bestIdx);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToCard = (i: number) => {
+    const cards = cardsRef.current?.children;
+    if (!cards || !cards[i]) return;
+    const card = cards[i] as HTMLElement;
+    card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  };
+
+  const scrollByDir = (dir: -1 | 1) => {
+    const next = Math.max(0, Math.min(skeletons.length - 1, activeIndex + dir));
+    scrollToCard(next);
+  };
+
   return (
     <div className="flex items-start gap-3 narrative-content-enter">
       <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
@@ -72,24 +114,58 @@ export default function NarrativeSkeletonChoice({
 
         {/* Horizontal scroll-snap carousel — bleeds 8px past the gutters
             so partially-scrolled cards aren't clipped at the edges. */}
-        <div
-          className="-mx-2 px-2 overflow-x-auto scrollbar-auto-hide"
-          style={{ scrollSnapType: "x mandatory" }}
-        >
-          <div className="flex gap-3 pb-2">
-            {skeletons.map((s, i) => (
-              <SkeletonCard
-                key={s.id}
-                skeleton={s}
-                selected={selectedSkeletonId === s.id}
-                revealed={i < revealedCount}
-                onSelect={() =>
-                  onSelect(selectedSkeletonId === s.id ? null : s.id)
-                }
-                onPreview={() => onPreview(s.id)}
-              />
-            ))}
+        <div className="group relative -mx-2">
+          <div
+            ref={scrollerRef}
+            className="px-2 overflow-x-auto scrollbar-hidden"
+            style={{ scrollSnapType: "x mandatory" }}
+          >
+            <div ref={cardsRef} className="flex gap-3 pb-2">
+              {skeletons.map((s, i) => (
+                <SkeletonCard
+                  key={s.id}
+                  skeleton={s}
+                  selected={selectedSkeletonId === s.id}
+                  revealed={i < revealedCount}
+                  onSelect={() =>
+                    onSelect(selectedSkeletonId === s.id ? null : s.id)
+                  }
+                  onPreview={() => onPreview(s.id)}
+                />
+              ))}
+            </div>
           </div>
+
+          {/* Edge arrows — fade in on container hover. Disabled at endpoints. */}
+          <CarouselArrow
+            direction="left"
+            disabled={activeIndex === 0}
+            onClick={() => scrollByDir(-1)}
+          />
+          <CarouselArrow
+            direction="right"
+            disabled={activeIndex >= skeletons.length - 1}
+            onClick={() => scrollByDir(1)}
+          />
+        </div>
+
+        {/* Pagination dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-1">
+          {skeletons.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-label={`Go to angle ${i + 1}`}
+              aria-current={activeIndex === i ? "true" : undefined}
+              onClick={() => scrollToCard(i)}
+              className={
+                "rounded-full transition-all duration-200" +
+                (activeIndex === i
+                  ? " w-4 h-1.5 bg-violet-500"
+                  : " w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400")
+              }
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -206,10 +282,10 @@ function SkeletonCard({
 
       <div className="mx-4 h-px bg-gray-200/70" />
 
-      {/* Countries — flag emoji chips */}
+      {/* Country examples — flag emoji chips */}
       <div className="px-4 pt-3 pb-4">
         <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
-          Countries
+          Country examples
         </span>
         <div className="mt-2 flex items-center gap-2 flex-wrap">
           {countryExamples.map((name, i) => (
@@ -226,5 +302,35 @@ function SkeletonCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function CarouselArrow({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: "left" | "right";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = direction === "left" ? IconChevronLeft : IconChevronRight;
+  return (
+    <button
+      type="button"
+      aria-label={direction === "left" ? "Previous angle" : "Next angle"}
+      onClick={onClick}
+      disabled={disabled}
+      className={
+        "absolute top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center" +
+        " rounded-full bg-white border border-gray-200 shadow-md text-gray-600" +
+        " opacity-0 group-hover:opacity-100 transition-opacity" +
+        " hover:text-gray-900 hover:border-gray-300" +
+        " disabled:opacity-0 disabled:cursor-default" +
+        (direction === "left" ? " left-0" : " right-0")
+      }
+    >
+      <Icon size={16} />
+    </button>
   );
 }

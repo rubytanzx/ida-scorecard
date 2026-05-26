@@ -28,11 +28,13 @@ interface Props {
   width: number;
   onResize: (width: number, dragging: boolean) => void;
   onClose: () => void;
-  /** Called when the user clicks "Select this angle" inside the preview. */
-  onSelectAngle: (id: string) => void;
-  /** True if this skeleton is currently the selected one — flips the CTA from
-   *  "Select this angle" to a confirmed-state label. */
-  alreadySelected: boolean;
+  /** Called when the user clicks "Proceed to Create Full Narrative". The
+   *  parent should select this angle and advance the phase to the
+   *  interactive-elements question. */
+  onProceed: (id: string) => void;
+  /** Called when the user clicks "Make changes" — opens the refining flow
+   *  in the prompt bar. The parent closes the panel and switches phase. */
+  onMakeChanges: (id: string) => void;
 }
 
 export default function SkeletonPreviewPanel({
@@ -42,8 +44,8 @@ export default function SkeletonPreviewPanel({
   width,
   onResize,
   onClose,
-  onSelectAngle,
-  alreadySelected,
+  onProceed,
+  onMakeChanges,
 }: Props) {
   const skeleton =
     skeletonId == null
@@ -150,38 +152,24 @@ export default function SkeletonPreviewPanel({
         )}
       </div>
 
-      {/* Footer CTA */}
+      {/* Footer CTA — primary action plus a "Make changes" secondary that
+          flips the prompt bar into refining mode. */}
       {skeleton && (
         <footer className="shrink-0 border-t border-gray-100 px-5 py-4 flex items-center justify-end gap-2">
           <button
             type="button"
-            onClick={onClose}
-            className="text-[12.5px] text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md transition-colors"
+            onClick={() => onMakeChanges(skeleton.id)}
+            className="text-[12.5px] font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 transition-colors"
           >
-            Cancel
+            Make changes
           </button>
           <button
             type="button"
-            onClick={() => {
-              onSelectAngle(skeleton.id);
-              onClose();
-            }}
-            disabled={alreadySelected}
-            className={
-              "inline-flex items-center gap-1.5 text-[12.5px] font-medium px-3 py-1.5 rounded-full transition-colors" +
-              (alreadySelected
-                ? " bg-violet-100 text-violet-700 border border-violet-200 cursor-default"
-                : " bg-violet-600 text-white border border-violet-600 hover:bg-violet-700 active:scale-[0.98]")
-            }
+            onClick={() => onProceed(skeleton.id)}
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-medium px-4 py-1.5 rounded-full bg-violet-600 text-white border border-violet-600 hover:bg-violet-700 active:scale-[0.98] transition-colors"
           >
-            {alreadySelected ? (
-              <>
-                <IconCheck size={12} stroke={3} />
-                Selected
-              </>
-            ) : (
-              <>Select this angle</>
-            )}
+            <IconCheck size={12} stroke={3} />
+            Proceed to Create Full Narrative
           </button>
         </footer>
       )}

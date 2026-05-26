@@ -8,6 +8,7 @@ import {
   IconPlus,
   IconNotebook,
   IconCheck,
+  IconX,
 } from "@tabler/icons-react";
 import MadLibsInput from "./MadLibsInput";
 import type { NarrativePhase } from "../app/page";
@@ -44,6 +45,12 @@ interface Props {
   onNarrativeMakeChanges?: () => void;
   /** When true, the "Yes, create narrative" button is disabled (no skeleton picked yet). */
   narrativeConfirmDisabled?: boolean;
+  /** When set, renders a "Refining: <title>" reference chip above the input.
+   * Submits route to `onRefineSubmit` instead of being no-ops. */
+  refiningChip?: { title: string; onDismiss: () => void };
+  /** Called when the user hits Enter / clicks Submit while a refining chip
+   *  is active. Receives the typed text and is expected to clear the field. */
+  onRefineSubmit?: (text: string) => void;
   /** When true, submit doesn't trigger a new conversation transition. */
   inConversation?: boolean;
   /** Fires immediately when the user hits Enter / clicks send. Lets the parent
@@ -71,6 +78,8 @@ export default function PromptBar({
   onNarrativeConfirm,
   onNarrativeMakeChanges,
   narrativeConfirmDisabled = false,
+  refiningChip,
+  onRefineSubmit,
   inConversation = false,
   onSubmit,
 }: Props) {
@@ -104,7 +113,14 @@ export default function PromptBar({
 
   const submit = () => {
     const v = value.trim();
-    if (!v || inConversation) return;
+    if (!v) return;
+    // Refining flow: short-circuit the new-conversation path and hand the
+    // text to the parent's refinement handler instead.
+    if (onRefineSubmit) {
+      onRefineSubmit(v);
+      return;
+    }
+    if (inConversation) return;
     onSubmit?.();
     const beamDelay = isBottom ? 700 : 0;
     timers.current.forEach(clearTimeout);
@@ -296,6 +312,26 @@ export default function PromptBar({
               onAllPlaced={handleMadLibsAllPlaced}
             />
           ) : (
+            <div className="flex flex-col">
+            {refiningChip && (
+              <div className="flex items-center gap-2 px-4 pt-2.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(167,139,250,0.10)] border border-violet-300 text-[11.5px] font-medium text-violet-800 max-w-full">
+                  <span className="opacity-70 shrink-0">Refining:</span>
+                  <span className="truncate">{refiningChip.title}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      refiningChip.onDismiss();
+                    }}
+                    aria-label="Cancel refining"
+                    className="ml-0.5 -mr-0.5 w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-violet-200/70 transition-colors shrink-0"
+                  >
+                    <IconX size={10} />
+                  </button>
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2 px-4 py-2.5">
               <IconPlus size={15} className="text-gray-400 shrink-0" />
               <input
@@ -331,6 +367,7 @@ export default function PromptBar({
                   <IconArrowUp size={14} />
                 </button>
               </div>
+            </div>
             </div>
           )}
         </motion.div>
