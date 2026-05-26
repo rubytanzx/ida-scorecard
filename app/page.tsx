@@ -15,6 +15,8 @@ import StoryDetailModal from "@/components/StoryDetailModal";
 import ConversationView from "@/components/conversation/ConversationView";
 import NarrativePanel, { NARRATIVE_PANEL_DEFAULT_WIDTH } from "@/components/conversation/NarrativePanel";
 import InfographicPanel from "@/components/conversation/InfographicPanel";
+import SkeletonPreviewPanel from "@/components/conversation/SkeletonPreviewPanel";
+import { detectFlow } from "@/components/conversation/ConversationView";
 import ViewerView from "@/components/conversation/ViewerView";
 import WorkspaceView from "@/components/conversation/WorkspaceView";
 import PromptBar from "@/components/PromptBar";
@@ -167,12 +169,14 @@ export default function HomePage() {
   const [promptValue, setPromptValue] = useState("");
   // Single discriminator for which right-side artefact pane is open.
   // null = closed; only one pane can be visible at a time.
-  type RightPane = "narrative" | "infographic" | null;
+  type RightPane = "narrative" | "infographic" | "skeleton-preview" | null;
   const [rightPane, setRightPane] = useState<RightPane>(null);
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
   const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
   const [selectedSkeletonId, setSelectedSkeletonId] = useState<string | null>(null);
+  // Which skeleton is being previewed in the right pane (null when no preview open).
+  const [previewSkeletonId, setPreviewSkeletonId] = useState<string | null>(null);
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
   // True for ~3.5s after the user picks "Generate · Infographic" —
   // drives the beam + cycling text loader inside the infographic pane.
@@ -298,6 +302,13 @@ export default function HomePage() {
   const handleNarrativeMakeChanges = () => {
     setSelectedSkeletonId(null);
     setNarrativePhase("idle");
+  };
+
+  // Opens the skeleton-preview panel for a given angle. If another pane is
+  // already open we replace it — only one right pane at a time.
+  const handlePreviewSkeleton = (id: string) => {
+    setPreviewSkeletonId(id);
+    setRightPane("skeleton-preview");
   };
 
   // Generate format from the narrative panel. Only "infographic" is
@@ -508,6 +519,24 @@ export default function HomePage() {
               setRightPaneDragging(dragging);
             }}
           />
+          <SkeletonPreviewPanel
+            open={rightPane === "skeleton-preview"}
+            flow={detectFlow(conversationPrompt)}
+            skeletonId={previewSkeletonId}
+            width={rightPaneWidth}
+            onResize={(w, dragging) => {
+              setRightPaneWidth(w);
+              setRightPaneDragging(dragging);
+            }}
+            onClose={() => {
+              setRightPane(null);
+              setPreviewSkeletonId(null);
+            }}
+            onSelectAngle={(id) => setSelectedSkeletonId(id)}
+            alreadySelected={
+              previewSkeletonId != null && previewSkeletonId === selectedSkeletonId
+            }
+          />
         </>
       )}
 
@@ -546,6 +575,7 @@ export default function HomePage() {
           onNarrativePlanningComplete={handleNarrativePlanningComplete}
           selectedSkeletonId={selectedSkeletonId}
           onSelectSkeleton={setSelectedSkeletonId}
+          onPreviewSkeleton={handlePreviewSkeleton}
         />
       ) : (
     <div

@@ -1,14 +1,14 @@
 // components/conversation/NarrativeSkeletonChoice.tsx
 //
 // Renders the AI assistant message + 4 narrative-angle cards as a horizontal
-// scroll-snap carousel in the skeleton-ready phase. Clicking a card sets the
-// selection; clicking the selected card again toggles it off.
+// scroll-snap carousel in the skeleton-ready phase. Each card shows the
+// Challenge in full, the Interventions with a fade-out mask, and the Country
+// examples as flag chips. The expand icon top-right opens a full preview panel.
 
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { IconCheck } from "@tabler/icons-react";
+import { IconArrowsMaximize } from "@tabler/icons-react";
 import {
   FLOW_SKELETONS,
   type NarrativeSkeleton,
@@ -19,6 +19,8 @@ interface Props {
   flow: FlowId;
   selectedSkeletonId: string | null;
   onSelect: (id: string | null) => void;
+  /** Opens the preview panel for a given skeleton id. */
+  onPreview: (id: string) => void;
   /** When true, animate the lead text + stagger the cards in. */
   animate: boolean;
 }
@@ -27,6 +29,7 @@ export default function NarrativeSkeletonChoice({
   flow,
   selectedSkeletonId,
   onSelect,
+  onPreview,
   animate,
 }: Props) {
   const skeletons = FLOW_SKELETONS[flow];
@@ -41,13 +44,13 @@ export default function NarrativeSkeletonChoice({
     { pads: 0, isrs: 0, icrs: 0 },
   );
 
-  const leadText = `I analysed ${totals.pads} PADs, ${totals.isrs} ISRs, and ${totals.icrs} ICRs and found 4 angles for this narrative. Pick one to expand.`;
+  const leadText = `I analysed ${totals.pads.toLocaleString()} PADs, ${totals.isrs.toLocaleString()} ISRs, and ${totals.icrs.toLocaleString()} ICRs and found ${skeletons.length} angles for this narrative. Pick one to expand.`;
 
   // Stagger card mount-in by 80ms per card when animating.
-  const [revealedCount, setRevealedCount] = useState(() => (animate ? 0 : 4));
+  const [revealedCount, setRevealedCount] = useState(() => (animate ? 0 : skeletons.length));
   useEffect(() => {
     if (!animate) {
-      setRevealedCount(4);
+      setRevealedCount(skeletons.length);
       return;
     }
     setRevealedCount(0);
@@ -73,16 +76,17 @@ export default function NarrativeSkeletonChoice({
           className="-mx-2 px-2 overflow-x-auto scrollbar-auto-hide"
           style={{ scrollSnapType: "x mandatory" }}
         >
-          <div className="flex gap-3 pb-1">
+          <div className="flex gap-3 pb-2">
             {skeletons.map((s, i) => (
               <SkeletonCard
                 key={s.id}
                 skeleton={s}
                 selected={selectedSkeletonId === s.id}
                 revealed={i < revealedCount}
-                onClick={() =>
+                onSelect={() =>
                   onSelect(selectedSkeletonId === s.id ? null : s.id)
                 }
+                onPreview={() => onPreview(s.id)}
               />
             ))}
           </div>
@@ -96,91 +100,131 @@ function SkeletonCard({
   skeleton,
   selected,
   revealed,
-  onClick,
+  onSelect,
+  onPreview,
 }: {
   skeleton: NarrativeSkeleton;
   selected: boolean;
   revealed: boolean;
-  onClick: () => void;
+  onSelect: () => void;
+  onPreview: () => void;
 }) {
-  const { marker, title, challengeTeaser, countryExamples, sourceCounts } = skeleton;
+  const { title, challengeText, interventionText, countryExamples, countryFlags, sourceCounts } =
+    skeleton;
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
+      role="button"
+      tabIndex={0}
       aria-pressed={selected}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       style={{ scrollSnapAlign: "start" }}
       className={
-        "relative shrink-0 w-[280px] text-left rounded-xl p-4 flex flex-col gap-2.5" +
-        " transition-[opacity,transform,border-color,box-shadow,background-color] duration-200" +
+        "group relative shrink-0 w-[320px] rounded-2xl cursor-pointer overflow-hidden" +
+        " transition-[border-color,box-shadow,background-color] duration-200" +
         (revealed
           ? " opacity-100 translate-y-0"
           : " opacity-0 translate-y-1 pointer-events-none") +
+        " transition-[opacity,transform] duration-200" +
         (selected
-          ? " border-2 border-blue-600 bg-[rgba(37,99,235,0.04)] shadow-[0_2px_8px_rgba(37,99,235,0.12)]"
-          : " border border-gray-200 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]")
+          ? " bg-[rgba(167,139,250,0.10)] border border-violet-300" +
+            " shadow-[0_8px_24px_-8px_rgba(124,58,237,0.25),0_2px_6px_rgba(124,58,237,0.08)]"
+          : " bg-white border border-gray-200" +
+            " hover:bg-[rgba(167,139,250,0.06)] hover:border-violet-200" +
+            " hover:shadow-[0_8px_24px_-8px_rgba(124,58,237,0.18),0_2px_6px_rgba(124,58,237,0.06)]")
       }
     >
-      {/* Selected check pill — top-right, springs in on selection */}
-      <AnimatePresence>
-        {selected && (
-          <motion.span
-            aria-hidden
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 32, mass: 0.7 }}
-            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
-          >
-            <IconCheck size={11} stroke={3} className="text-white" />
-          </motion.span>
-        )}
-      </AnimatePresence>
-
-      <span className="text-[11px] font-semibold text-gray-400 tracking-wider">
-        {marker}
-      </span>
-
-      <h4
-        className="text-[14px] font-semibold text-gray-900 leading-snug"
-        style={{
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
-      >
-        {title}
-      </h4>
-
-      <p
-        className="text-[12.5px] text-gray-700 leading-relaxed"
-        style={{
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
-      >
-        {challengeTeaser}
-      </p>
-
-      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-        {countryExamples.map((c) => (
-          <span
-            key={c}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200 text-[11px] text-gray-700"
-          >
-            <span className="w-1 h-1 rounded-full bg-gray-400" aria-hidden />
-            {c}
-          </span>
-        ))}
+      {/* Header — title + caption + expand icon */}
+      <div className="flex items-start gap-2 px-4 pt-4">
+        <div className="flex-1 min-w-0">
+          <h4 className="text-[15px] font-semibold text-gray-900 leading-snug">
+            {title}
+          </h4>
+          <p className="mt-0.5 text-[11.5px] text-gray-500 leading-relaxed">
+            Based on {sourceCounts.pads.toLocaleString()} PADs, {sourceCounts.isrs.toLocaleString()} ISRs, and {sourceCounts.icrs.toLocaleString()} ICRs.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPreview();
+          }}
+          aria-label={`Expand preview for ${title}`}
+          className="shrink-0 w-7 h-7 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <IconArrowsMaximize size={14} />
+        </button>
       </div>
 
-      <div className="mt-1 pt-2 border-t border-gray-100 text-[10.5px] text-gray-400">
-        Built from {sourceCounts.pads} PADs · {sourceCounts.isrs} ISRs · {sourceCounts.icrs} ICRs
+      <div className="mx-4 mt-3 h-px bg-gray-200/70" />
+
+      {/* The Challenge */}
+      <div className="px-4 pt-3 pb-3">
+        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
+          The Challenge
+        </span>
+        <p className="mt-2 text-[12.5px] text-gray-800 leading-relaxed">
+          {challengeText}
+        </p>
       </div>
-    </button>
+
+      <div className="mx-4 h-px bg-gray-200/70" />
+
+      {/* Interventions — clipped + fade overlay */}
+      <div className="relative px-4 pt-3">
+        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
+          Interventions
+        </span>
+        <p
+          className="mt-2 text-[12.5px] text-gray-800 leading-relaxed"
+          style={{
+            maxHeight: "4.6em",
+            overflow: "hidden",
+          }}
+        >
+          {interventionText}
+        </p>
+        {/* Bottom fade — matches the card background so the text dissolves
+            smoothly into whichever state the card is in. */}
+        <div
+          aria-hidden
+          className={
+            "pointer-events-none absolute left-0 right-0 bottom-0 h-12 " +
+            (selected
+              ? "bg-gradient-to-b from-transparent to-[rgba(247,243,255,1)]"
+              : "bg-gradient-to-b from-transparent to-white group-hover:to-[rgba(248,245,255,1)]")
+          }
+        />
+      </div>
+
+      <div className="mx-4 h-px bg-gray-200/70" />
+
+      {/* Countries — flag emoji chips */}
+      <div className="px-4 pt-3 pb-4">
+        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
+          Countries
+        </span>
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          {countryExamples.map((name, i) => (
+            <span
+              key={name}
+              className="inline-flex items-center gap-1.5 text-[12.5px] text-gray-800"
+            >
+              <span className="text-[14px] leading-none" aria-hidden>
+                {countryFlags[i]}
+              </span>
+              {name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -75,6 +75,8 @@ interface Props {
   selectedSkeletonId?: string | null;
   /** Called when the user clicks a skeleton card (or clicks it again to toggle off). */
   onSelectSkeleton?: (id: string | null) => void;
+  /** Called when the user clicks the expand icon on a skeleton card. */
+  onPreviewSkeleton?: (id: string) => void;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -1074,6 +1076,7 @@ export default function ConversationView({
   onNarrativePlanningComplete,
   selectedSkeletonId = null,
   onSelectSkeleton,
+  onPreviewSkeleton,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
@@ -1344,6 +1347,7 @@ export default function ConversationView({
               flow={flow}
               selectedSkeletonId={selectedSkeletonId}
               onSelect={(id) => onSelectSkeleton?.(id)}
+              onPreview={(id) => onPreviewSkeleton?.(id)}
               animate={narrativePhase === "skeleton-ready"}
             />
           )}
