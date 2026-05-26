@@ -43,7 +43,7 @@ export default function AppHeader({ workspaceCount = 0, onOpenWorkspace }: Props
         <Link href="/" className="justify-self-start self-center flex items-center gap-3 shrink-0">
           <WBGLogo />
           <div className="w-px h-4 bg-white/30" />
-          <span className="text-[13px] font-semibold text-white tracking-tight">IDA Scorecard</span>
+          <span className="text-[13px] font-semibold text-white tracking-tight">Scorecard</span>
         </Link>
 
         {/* Nav (always sits at viewport center) */}
