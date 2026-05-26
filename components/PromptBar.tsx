@@ -284,7 +284,7 @@ export default function PromptBar({
           layout
           transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.7 }}
           className={`bg-white border border-gray-200 hover:shadow-md focus-within:border-blue-400 focus-within:shadow-md focus-within:ring-[3px] focus-within:ring-blue-50 ${
-            !isBottom && expanded
+            (!isBottom && expanded) || refiningChip
               ? "rounded-[28px]"
               : "rounded-full hover:border-gray-300 cursor-text"
           }`}
@@ -314,7 +314,7 @@ export default function PromptBar({
           ) : (
             <div className="flex flex-col">
             {refiningChip && (
-              <div className="flex items-center gap-2 px-4 pt-2.5">
+              <div className="flex items-center gap-2 px-4 pt-3 pb-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(167,139,250,0.10)] border border-violet-300 text-[11.5px] font-medium text-violet-800 max-w-full">
                   <span className="opacity-70 shrink-0">Refining:</span>
                   <span className="truncate">{refiningChip.title}</span>
@@ -332,7 +332,7 @@ export default function PromptBar({
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2 px-4 py-2.5">
+            <div className={`flex items-center gap-2 px-4 ${refiningChip ? "pb-3 pt-1" : "py-2.5"}`}>
               <IconPlus size={15} className="text-gray-400 shrink-0" />
               <input
                 type="text"
