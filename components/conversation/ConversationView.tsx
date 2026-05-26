@@ -34,6 +34,7 @@ import {
   Tooltip,
 } from "recharts";
 import type { NarrativePhase } from "../../app/page";
+import NarrativeSkeletonChoice from "./NarrativeSkeletonChoice";
 
 const F = "'Open Sans', sans-serif";
 
@@ -68,6 +69,10 @@ interface Props {
   narrativePhase?: NarrativePhase;
   /** Fires when the NarrativePlanningMessage step animation completes. */
   onNarrativePlanningComplete?: () => void;
+  /** Currently selected narrative-skeleton id in the skeleton-ready phase. */
+  selectedSkeletonId?: string | null;
+  /** Called when the user clicks a skeleton card (or clicks it again to toggle off). */
+  onSelectSkeleton?: (id: string | null) => void;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -942,142 +947,6 @@ function NarrativePlanningMessage({
   );
 }
 
-const SKELETON_LEAD = "Here's the outline for your narrative. Let me know if this looks right:";
-
-function NarrativeSkeletonMessage({ animate }: { animate: boolean }) {
-  const [leadDone, setLeadDone] = useState(!animate);
-
-  return (
-    <div className="flex items-start gap-3 narrative-content-enter">
-      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
-        SC
-      </div>
-      <div className="flex-1 min-w-0 flex flex-col gap-3">
-        <p className="text-[13.5px] text-gray-700 leading-relaxed">
-          {animate
-            ? <StreamingText text={SKELETON_LEAD} wordDelay={35} onComplete={() => setLeadDone(true)} />
-            : SKELETON_LEAD}
-        </p>
-
-        <div
-          className="flex flex-col gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4 transition-opacity duration-700"
-          style={{ opacity: leadDone ? 1 : 0 }}
-        >
-          {/* The Challenge */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              The Challenge
-            </span>
-            <p className="text-[13px] text-gray-800 leading-relaxed">
-              Sub-Saharan Africa remains the epicentre of extreme poverty. FCS-country poverty sits
-              at 30.4%{" "}
-              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
-                CSC_CLI_EXT_POOR_FCS
-              </code>
-              , 70% learning poverty persists in primary schools{" "}
-              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
-                SE_LPV_PRIM
-              </code>
-              , and 56 economies collect less than 15% tax-to-GDP — limiting fiscal space for
-              homegrown investment.
-            </p>
-          </div>
-
-          <div className="h-px bg-gray-200" />
-
-          {/* Pathways to Outcomes */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Pathways to Outcomes
-            </span>
-            <p className="text-[13px] text-gray-800 leading-relaxed">
-              FY25 IDA operations targeted People-pillar programs across AFE + AFW, with safety
-              nets, education access, and primary health care as the primary delivery channels.
-              Climate resilience and electricity expansion{" "}
-              <code className="text-[11.5px] font-mono bg-gray-100 px-1 py-px rounded text-gray-600">
-                EG_ELC_ACCS_ZS
-              </code>{" "}
-              addressed the Planet and Infrastructure pillars.
-            </p>
-          </div>
-
-          <div className="h-px bg-gray-200" />
-
-          {/* Country Examples */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Country Examples
-            </span>
-            <p className="text-[13px] text-gray-800 leading-relaxed mb-1.5">
-              Key FY25 results vs. pipeline targets:
-            </p>
-            <ul className="flex flex-col gap-1.5 text-[12.5px] text-gray-700 pl-1">
-              <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
-                <span>
-                  Social safety nets: 244M / ~313M{" "}
-                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
-                    CSC_RES_SOC_SAF_PROG
-                  </code>
-                </span>
-              </li>
-              <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
-                <span>
-                  Students supported: 325M / ~452M{" "}
-                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
-                    CSC_RES_EDU_SUPP
-                  </code>
-                </span>
-              </li>
-              <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-400 shrink-0 mt-[5px]" aria-hidden="true" />
-                <span>
-                  Health services: 370M / ~425M{" "}
-                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
-                    CSC_RES_HEA_SERV
-                  </code>
-                </span>
-              </li>
-              <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0 mt-[5px]" aria-hidden="true" />
-                <span>
-                  Climate resilience: 244M / ~425M — behind target{" "}
-                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
-                    CSC_RES_RESI_CLIM_RISK
-                  </code>
-                </span>
-              </li>
-              <li className="flex items-baseline gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-red-400 shrink-0 mt-[5px]" aria-hidden="true" />
-                <span>
-                  Electricity access: 215M / 576M — significantly behind target{" "}
-                  <code className="text-[11px] font-mono bg-gray-100 px-1 py-px rounded text-gray-500">
-                    CSC_RES_ELC_ACCS
-                  </code>
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="h-px bg-gray-200" />
-
-          {/* Lessons Learned */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-              Lessons Learned
-            </span>
-            <p className="text-[13px] text-gray-800 leading-relaxed">
-              The People vertical leads at 68% achievement. FCS-country health efficiency is 2.3×
-              vs. non-FCS IDA peers. Infrastructure at 41% flags FY26 priorities, with electricity
-              access warranting a dedicated funding push in AFE.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function NarrativeGeneratingMessage({ generating }: { generating: boolean }) {
   return (
@@ -1201,6 +1070,8 @@ export default function ConversationView({
   embedded,
   narrativePhase = "idle",
   onNarrativePlanningComplete,
+  selectedSkeletonId = null,
+  onSelectSkeleton,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
@@ -1466,7 +1337,14 @@ export default function ConversationView({
               onComplete={onNarrativePlanningComplete}
             />
           )}
-          {showBlock2 && <NarrativeSkeletonMessage animate={narrativePhase === "skeleton-ready"} />}
+          {showBlock2 && (
+            <NarrativeSkeletonChoice
+              flow={flow}
+              selectedSkeletonId={selectedSkeletonId}
+              onSelect={(id) => onSelectSkeleton?.(id)}
+              animate={narrativePhase === "skeleton-ready"}
+            />
+          )}
           {showBlock3 && <NarrativeGeneratingMessage generating={narrativePhase === "generating"} />}
 
           <div className="h-8" />
