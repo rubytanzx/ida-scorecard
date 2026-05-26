@@ -7,6 +7,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { IconCheck } from "@tabler/icons-react";
 import {
   FLOW_SKELETONS,
@@ -43,7 +44,7 @@ export default function NarrativeSkeletonChoice({
   const leadText = `I analysed ${totals.pads} PADs, ${totals.isrs} ISRs, and ${totals.icrs} ICRs and found 4 angles for this narrative. Pick one to expand.`;
 
   // Stagger card mount-in by 80ms per card when animating.
-  const [revealedCount, setRevealedCount] = useState(animate ? 0 : 4);
+  const [revealedCount, setRevealedCount] = useState(() => (animate ? 0 : 4));
   useEffect(() => {
     if (!animate) {
       setRevealedCount(4);
@@ -52,11 +53,11 @@ export default function NarrativeSkeletonChoice({
     setRevealedCount(0);
     const timers: ReturnType<typeof setTimeout>[] = [];
     // Wait ~300ms after mount for the lead text to settle, then reveal each card.
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < skeletons.length; i++) {
       timers.push(setTimeout(() => setRevealedCount((n) => Math.max(n, i + 1)), 300 + i * 80));
     }
     return () => timers.forEach(clearTimeout);
-  }, [animate]);
+  }, [animate, skeletons.length]);
 
   return (
     <div className="flex items-start gap-3 narrative-content-enter">
@@ -111,25 +112,31 @@ function SkeletonCard({
       aria-pressed={selected}
       style={{ scrollSnapAlign: "start" }}
       className={
-        "relative shrink-0 w-[280px] text-left bg-white rounded-xl p-4 flex flex-col gap-2.5 " +
-        "transition-[opacity,transform,border-color,box-shadow,background] duration-200 " +
+        "relative shrink-0 w-[280px] text-left bg-white rounded-xl p-4 flex flex-col gap-2.5" +
+        " transition-[opacity,transform,border-color,box-shadow,background] duration-200" +
         (revealed
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-1 pointer-events-none ") +
+          ? " opacity-100 translate-y-0"
+          : " opacity-0 translate-y-1 pointer-events-none") +
         (selected
-          ? "border-2 border-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.12)] "
-          : "border border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] ")
+          ? " border-2 border-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.12)]"
+          : " border border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]")
       }
     >
-      {/* Selected check pill — top-right */}
-      {selected && (
-        <span
-          aria-hidden
-          className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
-        >
-          <IconCheck size={11} stroke={3} className="text-white" />
-        </span>
-      )}
+      {/* Selected check pill — top-right, springs in on selection */}
+      <AnimatePresence>
+        {selected && (
+          <motion.span
+            aria-hidden
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 32, mass: 0.7 }}
+            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
+          >
+            <IconCheck size={11} stroke={3} className="text-white" />
+          </motion.span>
+        )}
+      </AnimatePresence>
 
       <span className="text-[11px] font-semibold text-gray-400 tracking-wider">
         {marker}
