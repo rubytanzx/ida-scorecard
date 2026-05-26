@@ -24,7 +24,7 @@ export type NarrativeSkeletonSet = readonly [
   NarrativeSkeleton,
 ];
 
-export const FLOW_SKELETONS: Record<FlowId, NarrativeSkeletonSet> = {
+export const FLOW_SKELETONS = {
   "africa-poverty": [
     {
       id: "africa-poverty-climate-safety-nets",
@@ -139,4 +139,4 @@ export const FLOW_SKELETONS: Record<FlowId, NarrativeSkeletonSet> = {
       sourceCounts: { pads: 11, isrs: 9, icrs: 5 },
     },
   ],
-};
+} as const satisfies Record<FlowId, NarrativeSkeletonSet>;
