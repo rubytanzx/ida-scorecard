@@ -76,10 +76,9 @@ export default function NarrativeSkeletonChoice({
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">{leadText}</p>
 
-        {/* Flat carousel — cards sit side-by-side at the same depth. Side
-            cards peek out and a left/right gradient overlay fades them into
-            the page so the focal card reads as the centre of attention. */}
-        <div className="group relative h-[460px] flex items-center justify-center overflow-hidden">
+        {/* Flat carousel — cards flush to the left edge. Next card peeks on
+            the right and the right-edge gradient overlay fades it out. */}
+        <div className="group relative h-[440px] flex items-center overflow-hidden">
           {skeletons.map((s, i) => {
             const offset = i - activeIndex;
             const abs = Math.abs(offset);
@@ -119,17 +118,13 @@ export default function NarrativeSkeletonChoice({
             );
           })}
 
-          {/* Side fade overlays — solid-white → transparent gradients sit
-              above the side cards and dissolve them into the page. */}
+          {/* Right-edge fade overlay — solid-white → transparent gradient
+              that dissolves the peeking next card into the page. The left
+              edge is flush with the focal card so no left overlay needed. */}
           <div
             aria-hidden
-            className="absolute inset-y-0 left-0 w-32 pointer-events-none z-20"
-            style={{ background: "linear-gradient(to right, #fff 0%, #fff 25%, rgba(255,255,255,0) 100%)" }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-y-0 right-0 w-32 pointer-events-none z-20"
-            style={{ background: "linear-gradient(to left, #fff 0%, #fff 25%, rgba(255,255,255,0) 100%)" }}
+            className="absolute inset-y-0 right-0 w-40 pointer-events-none z-20"
+            style={{ background: "linear-gradient(to left, #fff 0%, #fff 30%, rgba(255,255,255,0) 100%)" }}
           />
 
           {/* Edge arrows — fade in on container hover. Disabled at endpoints. */}
@@ -199,7 +194,7 @@ function SkeletonCard({
         }
       }}
       className={
-        "group relative w-[320px] rounded-2xl cursor-pointer overflow-hidden" +
+        "group relative w-[320px] h-[420px] flex flex-col rounded-2xl cursor-pointer overflow-hidden" +
         " transition-[border-color,box-shadow,background-color] duration-200" +
         (selected
           ? " bg-violet-50 border border-violet-300" +
@@ -214,7 +209,7 @@ function SkeletonCard({
       }
     >
       {/* Header — title + caption + expand icon */}
-      <div className="flex items-start gap-2 px-4 pt-4">
+      <div className="shrink-0 flex items-start gap-2 px-4 pt-4">
         <div className="flex-1 min-w-0">
           <h4 className="text-[15px] font-semibold text-gray-900 leading-snug">
             {title}
@@ -238,32 +233,36 @@ function SkeletonCard({
         )}
       </div>
 
-      <div className="mx-4 mt-3 h-px bg-gray-200/70" />
+      <div className="shrink-0 mx-4 mt-3 h-px bg-gray-200/70" />
 
-      {/* The Challenge */}
-      <div className="px-4 pt-3 pb-3">
+      {/* The Challenge — clamped to 4 lines so every card has the same
+          header+challenge height regardless of source length. */}
+      <div className="shrink-0 px-4 pt-3 pb-3">
         <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
           The Challenge
-        </span>
-        <p className="mt-2 text-[12.5px] text-gray-800 leading-relaxed">
-          {challengeText}
-        </p>
-      </div>
-
-      <div className="mx-4 h-px bg-gray-200/70" />
-
-      {/* Interventions — clipped + fade overlay */}
-      <div className="relative px-4 pt-3">
-        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
-          Interventions
         </span>
         <p
           className="mt-2 text-[12.5px] text-gray-800 leading-relaxed"
           style={{
-            maxHeight: "4.6em",
+            display: "-webkit-box",
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}
         >
+          {challengeText}
+        </p>
+      </div>
+
+      <div className="shrink-0 mx-4 h-px bg-gray-200/70" />
+
+      {/* Interventions — fills the remaining card height with a bottom
+          fade overlay; cards keep a uniform total height. */}
+      <div className="relative flex-1 min-h-0 px-4 pt-3 overflow-hidden">
+        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
+          Interventions
+        </span>
+        <p className="mt-2 text-[12.5px] text-gray-800 leading-relaxed">
           {interventionText}
         </p>
         {/* Bottom fade — matches the card background so the text dissolves
@@ -279,10 +278,10 @@ function SkeletonCard({
         />
       </div>
 
-      <div className="mx-4 h-px bg-gray-200/70" />
+      <div className="shrink-0 mx-4 h-px bg-gray-200/70" />
 
       {/* Country examples — flag emoji chips */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="shrink-0 px-4 pt-3 pb-4">
         <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
           Country examples
         </span>
