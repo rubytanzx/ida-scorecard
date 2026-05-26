@@ -4,6 +4,7 @@ import {
   IconTrendingUp,
   IconAlertTriangle,
   IconArrowsUpDown,
+  IconNotebook,
 } from "@tabler/icons-react";
 
 const ACTION_PILLS = [
@@ -15,9 +16,13 @@ const ACTION_PILLS = [
 interface Props {
   /** Set the prompt-bar's value when a suggestion pill is clicked. */
   onPillClick: (label: string) => void;
+  /** Fires when the user clicks the "Create a narrative" pill. The parent
+   *  switches the prompt bar into create-narrative mode (chip + direct
+   *  jump to the 4-skeleton carousel on submit). */
+  onCreateNarrative: () => void;
 }
 
-export default function SearchHero({ onPillClick }: Props) {
+export default function SearchHero({ onPillClick, onCreateNarrative }: Props) {
   return (
     <section
       className="relative w-full pb-8 flex flex-col items-center gap-5"
@@ -38,6 +43,31 @@ export default function SearchHero({ onPillClick }: Props) {
             {label}
           </button>
         ))}
+
+        {/* "Create a narrative" — different visual treatment: animated
+            gleaming gradient border on a white pill so the call to action
+            reads as a primary entry point distinct from the suggestion
+            pills above. */}
+        <button
+          onClick={onCreateNarrative}
+          aria-label="Create a narrative"
+          className="group relative isolate rounded-full p-[1.5px] active:scale-[0.98] transition-transform duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+        >
+          <span
+            aria-hidden
+            className="absolute inset-0 -z-10 rounded-full"
+            style={{
+              background:
+                "linear-gradient(110deg, #c4b5fd 0%, #818cf8 25%, #38bdf8 50%, #a78bfa 75%, #c4b5fd 100%)",
+              backgroundSize: "200% 100%",
+              animation: "gleam 3s linear infinite",
+            }}
+          />
+          <span className="flex items-center gap-1.5 px-4 py-1.5 text-[12.5px] font-semibold text-violet-700 bg-white rounded-full group-hover:bg-violet-50 transition-colors">
+            <IconNotebook size={12} className="text-violet-500" />
+            Create a narrative
+          </span>
+        </button>
       </div>
     </section>
   );

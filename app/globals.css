@@ -91,6 +91,14 @@ button {
   display: none;
 }
 
+/* Animated gradient sweep used by the landing-page "Create a narrative"
+   pill to give its border a subtle gleam. Pair with background-size
+   200% / animation gleam Ns linear infinite on the gradient layer. */
+@keyframes gleam {
+  0%   { background-position:   0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
 /* Recharts tweaks */
 .recharts-tooltip-wrapper {
   outline: none !important;

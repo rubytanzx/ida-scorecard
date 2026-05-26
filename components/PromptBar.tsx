@@ -51,6 +51,13 @@ interface Props {
   /** Called when the user hits Enter / clicks Submit while a refining chip
    *  is active. Receives the typed text and is expected to clear the field. */
   onRefineSubmit?: (text: string) => void;
+  /** When set, renders a "Create narrative" tag chip above the input. The
+   *  next submit routes to onCreateNarrativeSubmit instead of starting a
+   *  regular conversation. Mutually exclusive with refiningChip. */
+  createNarrativeChip?: { onDismiss: () => void };
+  /** Called when the user hits Enter / clicks Submit while the
+   *  create-narrative tag is active. */
+  onCreateNarrativeSubmit?: (text: string) => void;
   /** When true, submit doesn't trigger a new conversation transition. */
   inConversation?: boolean;
   /** Fires immediately when the user hits Enter / clicks send. Lets the parent
@@ -84,6 +91,8 @@ export default function PromptBar({
   narrativeConfirmDisabled = false,
   refiningChip,
   onRefineSubmit,
+  createNarrativeChip,
+  onCreateNarrativeSubmit,
   inConversation = false,
   onSubmit,
 }: Props) {
@@ -101,7 +110,8 @@ export default function PromptBar({
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const isBottom = mode === "bottom";
-  const extraHeight = refiningChip ? REFINING_EXTRA : 0;
+  const hasChip = !!refiningChip || !!createNarrativeChip;
+  const extraHeight = hasChip ? REFINING_EXTRA : 0;
 
   useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
 
@@ -123,6 +133,20 @@ export default function PromptBar({
     // text to the parent's refinement handler instead.
     if (onRefineSubmit) {
       onRefineSubmit(v);
+      return;
+    }
+    // Landing-page "Create a narrative" flow: open the conversation directly
+    // in the planning phase instead of running the AI Q&A path.
+    if (onCreateNarrativeSubmit) {
+      onSubmit?.();
+      const beamDelay = isBottom ? 700 : 0;
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      timers.current.push(setTimeout(() => {
+        setSubmitted(false);
+        requestAnimationFrame(() => setSubmitted(true));
+      }, beamDelay));
+      timers.current.push(setTimeout(() => onCreateNarrativeSubmit(v), beamDelay + holdMs));
       return;
     }
     if (inConversation) return;
@@ -202,8 +226,10 @@ export default function PromptBar({
         />
       )}
 
-      {/* Narrative chips — "Create narrative" when idle, "Yes / Make changes" when skeleton-ready */}
-      {isBottom && showCreateChip && (
+      {/* Narrative chips — "Yes / Make changes" pair shown only in
+          skeleton-ready phase after a card is selected. The earlier
+          "Create narrative" entry point now lives on the landing page. */}
+      {isBottom && showCreateChip && narrativePhase === "skeleton-ready" && (
         <div
           className={`fixed flex justify-end gap-2 ${suppressTransition ? "" : "transition-[left,width] duration-[900ms]"}`}
           style={{
@@ -215,41 +241,28 @@ export default function PromptBar({
             transitionTimingFunction: suppressTransition ? undefined : "cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          {narrativePhase === "skeleton-ready" ? (
-            <>
-              <button
-                type="button"
-                onClick={() => onNarrativeMakeChanges?.()}
-                className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-600 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
-              >
-                Make changes
-              </button>
-              <button
-                type="button"
-                onClick={() => onNarrativeConfirm?.()}
-                disabled={narrativeConfirmDisabled}
-                aria-disabled={narrativeConfirmDisabled}
-                className={
-                  "flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full shadow-sm transition-colors" +
-                  (narrativeConfirmDisabled
-                    ? " text-gray-400 bg-gray-200 border border-gray-200 cursor-not-allowed"
-                    : " text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 active:scale-[0.98]")
-                }
-              >
-                <IconCheck size={12} />
-                Yes, create narrative
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onCreateNarrative?.()}
-              className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-700 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
-            >
-              <IconNotebook size={12} className="opacity-60" />
-              Create narrative
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => onNarrativeMakeChanges?.()}
+            className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-gray-600 bg-white border border-gray-200 rounded-full shadow-sm hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-colors"
+          >
+            Make changes
+          </button>
+          <button
+            type="button"
+            onClick={() => onNarrativeConfirm?.()}
+            disabled={narrativeConfirmDisabled}
+            aria-disabled={narrativeConfirmDisabled}
+            className={
+              "flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full shadow-sm transition-colors" +
+              (narrativeConfirmDisabled
+                ? " text-gray-400 bg-gray-200 border border-gray-200 cursor-not-allowed"
+                : " text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 active:scale-[0.98]")
+            }
+          >
+            <IconCheck size={12} />
+            Yes, create narrative
+          </button>
         </div>
       )}
 
@@ -289,7 +302,7 @@ export default function PromptBar({
           layout
           transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.7 }}
           className={`bg-white border border-gray-200 hover:shadow-md focus-within:border-blue-400 focus-within:shadow-md focus-within:ring-[3px] focus-within:ring-blue-50 ${
-            (!isBottom && expanded) || refiningChip
+            (!isBottom && expanded) || hasChip
               ? "rounded-[28px]"
               : "rounded-full hover:border-gray-300 cursor-text"
           }`}
@@ -306,6 +319,7 @@ export default function PromptBar({
               : "0 0 0 1px rgba(15,118,110,0.22), 0 0 24px rgba(45,212,191,0.32), 0 0 56px rgba(15,118,110,0.14), 0 1px 2px rgba(0,0,0,0.04)",
           }}
           onClick={() => {
+            if (hasChip) return;
             if (!isBottom && !inConversation && !expanded) setExpanded(true);
           }}
         >
@@ -337,7 +351,26 @@ export default function PromptBar({
                 </span>
               </div>
             )}
-            <div className={`flex items-center gap-2 px-4 ${refiningChip ? "pb-3 pt-1" : "py-2.5"}`}>
+            {createNarrativeChip && !refiningChip && (
+              <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(167,139,250,0.10)] border border-violet-300 text-[11.5px] font-semibold text-violet-700 max-w-full">
+                  <IconNotebook size={11} className="shrink-0" />
+                  <span className="truncate">Create narrative</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      createNarrativeChip.onDismiss();
+                    }}
+                    aria-label="Cancel create narrative"
+                    className="ml-0.5 -mr-0.5 w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-violet-200/70 transition-colors shrink-0"
+                  >
+                    <IconX size={10} />
+                  </button>
+                </span>
+              </div>
+            )}
+            <div className={`flex items-center gap-2 px-4 ${hasChip ? "pb-3 pt-1" : "py-2.5"}`}>
               <IconPlus size={15} className="text-gray-400 shrink-0" />
               <input
                 type="text"
@@ -347,12 +380,20 @@ export default function PromptBar({
                   if (submitted) setSubmitted(false);
                 }}
                 onFocus={() => {
+                  if (hasChip) return;
                   if (!isBottom && !inConversation) setExpanded(true);
                 }}
-                placeholder={isBottom ? "Ask a follow-up question" : "What do you want to learn about IDA results?"}
+                placeholder={
+                  createNarrativeChip
+                    ? "Describe what the narrative should focus on…"
+                    : isBottom
+                    ? "Ask a follow-up question"
+                    : "What do you want to learn about IDA results?"
+                }
                 className="flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none"
                 aria-label="Search the scorecard"
-                readOnly={!isBottom && !inConversation}
+                readOnly={!hasChip && !isBottom && !inConversation}
+                autoFocus={!!createNarrativeChip}
               />
               <div className="flex items-center gap-1.5 shrink-0">
                 <button

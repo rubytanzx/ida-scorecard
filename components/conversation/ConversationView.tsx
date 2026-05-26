@@ -94,6 +94,10 @@ interface Props {
   onToggleInteractiveElement?: (el: InteractiveElement) => void;
   /** Fires when the user clicks "Proceed" in the interactive-elements message. */
   onProceedFromInteractive?: () => void;
+  /** When true, the conversation was opened via the landing-page
+   *  "Create a narrative" pill — skip the AI Q&A response block and start
+   *  the narrative-creation flow directly. */
+  narrativeDirect?: boolean;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -1101,6 +1105,7 @@ export default function ConversationView({
   interactiveElements = [],
   onToggleInteractiveElement,
   onProceedFromInteractive,
+  narrativeDirect = false,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
@@ -1273,13 +1278,14 @@ export default function ConversationView({
             </div>
           )}
 
-          {/* Thought process — stage 2: mounts 350ms after user message, then steps animate sequentially */}
-          {mountStage >= 2 && (
+          {/* Thought process — stage 2: mounts 350ms after user message, then steps animate sequentially.
+              Suppressed entirely in narrative-direct mode (landing-page "Create a narrative" entry). */}
+          {!narrativeDirect && mountStage >= 2 && (
             <ThoughtProcess flow={flow} onComplete={() => setThoughtDone(true)} />
           )}
 
           {/* Assistant response — appears after thought process collapses */}
-          {thoughtDone && (
+          {!narrativeDirect && thoughtDone && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
                 SC
@@ -1363,7 +1369,7 @@ export default function ConversationView({
           )}
 
           {/* ── Narrative confirmation flow ── */}
-          {showBlock1 && (
+          {showBlock1 && !narrativeDirect && (
             <div className="self-end flex items-center gap-3 max-w-[85%] narrative-content-enter">
               <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
                 Create narrative

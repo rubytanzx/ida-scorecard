@@ -206,6 +206,15 @@ export default function HomePage() {
   // Interactive-elements multi-select. Persists after Proceed so generated
   // narratives could (later) branch on it.
   const [interactiveElements, setInteractiveElements] = useState<InteractiveElement[]>([]);
+  // True when the user clicked "Create a narrative" on the landing page —
+  // adds a tag to the prompt bar and routes submits straight into the
+  // narrative-creation flow (skipping the AI Q&A response in conversation).
+  const [createNarrativeMode, setCreateNarrativeMode] = useState(false);
+  // Conversation ids that bypass the AI Q&A response and start directly in
+  // the planning phase (landing-page "Create a narrative" entry point).
+  const [narrativeDirectConversations, setNarrativeDirectConversations] = useState<Set<string>>(
+    new Set(),
+  );
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
   // True for ~3.5s after the user picks "Generate · Infographic" —
   // drives the beam + cycling text loader inside the infographic pane.
@@ -284,6 +293,43 @@ export default function HomePage() {
     setPromptValue("");        // empty the bar for follow-up questions
     setView("conversation");
     setHomeScrolled(false);    // reset for when we return home
+  };
+
+  // Landing-page "Create a narrative" pill → arms the create-narrative tag
+  // on the prompt bar so the next submit routes through the direct path.
+  const handleArmCreateNarrative = () => {
+    setCreateNarrativeMode(true);
+  };
+
+  // The user submitted while the create-narrative tag was on. Skip the AI
+  // Q&A response in the conversation thread and start the planning phase
+  // immediately. We mark this conversation as narrative-direct so the
+  // ConversationView knows to suppress the Q&A block.
+  const handleCreateNarrativeSubmit = (text: string) => {
+    const id = Date.now().toString();
+    setConversations((prev) => [
+      ...prev,
+      {
+        id,
+        title: deriveArtefactTitle(text) || "Untitled narrative",
+        prompt: text,
+        createdAt: Date.now(),
+        artefacts: [],
+      },
+    ]);
+    setNarrativeDirectConversations((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+    setCurrentConversationId(id);
+    setConversationPrompt(text);
+    setPromptValue("");
+    setCreateNarrativeMode(false);
+    setHomeScrolled(false);
+    setSelectedSkeletonId(null);
+    setView("conversation");
+    setNarrativePhase("planning");
   };
 
   const handleCreateNarrative = () => {
@@ -587,8 +633,8 @@ export default function HomePage() {
         showCreateChip={
           view === "conversation" &&
           !currentArtefacts.some((a) => a.kind === "narrative") &&
-          (narrativePhase === "idle" ||
-            (narrativePhase === "skeleton-ready" && selectedSkeletonId != null))
+          narrativePhase === "skeleton-ready" &&
+          selectedSkeletonId != null
         }
         narrativePhase={narrativePhase}
         onNarrativeConfirm={handleNarrativeConfirm}
@@ -607,6 +653,14 @@ export default function HomePage() {
         }
         onRefineSubmit={
           narrativePhase === "refining" ? handleSubmitRefinement : undefined
+        }
+        createNarrativeChip={
+          view === "home" && createNarrativeMode
+            ? { onDismiss: () => setCreateNarrativeMode(false) }
+            : undefined
+        }
+        onCreateNarrativeSubmit={
+          view === "home" && createNarrativeMode ? handleCreateNarrativeSubmit : undefined
         }
         inConversation={view === "conversation"}
         onSubmit={() => {
@@ -714,6 +768,10 @@ export default function HomePage() {
           interactiveElements={interactiveElements}
           onToggleInteractiveElement={handleToggleInteractiveElement}
           onProceedFromInteractive={handleProceedFromInteractive}
+          narrativeDirect={
+            currentConversationId != null &&
+            narrativeDirectConversations.has(currentConversationId)
+          }
         />
       ) : (
     <div
@@ -763,7 +821,10 @@ export default function HomePage() {
       />
 
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        <SearchHero onPillClick={setPromptValue} />
+        <SearchHero
+          onPillClick={setPromptValue}
+          onCreateNarrative={handleArmCreateNarrative}
+        />
 
         {/* Ticker hidden for now — keep import/state intact for a quick re-enable.
             To bring it back, wrap with the FadeIn delay={25} block again. */}
