@@ -46,63 +46,27 @@ export default function NarrativeSkeletonChoice({
 
   const leadText = `I analysed ${totals.pads.toLocaleString()} PADs, ${totals.isrs.toLocaleString()} ISRs, and ${totals.icrs.toLocaleString()} ICRs and found ${skeletons.length} angles for this narrative. Pick one to expand.`;
 
-  // Stagger card mount-in by 80ms per card when animating.
-  const [revealedCount, setRevealedCount] = useState(() => (animate ? 0 : skeletons.length));
-  useEffect(() => {
-    if (!animate) {
-      setRevealedCount(skeletons.length);
-      return;
-    }
-    setRevealedCount(0);
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    // Wait ~300ms after mount for the lead text to settle, then reveal each card.
-    for (let i = 0; i < skeletons.length; i++) {
-      timers.push(setTimeout(() => setRevealedCount((n) => Math.max(n, i + 1)), 300 + i * 80));
-    }
-    return () => timers.forEach(clearTimeout);
-  }, [animate, skeletons.length]);
-
-  // Pagination — track which card the carousel is centred on. The scroll
-  // listener picks the index of the card whose left edge is closest to the
-  // scroll-container's left edge (allowing for the 8px gutter bleed).
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
+  // Active index = which card is centred (focal) in the deck. Side cards
+  // tilt away in 3D and are dimmed; clicking one brings it to focus.
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const goToCard = (i: number) => {
+    setActiveIndex(Math.max(0, Math.min(skeletons.length - 1, i)));
+  };
+  const stepBy = (dir: -1 | 1) => goToCard(activeIndex + dir);
+
+  // Mount-in transition: fade the whole deck up the first time the
+  // skeleton-ready phase opens. Each card uses its own deck transform.
+  const [mountedIn, setMountedIn] = useState(!animate);
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const cards = cardsRef.current?.children;
-      if (!cards) return;
-      const scrollerLeft = el.getBoundingClientRect().left;
-      let bestIdx = 0;
-      let bestDist = Number.POSITIVE_INFINITY;
-      for (let i = 0; i < cards.length; i++) {
-        const c = cards[i] as HTMLElement;
-        const d = Math.abs(c.getBoundingClientRect().left - scrollerLeft);
-        if (d < bestDist) {
-          bestDist = d;
-          bestIdx = i;
-        }
-      }
-      setActiveIndex(bestIdx);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const scrollToCard = (i: number) => {
-    const cards = cardsRef.current?.children;
-    if (!cards || !cards[i]) return;
-    const card = cards[i] as HTMLElement;
-    card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-  };
-
-  const scrollByDir = (dir: -1 | 1) => {
-    const next = Math.max(0, Math.min(skeletons.length - 1, activeIndex + dir));
-    scrollToCard(next);
-  };
+    if (!animate) {
+      setMountedIn(true);
+      return;
+    }
+    setMountedIn(false);
+    const t = setTimeout(() => setMountedIn(true), 250);
+    return () => clearTimeout(t);
+  }, [animate]);
 
   return (
     <div className="flex items-start gap-3 narrative-content-enter">
@@ -112,40 +76,67 @@ export default function NarrativeSkeletonChoice({
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">{leadText}</p>
 
-        {/* Horizontal scroll-snap carousel — bleeds 8px past the gutters
-            so partially-scrolled cards aren't clipped at the edges. */}
-        <div className="group relative -mx-2">
-          <div
-            ref={scrollerRef}
-            className="px-2 overflow-x-auto scrollbar-hidden"
-            style={{ scrollSnapType: "x mandatory" }}
-          >
-            <div ref={cardsRef} className="flex gap-3 pb-2">
-              {skeletons.map((s, i) => (
+        {/* 3D deck carousel — one focal card at centre, neighbours tilt
+            back into space. Click a side card to bring it to focus. */}
+        <div
+          className="group relative h-[460px] flex items-center justify-center"
+          style={{ perspective: "1400px" }}
+        >
+          {skeletons.map((s, i) => {
+            const offset = i - activeIndex;
+            const abs = Math.abs(offset);
+            const dir = offset === 0 ? 0 : offset > 0 ? 1 : -1;
+            const isFocal = offset === 0;
+            // Hide cards further than 2 away — keeps the deck visually tidy.
+            const hidden = abs > 2;
+            const cardTransform =
+              `translateX(${dir * (abs === 1 ? 170 : 290)}px)` +
+              ` rotateY(${-dir * (abs === 1 ? 22 : 30)}deg)` +
+              ` translateZ(${-abs * 80}px)` +
+              ` scale(${1 - abs * 0.06})`;
+            return (
+              <div
+                key={s.id}
+                style={{
+                  transform: cardTransform,
+                  opacity: hidden ? 0 : mountedIn ? 1 - abs * 0.25 : 0,
+                  pointerEvents: hidden ? "none" : "auto",
+                  zIndex: 10 - abs,
+                  transition:
+                    "transform 500ms cubic-bezier(0.22,1,0.36,1)," +
+                    " opacity 400ms ease-out",
+                  transformStyle: "preserve-3d",
+                  willChange: "transform, opacity",
+                }}
+                className="absolute"
+              >
                 <SkeletonCard
-                  key={s.id}
                   skeleton={s}
                   selected={selectedSkeletonId === s.id}
-                  revealed={i < revealedCount}
-                  onSelect={() =>
-                    onSelect(selectedSkeletonId === s.id ? null : s.id)
-                  }
+                  focal={isFocal}
+                  onClick={() => {
+                    if (!isFocal) {
+                      goToCard(i);
+                      return;
+                    }
+                    onSelect(selectedSkeletonId === s.id ? null : s.id);
+                  }}
                   onPreview={() => onPreview(s.id)}
                 />
-              ))}
-            </div>
-          </div>
+              </div>
+            );
+          })}
 
           {/* Edge arrows — fade in on container hover. Disabled at endpoints. */}
           <CarouselArrow
             direction="left"
             disabled={activeIndex === 0}
-            onClick={() => scrollByDir(-1)}
+            onClick={() => stepBy(-1)}
           />
           <CarouselArrow
             direction="right"
             disabled={activeIndex >= skeletons.length - 1}
-            onClick={() => scrollByDir(1)}
+            onClick={() => stepBy(1)}
           />
         </div>
 
@@ -157,7 +148,7 @@ export default function NarrativeSkeletonChoice({
               type="button"
               aria-label={`Go to angle ${i + 1}`}
               aria-current={activeIndex === i ? "true" : undefined}
-              onClick={() => scrollToCard(i)}
+              onClick={() => goToCard(i)}
               className={
                 "rounded-full transition-all duration-200" +
                 (activeIndex === i
@@ -175,14 +166,16 @@ export default function NarrativeSkeletonChoice({
 function SkeletonCard({
   skeleton,
   selected,
-  revealed,
-  onSelect,
+  focal,
+  onClick,
   onPreview,
 }: {
   skeleton: NarrativeSkeleton;
   selected: boolean;
-  revealed: boolean;
-  onSelect: () => void;
+  /** True for the centre card in the deck; controls the expand-icon
+   *  visibility and the slightly stronger card shadow. */
+  focal: boolean;
+  onClick: () => void;
   onPreview: () => void;
 }) {
   const { title, challengeText, interventionText, countryExamples, countryFlags, sourceCounts } =
@@ -193,27 +186,26 @@ function SkeletonCard({
       role="button"
       tabIndex={0}
       aria-pressed={selected}
-      onClick={onSelect}
+      onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onSelect();
+          onClick();
         }
       }}
-      style={{ scrollSnapAlign: "start" }}
       className={
-        "group relative shrink-0 w-[320px] rounded-2xl cursor-pointer overflow-hidden" +
+        "group relative w-[320px] rounded-2xl cursor-pointer overflow-hidden" +
         " transition-[border-color,box-shadow,background-color] duration-200" +
-        (revealed
-          ? " opacity-100 translate-y-0"
-          : " opacity-0 translate-y-1 pointer-events-none") +
-        " transition-[opacity,transform] duration-200" +
         (selected
           ? " bg-[rgba(167,139,250,0.10)] border border-violet-300" +
-            " shadow-[0_8px_24px_-8px_rgba(124,58,237,0.25),0_2px_6px_rgba(124,58,237,0.08)]"
-          : " bg-white border border-gray-200" +
-            " hover:bg-[rgba(167,139,250,0.06)] hover:border-violet-200" +
-            " hover:shadow-[0_8px_24px_-8px_rgba(124,58,237,0.18),0_2px_6px_rgba(124,58,237,0.06)]")
+            " shadow-[0_18px_36px_-12px_rgba(124,58,237,0.35),0_2px_6px_rgba(124,58,237,0.08)]"
+          : focal
+            ? " bg-white border border-gray-200" +
+              " shadow-[0_18px_36px_-12px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)]" +
+              " hover:bg-[rgba(167,139,250,0.06)] hover:border-violet-200"
+            : " bg-white border border-gray-200" +
+              " shadow-[0_8px_24px_-12px_rgba(15,23,42,0.18)]" +
+              " hover:bg-[rgba(167,139,250,0.05)]")
       }
     >
       {/* Header — title + caption + expand icon */}
@@ -226,17 +218,19 @@ function SkeletonCard({
             Based on {sourceCounts.pads.toLocaleString()} PADs, {sourceCounts.isrs.toLocaleString()} ISRs, and {sourceCounts.icrs.toLocaleString()} ICRs.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPreview();
-          }}
-          aria-label={`Expand preview for ${title}`}
-          className="shrink-0 w-7 h-7 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          <IconArrowsMaximize size={14} />
-        </button>
+        {focal && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+            aria-label={`Expand preview for ${title}`}
+            className="shrink-0 w-7 h-7 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <IconArrowsMaximize size={14} />
+          </button>
+        )}
       </div>
 
       <div className="mx-4 mt-3 h-px bg-gray-200/70" />
