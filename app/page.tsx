@@ -666,6 +666,7 @@ export default function HomePage() {
             }}
             onProceed={(id) => handleProceedFromPreview(id)}
             onMakeChanges={(id) => handleMakeChangesFromPreview(id)}
+            refinementTurns={refinementTurns}
           />
         </>
       )}

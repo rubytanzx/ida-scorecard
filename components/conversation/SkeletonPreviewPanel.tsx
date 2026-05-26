@@ -8,7 +8,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconX, IconNotebook, IconCheck, IconGripVertical } from "@tabler/icons-react";
+import { IconX, IconNotebook, IconCheck, IconGripVertical, IconSparkles } from "@tabler/icons-react";
 import {
   FLOW_SKELETONS,
   type NarrativeSkeleton,
@@ -35,6 +35,9 @@ interface Props {
   /** Called when the user clicks "Make changes" — opens the refining flow
    *  in the prompt bar. The parent closes the panel and switches phase. */
   onMakeChanges: (id: string) => void;
+  /** Refinement-turn history. When the count changes the panel briefly
+   *  fades to indicate the content has been re-derived. */
+  refinementTurns?: string[];
 }
 
 export default function SkeletonPreviewPanel({
@@ -46,11 +49,29 @@ export default function SkeletonPreviewPanel({
   onClose,
   onProceed,
   onMakeChanges,
+  refinementTurns = [],
 }: Props) {
   const skeleton =
     skeletonId == null
       ? null
       : FLOW_SKELETONS[flow].find((s) => s.id === skeletonId) ?? null;
+
+  const refinedCount = refinementTurns.length;
+  const isRefined = refinedCount > 0;
+
+  // When the refinement-turn count or the previewed skeleton changes, briefly
+  // fade the body to 0 then back to 1 so the reader gets a visual cue that
+  // the panel content has been re-derived (the "reload" the user asked for).
+  const [bodyOpacity, setBodyOpacity] = useState(1);
+  const lastReloadKeyRef = useRef<string>(`${skeletonId ?? ""}:${refinedCount}`);
+  useEffect(() => {
+    const key = `${skeletonId ?? ""}:${refinedCount}`;
+    if (lastReloadKeyRef.current === key) return;
+    lastReloadKeyRef.current = key;
+    setBodyOpacity(0);
+    const t = setTimeout(() => setBodyOpacity(1), 180);
+    return () => clearTimeout(t);
+  }, [skeletonId, refinedCount]);
 
   // Same drag-to-resize affordance as NarrativePanel, so the right pane
   // behaves identically across the three panel types.
@@ -119,11 +140,11 @@ export default function SkeletonPreviewPanel({
 
       {/* Header */}
       <header className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-violet-50 flex items-center justify-center">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-md bg-violet-50 flex items-center justify-center shrink-0">
             <IconNotebook size={15} className="text-violet-600" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
               Preview
             </span>
@@ -131,6 +152,12 @@ export default function SkeletonPreviewPanel({
               Narrative angle
             </span>
           </div>
+          {isRefined && (
+            <span className="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">
+              <IconSparkles size={10} stroke={2.5} />
+              Refined{refinedCount > 1 ? ` ×${refinedCount}` : ""}
+            </span>
+          )}
         </div>
         <button
           onClick={onClose}
@@ -141,10 +168,16 @@ export default function SkeletonPreviewPanel({
         </button>
       </header>
 
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Body — fades briefly when refinement count changes to signal reload */}
+      <div
+        className="flex-1 overflow-y-auto transition-opacity duration-300"
+        style={{ opacity: bodyOpacity }}
+      >
         {skeleton ? (
-          <PreviewBody skeleton={skeleton} />
+          <PreviewBody
+            skeleton={skeleton}
+            latestRefinement={isRefined ? refinementTurns[refinedCount - 1] : null}
+          />
         ) : (
           <div className="p-6 text-[12.5px] text-gray-400">
             No angle selected.
@@ -177,7 +210,13 @@ export default function SkeletonPreviewPanel({
   );
 }
 
-function PreviewBody({ skeleton }: { skeleton: NarrativeSkeleton }) {
+function PreviewBody({
+  skeleton,
+  latestRefinement,
+}: {
+  skeleton: NarrativeSkeleton;
+  latestRefinement: string | null;
+}) {
   const {
     title,
     challengeText,
@@ -200,6 +239,18 @@ function PreviewBody({ skeleton }: { skeleton: NarrativeSkeleton }) {
           Based on {sourceCounts.pads.toLocaleString()} PADs, {sourceCounts.isrs.toLocaleString()} ISRs, and {sourceCounts.icrs.toLocaleString()} ICRs.
         </p>
       </div>
+
+      {latestRefinement && (
+        <div className="rounded-lg border border-violet-200 bg-[rgba(167,139,250,0.06)] px-3 py-2.5">
+          <div className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-violet-700">
+            <IconSparkles size={11} stroke={2.5} />
+            Your changes
+          </div>
+          <p className="mt-1 text-[12.5px] text-gray-800 leading-relaxed">
+            “{latestRefinement}”
+          </p>
+        </div>
+      )}
 
       <Section label="The Challenge" body={challengeText} />
       <Section label="Interventions" body={interventionText} />
