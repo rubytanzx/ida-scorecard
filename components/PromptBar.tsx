@@ -211,7 +211,7 @@ export default function PromptBar({
                 className={
                   "flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full shadow-sm transition-colors" +
                   (narrativeConfirmDisabled
-                    ? " text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed"
+                    ? " text-gray-400 bg-gray-200 border border-gray-200 cursor-not-allowed"
                     : " text-white bg-blue-600 border border-blue-600 hover:bg-blue-700 active:scale-[0.98]")
                 }
               >

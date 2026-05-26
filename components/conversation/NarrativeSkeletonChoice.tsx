@@ -112,14 +112,14 @@ function SkeletonCard({
       aria-pressed={selected}
       style={{ scrollSnapAlign: "start" }}
       className={
-        "relative shrink-0 w-[280px] text-left bg-white rounded-xl p-4 flex flex-col gap-2.5" +
-        " transition-[opacity,transform,border-color,box-shadow,background] duration-200" +
+        "relative shrink-0 w-[280px] text-left rounded-xl p-4 flex flex-col gap-2.5" +
+        " transition-[opacity,transform,border-color,box-shadow,background-color] duration-200" +
         (revealed
           ? " opacity-100 translate-y-0"
           : " opacity-0 translate-y-1 pointer-events-none") +
         (selected
-          ? " border-2 border-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.12)]"
-          : " border border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]")
+          ? " border-2 border-blue-600 bg-[rgba(37,99,235,0.04)] shadow-[0_2px_8px_rgba(37,99,235,0.12)]"
+          : " border border-gray-200 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]")
       }
     >
       {/* Selected check pill — top-right, springs in on selection */}
