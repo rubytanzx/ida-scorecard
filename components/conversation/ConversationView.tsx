@@ -44,6 +44,8 @@ export interface Artefact {
   title: string;
   prompt: string;
   createdAt: number;
+  /** Which narrative-angle skeleton the user picked (narrative artefacts only). */
+  skeletonId?: string;
 }
 
 interface Props {

@@ -172,6 +172,7 @@ export default function HomePage() {
   const [rightPaneWidth, setRightPaneWidth] = useState(NARRATIVE_PANEL_DEFAULT_WIDTH);
   const [rightPaneDragging, setRightPaneDragging] = useState(false);
   const [narrativePhase, setNarrativePhase] = useState<NarrativePhase>("idle");
+  const [selectedSkeletonId, setSelectedSkeletonId] = useState<string | null>(null);
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
   // True for ~3.5s after the user picks "Generate · Infographic" —
   // drives the beam + cycling text loader inside the infographic pane.
@@ -218,6 +219,8 @@ export default function HomePage() {
     title: string;
     prompt: string;
     createdAt: number;
+    /** Which narrative-angle skeleton the user picked (narrative artefacts only). */
+    skeletonId?: string;
   }
   interface Conversation {
     id: string;
@@ -258,6 +261,7 @@ export default function HomePage() {
       setRightPane("narrative");
       return;
     }
+    setSelectedSkeletonId(null);
     setNarrativePhase("planning");
   };
 
@@ -275,6 +279,7 @@ export default function HomePage() {
       title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
       prompt: conversationPrompt,
       createdAt: Date.now(),
+      skeletonId: selectedSkeletonId ?? undefined,
     };
     setConversations((prev) =>
       prev.map((c) =>
@@ -291,6 +296,7 @@ export default function HomePage() {
   };
 
   const handleNarrativeMakeChanges = () => {
+    setSelectedSkeletonId(null);
     setNarrativePhase("idle");
   };
 
@@ -458,6 +464,7 @@ export default function HomePage() {
         narrativePhase={narrativePhase}
         onNarrativeConfirm={handleNarrativeConfirm}
         onNarrativeMakeChanges={handleNarrativeMakeChanges}
+        narrativeConfirmDisabled={narrativePhase === "skeleton-ready" && selectedSkeletonId === null}
         inConversation={view === "conversation"}
         onSubmit={() => {
           // Scroll the home view back to the top on submit so the beam runs
@@ -537,6 +544,8 @@ export default function HomePage() {
           )}
           narrativePhase={narrativePhase}
           onNarrativePlanningComplete={handleNarrativePlanningComplete}
+          selectedSkeletonId={selectedSkeletonId}
+          onSelectSkeleton={setSelectedSkeletonId}
         />
       ) : (
     <div
