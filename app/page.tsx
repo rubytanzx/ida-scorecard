@@ -310,9 +310,13 @@ export default function HomePage() {
     setNarrativePhase("interactive-choice");
   };
 
+  // "Make changes" from the prompt-bar pill in skeleton-ready phase. The
+  // pill only renders when a card is selected, so selectedSkeletonId is
+  // guaranteed non-null here. Opens the preview for the selected angle and
+  // switches to refining mode (chip in prompt bar).
   const handleNarrativeMakeChanges = () => {
-    setSelectedSkeletonId(null);
-    setNarrativePhase("idle");
+    if (selectedSkeletonId == null) return;
+    enterRefiningMode(selectedSkeletonId);
   };
 
   // Opens the skeleton-preview panel for a given angle. If another pane is
@@ -334,13 +338,21 @@ export default function HomePage() {
     setNarrativePhase("interactive-choice");
   };
 
-  // Preview-panel "Make changes" — closes the panel and switches the
-  // prompt bar into refining mode for this angle.
+  // Preview-panel "Make changes" — keeps the preview open so the user can
+  // reference the full skeleton while writing their feedback, and switches
+  // the prompt bar into refining mode.
   const handleMakeChangesFromPreview = (id: string) => {
+    enterRefiningMode(id);
+  };
+
+  // Shared implementation: both "Make changes" entry points (prompt-bar pill
+  // and preview-panel button) land here. Preview panel stays open; chip
+  // appears in the prompt bar; refinement history resets.
+  const enterRefiningMode = (id: string) => {
     setRefiningSkeletonId(id);
     setSelectedSkeletonId(id);
-    setRightPane(null);
-    setPreviewSkeletonId(null);
+    setPreviewSkeletonId(id);
+    setRightPane("skeleton-preview");
     setRefinementTurns([]);
     setNarrativePhase("refining");
   };
@@ -356,8 +368,16 @@ export default function HomePage() {
   };
 
   // Inline refined-widget "Make changes" — loop back into refining mode
-  // (chip stays, history stays). The next submit appends another turn.
+  // and reopen the preview panel so the user can reference the original
+  // skeleton while writing the next refinement. History stays so the
+  // conversation thread keeps the previous turns.
   const handleMakeChangesFromRefined = () => {
+    if (refiningSkeletonId == null) {
+      setNarrativePhase("refining");
+      return;
+    }
+    setPreviewSkeletonId(refiningSkeletonId);
+    setRightPane("skeleton-preview");
     setNarrativePhase("refining");
   };
 
@@ -567,7 +587,8 @@ export default function HomePage() {
         showCreateChip={
           view === "conversation" &&
           !currentArtefacts.some((a) => a.kind === "narrative") &&
-          (narrativePhase === "idle" || narrativePhase === "skeleton-ready")
+          (narrativePhase === "idle" ||
+            (narrativePhase === "skeleton-ready" && selectedSkeletonId != null))
         }
         narrativePhase={narrativePhase}
         onNarrativeConfirm={handleNarrativeConfirm}
