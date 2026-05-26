@@ -99,12 +99,18 @@ export default function NarrativeSkeletonChoice({
                 key={s.id}
                 style={{
                   transform: cardTransform,
-                  opacity: hidden ? 0 : mountedIn ? 1 - abs * 0.25 : 0,
+                  // Keep cards fully opaque so they don't look see-through.
+                  // Depth is communicated by 3D transform + scale + a small
+                  // brightness drop on non-focal cards. mountedIn drives the
+                  // initial fade-in only.
+                  opacity: hidden ? 0 : mountedIn ? 1 : 0,
+                  filter: isFocal ? "none" : `brightness(${1 - abs * 0.06})`,
                   pointerEvents: hidden ? "none" : "auto",
                   zIndex: 10 - abs,
                   transition:
                     "transform 500ms cubic-bezier(0.22,1,0.36,1)," +
-                    " opacity 400ms ease-out",
+                    " opacity 400ms ease-out," +
+                    " filter 400ms ease-out",
                   transformStyle: "preserve-3d",
                   willChange: "transform, opacity",
                 }}
