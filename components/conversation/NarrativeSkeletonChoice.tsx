@@ -203,15 +203,15 @@ function SkeletonCard({
         "group relative w-[320px] rounded-2xl cursor-pointer overflow-hidden" +
         " transition-[border-color,box-shadow,background-color] duration-200" +
         (selected
-          ? " bg-[rgba(167,139,250,0.10)] border border-violet-300" +
+          ? " bg-violet-50 border border-violet-300" +
             " shadow-[0_18px_36px_-12px_rgba(124,58,237,0.35),0_2px_6px_rgba(124,58,237,0.08)]"
           : focal
             ? " bg-white border border-gray-200" +
               " shadow-[0_18px_36px_-12px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)]" +
-              " hover:bg-[rgba(167,139,250,0.06)] hover:border-violet-200"
+              " hover:bg-violet-50 hover:border-violet-200"
             : " bg-white border border-gray-200" +
               " shadow-[0_8px_24px_-12px_rgba(15,23,42,0.18)]" +
-              " hover:bg-[rgba(167,139,250,0.05)]")
+              " hover:bg-violet-50")
       }
     >
       {/* Header — title + caption + expand icon */}
