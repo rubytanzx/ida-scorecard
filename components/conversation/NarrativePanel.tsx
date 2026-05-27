@@ -340,8 +340,9 @@ function RegionTiles({ prompt, flow, selectedRegion, onSelectRegion }: RegionTil
         {isHealth ? "Regional health-services reach (FY25)" : "Regional reach (FY25)"}
       </h4>
 
-      {/* Region tile grid */}
-      <div className="relative bg-white border border-gray-200 rounded-lg p-3">
+      {/* Region tile grid — no outer card wrapper; each tile already
+          carries its own surface so a parent card would just nest. */}
+      <div className="relative">
         <div className="grid grid-cols-4 gap-1.5">
           {REGIONS.map((r) => {
             const reach = reachOf(r);
