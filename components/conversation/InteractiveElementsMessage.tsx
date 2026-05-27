@@ -15,15 +15,17 @@ import type { InteractiveElement } from "../../app/page";
 interface Option {
   id: InteractiveElement;
   label: string;
+  /** Which narrative section this visual will live under once generated. */
+  section: string;
   recommended: boolean;
   Thumb: (props: { active: boolean }) => React.ReactElement;
 }
 
 const OPTIONS: Option[] = [
-  { id: "map", label: "Interactive map", recommended: true, Thumb: MapThumb },
-  { id: "timeline", label: "Time-series chart", recommended: true, Thumb: TimelineThumb },
-  { id: "charts", label: "Bar charts", recommended: false, Thumb: BarChartThumb },
-  { id: "tables", label: "Data tables", recommended: false, Thumb: TableThumb },
+  { id: "map", label: "Interactive map", section: "Geography", recommended: true, Thumb: MapThumb },
+  { id: "timeline", label: "Time-series chart", section: "The Challenge", recommended: true, Thumb: TimelineThumb },
+  { id: "charts", label: "Bar charts", section: "Country Examples", recommended: false, Thumb: BarChartThumb },
+  { id: "tables", label: "Data tables", section: "Lessons Learned", recommended: false, Thumb: TableThumb },
 ];
 
 interface Props {
@@ -87,7 +89,7 @@ export default function InteractiveElementsMessage({
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {OPTIONS.map(({ id, label, recommended, Thumb }) => {
+          {OPTIONS.map(({ id, label, section, recommended, Thumb }) => {
             const on = selected.includes(id);
             return (
               <button
@@ -128,6 +130,12 @@ export default function InteractiveElementsMessage({
                     }
                   >
                     {label}
+                  </div>
+                  <div className="mt-0.5 text-[10.5px] text-gray-500 leading-snug">
+                    In{" "}
+                    <span className={on ? "text-violet-700 font-medium" : "text-gray-700 font-medium"}>
+                      {section}
+                    </span>
                   </div>
                   {recommended && (
                     <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-500">
