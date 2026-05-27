@@ -158,104 +158,129 @@ export default function InteractiveElementsMessage({
 }
 
 // ─── Thumbnail SVGs ────────────────────────────────────────────────────────
-// Each thumb takes an `active` prop so it can tint to violet when selected.
+// Each thumb is a mini reproduction of the corresponding chart inside the
+// NarrativePanel so the user previews what they're about to get. Colours
+// match the live charts (WBG navy/red on context, green/orange/red on
+// achievement) except when active, where everything tints violet.
 
 function MapThumb({ active }: { active: boolean }) {
-  const stroke = active ? "#7c3aed" : "#94a3b8";
-  const fill = active ? "rgba(124,58,237,0.15)" : "rgba(148,163,184,0.18)";
-  const dot = active ? "#7c3aed" : "#475569";
+  // Mirrors WorldMap — abstract continent outlines + two coloured regions
+  // standing in for the highlighted WB regions in the live map.
+  const baseFill = active ? "rgba(124,58,237,0.10)" : "rgba(148,163,184,0.18)";
+  const baseStroke = active ? "#7c3aed" : "#94a3b8";
+  const goodFill = active ? "#a78bfa" : "#2E8B57";
+  const warnFill = active ? "#7c3aed" : "#D04040";
   return (
     <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-      {/* Stylised continents */}
+      {/* Africa-ish blob */}
       <path
-        d="M8 22 Q14 16 22 18 L30 22 Q36 18 46 22 L52 26 Q58 22 68 24 L74 28 L70 38 Q64 40 58 36 L52 38 Q44 42 36 38 L26 40 Q18 38 14 32 L10 28 Z"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth="0.8"
+        d="M50 22 Q56 18 62 22 L66 28 Q70 34 66 42 L62 50 Q56 54 50 50 L46 42 Q42 32 46 26 Z"
+        fill={warnFill}
+        stroke={baseStroke}
+        strokeWidth="0.6"
+        opacity={active ? 0.85 : 1}
+      />
+      {/* South-Asia blob */}
+      <path
+        d="M80 26 Q86 22 92 28 L94 36 Q92 42 86 44 L80 42 Q76 36 78 30 Z"
+        fill={goodFill}
+        stroke={baseStroke}
+        strokeWidth="0.6"
+        opacity={active ? 0.85 : 1}
+      />
+      {/* Other continents (Americas + Asia outline) */}
+      <path
+        d="M10 22 Q18 18 24 24 L26 32 Q22 40 16 42 L10 38 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.6"
       />
       <path
-        d="M82 30 Q92 28 100 32 L110 36 L106 46 Q98 50 90 46 L84 40 Z"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth="0.8"
+        d="M100 18 Q108 18 112 24 L114 30 Q110 32 104 30 L100 24 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.6"
       />
-      {/* Country pins */}
-      <circle cx="36" cy="28" r="3" fill={dot} />
-      <circle cx="64" cy="32" r="3" fill={dot} />
     </svg>
   );
 }
 
 function TimelineThumb({ active }: { active: boolean }) {
-  const stroke = active ? "#7c3aed" : "#94a3b8";
-  const fill = active ? "rgba(124,58,237,0.18)" : "rgba(148,163,184,0.2)";
+  // Mirrors ContextChart — two trend lines with dots, axis baseline.
+  const fcs = active ? "#7c3aed" : "#D04040";   // red FCS line in live chart
+  const lic = active ? "#a78bfa" : "#003F6B";   // navy LIC line in live chart
   return (
     <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
-      {/* Axis */}
-      <line x1="6" y1="54" x2="114" y2="54" stroke="#cbd5e1" strokeWidth="0.6" />
-      {/* Area */}
-      <path
-        d="M8 44 L26 32 L44 38 L62 22 L80 28 L98 14 L114 20 L114 54 L8 54 Z"
-        fill={fill}
-      />
-      {/* Line */}
-      <path
-        d="M8 44 L26 32 L44 38 L62 22 L80 28 L98 14 L114 20"
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Endpoint dot */}
-      <circle cx="114" cy="20" r="2.2" fill={stroke} />
+      <line x1="8" y1="54" x2="114" y2="54" stroke="#e2e8f0" strokeWidth="0.6" />
+      {/* FCS — higher, declining */}
+      <path d="M14 18 L34 24 L54 22 L74 30 L94 28 L112 34" fill="none" stroke={fcs} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      {[14, 34, 54, 74, 94, 112].map((x, i) => {
+        const ys = [18, 24, 22, 30, 28, 34];
+        return <circle key={`f${i}`} cx={x} cy={ys[i]} r={1.6} fill={fcs} />;
+      })}
+      {/* LIC — lower, slightly improving */}
+      <path d="M14 40 L34 38 L54 42 L74 38 L94 36 L112 34" fill="none" stroke={lic} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      {[14, 34, 54, 74, 94, 112].map((x, i) => {
+        const ys = [40, 38, 42, 38, 36, 34];
+        return <circle key={`l${i}`} cx={x} cy={ys[i]} r={1.6} fill={lic} />;
+      })}
     </svg>
   );
 }
 
 function BarChartThumb({ active }: { active: boolean }) {
-  const bar = active ? "#7c3aed" : "#94a3b8";
-  const bars = [
-    { x: 12, h: 22 },
-    { x: 32, h: 38 },
-    { x: 52, h: 28 },
-    { x: 72, h: 46 },
-    { x: 92, h: 18 },
+  // Mirrors EvidenceChart — horizontal achievement bars vs a track,
+  // coloured by ratio (green good / amber warn / red miss).
+  const rows = [
+    { width: 78, color: active ? "#a78bfa" : "#2E8B57" },
+    { width: 64, color: active ? "#7c3aed" : "#E88B2B" },
+    { width: 48, color: active ? "#a78bfa" : "#E88B2B" },
+    { width: 32, color: active ? "#7c3aed" : "#D04040" },
   ];
   return (
     <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
-      <line x1="6" y1="56" x2="114" y2="56" stroke="#cbd5e1" strokeWidth="0.6" />
-      {bars.map((b, i) => (
-        <rect
-          key={i}
-          x={b.x}
-          y={56 - b.h}
-          width={12}
-          height={b.h}
-          rx={1.5}
-          fill={bar}
-          opacity={active ? 1 : 0.85}
-        />
-      ))}
+      {rows.map((r, i) => {
+        const y = 12 + i * 12;
+        return (
+          <g key={i}>
+            {/* track */}
+            <rect x={10} y={y} width={100} height={4} rx={2} fill="#e2e8f0" />
+            {/* fill */}
+            <rect x={10} y={y} width={r.width} height={4} rx={2} fill={r.color} />
+          </g>
+        );
+      })}
     </svg>
   );
 }
 
 function TableThumb({ active }: { active: boolean }) {
-  const stroke = active ? "#7c3aed" : "#cbd5e1";
-  const header = active ? "rgba(124,58,237,0.18)" : "rgba(148,163,184,0.2)";
+  // Mirrors RegionTiles — a compact grid of stat tiles with labels +
+  // tiny progress bars. Same 2x3 layout as the live region grid.
+  const accent = active ? "#7c3aed" : "#94a3b8";
+  const fill = active ? "rgba(124,58,237,0.12)" : "rgba(148,163,184,0.16)";
+  const tiles = [
+    { x: 8, y: 10, w: 0.7 },
+    { x: 44, y: 10, w: 0.55 },
+    { x: 80, y: 10, w: 0.4 },
+    { x: 8, y: 36, w: 0.5 },
+    { x: 44, y: 36, w: 0.65 },
+    { x: 80, y: 36, w: 0.85 },
+  ];
   return (
     <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
-      {/* Outer border */}
-      <rect x="8" y="10" width="104" height="44" rx="3" fill="white" stroke={stroke} strokeWidth="0.8" />
-      {/* Header */}
-      <rect x="8" y="10" width="104" height="11" rx="3" fill={header} />
-      {/* Row dividers */}
-      <line x1="8" y1="32" x2="112" y2="32" stroke={stroke} strokeWidth="0.5" />
-      <line x1="8" y1="43" x2="112" y2="43" stroke={stroke} strokeWidth="0.5" />
-      {/* Column dividers */}
-      <line x1="42" y1="10" x2="42" y2="54" stroke={stroke} strokeWidth="0.5" />
-      <line x1="78" y1="10" x2="78" y2="54" stroke={stroke} strokeWidth="0.5" />
+      {tiles.map((t, i) => (
+        <g key={i}>
+          <rect x={t.x} y={t.y} width={32} height={20} rx={2} fill="white" stroke={accent} strokeWidth="0.6" />
+          {/* heading bar */}
+          <rect x={t.x + 2} y={t.y + 3} width={14} height={2} rx={1} fill={accent} opacity={0.5} />
+          {/* value bar */}
+          <rect x={t.x + 2} y={t.y + 8} width={20} height={3} rx={1.5} fill={fill} />
+          <rect x={t.x + 2} y={t.y + 8} width={20 * t.w} height={3} rx={1.5} fill={accent} />
+          {/* small caption */}
+          <rect x={t.x + 2} y={t.y + 14} width={10} height={1.5} rx={0.75} fill={accent} opacity={0.4} />
+        </g>
+      ))}
     </svg>
   );
 }

@@ -1374,13 +1374,12 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
   // accordions are open. The stepper fades in once the user begins scrolling
   // so it feels reactive rather than chrome.
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
-  const [activeAnchor, setActiveAnchor] = useState<string>("summary");
+  const [activeAnchor, setActiveAnchor] = useState<string>("geography");
   const [scrolled, setScrolled] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  // Anchor order: Summary leads since it's now the top section.
+  // Anchor order: Geography leads now that the Summary section is gone.
   const anchors = useMemo(
     () => [
-      { id: "summary",   label: "Summary"   },
       { id: "geography", label: "Geography" },
       ...sections.map((s) => ({ id: s.id, label: s.title })),
     ],
@@ -1456,10 +1455,6 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
     root.addEventListener("scroll", onScroll, { passive: true });
     return () => root.removeEventListener("scroll", onScroll);
   }, [open]);
-  const summary = flow === "health-gap"
-    ? "Five FCS countries — Yemen, Sudan, Afghanistan, South Sudan and Myanmar — collectively account for ~37% of the FY25 HNP pipeline shortfall, all running below 50% of plan. Across the bottom-5, conflict-driven supply-chain disruption (38%) and health-worker shortages (27%) explain the bulk of the gap. Workforce + supply remediation is the highest-leverage FY26 lever."
-    : "FY25 IDA delivery converged on People-pillar programs (safety nets, students, health) which collectively reached 939M direct beneficiaries. Climate resilience and electricity access remain materially behind pipeline. FCS-country efficiency is 2.3× higher for health coverage than non-FCS IDA peers — a structural finding worth elevating.";
-
   useEffect(() => {
     if (!dragging) return;
     const onMove = (e: MouseEvent) => {
@@ -1590,21 +1585,6 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
         <div className="px-5 py-5 flex flex-col gap-5">
           {/* Each section enters with a staggered fade+lift so the
               narrative reveals top-to-bottom rather than slamming in. */}
-
-          {/* Summary — surfaces first so the headline reads before the map */}
-          <section
-            data-anchor="summary"
-            className="flex flex-col gap-2 scroll-mt-12 narrative-content-enter"
-            style={{ animationDelay: "0ms" }}
-          >
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Summary</h3>
-            <p className="text-[13.5px] text-gray-900 leading-relaxed">{summary}</p>
-            {prompt && (
-              <p className="text-[12px] text-gray-500 italic mt-1">
-                Generated from your query: &ldquo;{prompt}&rdquo;
-              </p>
-            )}
-          </section>
 
           {/* Geography — real world map, with WBG-region tiles below */}
           <section
