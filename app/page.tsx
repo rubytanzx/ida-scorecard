@@ -348,12 +348,20 @@ export default function HomePage() {
     setNarrativePhase("skeleton-ready");
   };
 
+  // Shared entry point into the interactive-elements question. Seeds the
+  // multi-select with the AI's default recommendation (map + timeline) so
+  // the user can just hit Proceed unless they want to change it.
+  const enterInteractiveChoice = () => {
+    setInteractiveElements(["map", "timeline"]);
+    setNarrativePhase("interactive-choice");
+  };
+
   // The original prompt-bar "Yes, create narrative" path. Instead of jumping
   // straight to generation, route through the interactive-elements question
   // so both this path and the preview-panel Proceed path converge.
   const handleNarrativeConfirm = () => {
     if (!currentConversationId || selectedSkeletonId == null) return;
-    setNarrativePhase("interactive-choice");
+    enterInteractiveChoice();
   };
 
   // "Make changes" from the prompt-bar pill in skeleton-ready phase. The
@@ -388,7 +396,7 @@ export default function HomePage() {
     setPreviewSkeletonId(null);
     setRefiningSkeletonId(null);
     setRefinementTurns([]);
-    setNarrativePhase("interactive-choice");
+    enterInteractiveChoice();
   };
 
   // Preview-panel "Make changes" — keeps the preview open so the user can
@@ -437,7 +445,7 @@ export default function HomePage() {
   // Inline refined-widget "Proceed to Create Full Narrative" — advances
   // to the interactive-elements question.
   const handleProceedFromRefined = () => {
-    setNarrativePhase("interactive-choice");
+    enterInteractiveChoice();
   };
 
   // Cancel the refining session entirely (user dismissed the chip). Returns

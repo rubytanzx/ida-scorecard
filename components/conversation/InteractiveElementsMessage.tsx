@@ -49,7 +49,10 @@ export default function InteractiveElementsMessage({
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         <p className="text-[13.5px] text-gray-700 leading-relaxed">
-          Would you like to include any interactive elements?
+          Based on the data behind this angle, I recommend an interactive{" "}
+          <span className="font-semibold text-gray-900">map</span> and a{" "}
+          <span className="font-semibold text-gray-900">time-series chart</span>
+          {" "}— I&apos;ve selected them below. Toggle anything off, then proceed.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
