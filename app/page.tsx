@@ -372,6 +372,13 @@ export default function HomePage() {
     setRightPane("skeleton-preview");
   };
 
+  // Closes the skeleton-preview panel. Fired when the user toggles off a
+  // selected card so the drawer stays in sync with selection state.
+  const handleClosePreviewSkeleton = () => {
+    if (rightPane === "skeleton-preview") setRightPane(null);
+    setPreviewSkeletonId(null);
+  };
+
   // Preview-panel "Proceed to Create Full Narrative" — commits this angle
   // as the selection, closes the panel, and advances to the
   // interactive-elements question.
@@ -761,6 +768,7 @@ export default function HomePage() {
           selectedSkeletonId={selectedSkeletonId}
           onSelectSkeleton={setSelectedSkeletonId}
           onPreviewSkeleton={handlePreviewSkeleton}
+          onClosePreviewSkeleton={handleClosePreviewSkeleton}
           refiningSkeletonId={refiningSkeletonId}
           refinementTurns={refinementTurns}
           onRefinedProceed={handleProceedFromRefined}

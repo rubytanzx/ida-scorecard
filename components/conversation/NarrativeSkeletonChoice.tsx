@@ -21,6 +21,9 @@ interface Props {
   onSelect: (id: string | null) => void;
   /** Opens the preview panel for a given skeleton id. */
   onPreview: (id: string) => void;
+  /** Closes the preview panel — fired when the user clicks the selected
+   *  card again to deselect. */
+  onPreviewClose?: () => void;
   /** When true, animate the lead text + stagger the cards in. */
   animate: boolean;
 }
@@ -30,6 +33,7 @@ export default function NarrativeSkeletonChoice({
   selectedSkeletonId,
   onSelect,
   onPreview,
+  onPreviewClose,
   animate,
 }: Props) {
   const skeletons = FLOW_SKELETONS[flow];
@@ -106,13 +110,18 @@ export default function NarrativeSkeletonChoice({
                   selected={selectedSkeletonId === s.id}
                   focal={isFocal}
                   onClick={() => {
-                    if (!isFocal) {
-                      goToCard(i);
-                      return;
+                    // Any click rotates the card to focus; selecting also
+                    // opens the preview drawer. Re-clicking the already-
+                    // selected card deselects and closes the drawer.
+                    goToCard(i);
+                    if (selectedSkeletonId === s.id) {
+                      onSelect(null);
+                      onPreviewClose?.();
+                    } else {
+                      onSelect(s.id);
+                      onPreview(s.id);
                     }
-                    onSelect(selectedSkeletonId === s.id ? null : s.id);
                   }}
-                  onPreview={() => onPreview(s.id)}
                 />
               </div>
             );
@@ -168,7 +177,6 @@ function SkeletonCard({
   selected,
   focal,
   onClick,
-  onPreview,
 }: {
   skeleton: NarrativeSkeleton;
   selected: boolean;
@@ -176,7 +184,6 @@ function SkeletonCard({
    *  visibility and the slightly stronger card shadow. */
   focal: boolean;
   onClick: () => void;
-  onPreview: () => void;
 }) {
   const { title, challengeText, interventionText, countryExamples, countryFlags, sourceCounts } =
     skeleton;
@@ -218,18 +225,16 @@ function SkeletonCard({
             Based on {sourceCounts.pads.toLocaleString()} PADs, {sourceCounts.isrs.toLocaleString()} ISRs, and {sourceCounts.icrs.toLocaleString()} ICRs.
           </p>
         </div>
+        {/* Expand icon kept as a visual cue on the focal card — clicking
+            the card body opens the preview too, but the icon makes the
+            affordance obvious. */}
         {focal && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPreview();
-            }}
-            aria-label={`Expand preview for ${title}`}
-            className="shrink-0 w-7 h-7 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          <span
+            aria-hidden
+            className="shrink-0 w-7 h-7 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-gray-400"
           >
             <IconArrowsMaximize size={14} />
-          </button>
+          </span>
         )}
       </div>
 

@@ -80,6 +80,9 @@ interface Props {
   onSelectSkeleton?: (id: string | null) => void;
   /** Called when the user clicks the expand icon on a skeleton card. */
   onPreviewSkeleton?: (id: string) => void;
+  /** Called when the user deselects a skeleton (toggle-off) so the parent
+   *  can close the preview drawer in sync. */
+  onClosePreviewSkeleton?: () => void;
   /** Which skeleton angle the user is refining (drives the refined widget). */
   refiningSkeletonId?: string | null;
   /** History of user-submitted refinement texts. */
@@ -1098,6 +1101,7 @@ export default function ConversationView({
   selectedSkeletonId = null,
   onSelectSkeleton,
   onPreviewSkeleton,
+  onClosePreviewSkeleton,
   refiningSkeletonId = null,
   refinementTurns = [],
   onRefinedProceed,
@@ -1391,6 +1395,7 @@ export default function ConversationView({
               selectedSkeletonId={selectedSkeletonId}
               onSelect={(id) => onSelectSkeleton?.(id)}
               onPreview={(id) => onPreviewSkeleton?.(id)}
+              onPreviewClose={() => onClosePreviewSkeleton?.()}
               animate={narrativePhase === "skeleton-ready"}
             />
           )}
