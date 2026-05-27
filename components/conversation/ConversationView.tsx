@@ -1411,6 +1411,8 @@ export default function ConversationView({
           )}
           {showInteractiveBlock && (
             <InteractiveElementsMessage
+              flow={flow}
+              skeletonId={refiningSkeletonId ?? selectedSkeletonId}
               selected={interactiveElements}
               active={narrativePhase === "interactive-choice"}
               onToggle={(el) => onToggleInteractiveElement?.(el)}
