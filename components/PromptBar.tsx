@@ -414,7 +414,9 @@ export default function PromptBar({
                   if (!isBottom && !inConversation) setExpanded(true);
                 }}
                 placeholder={
-                  createNarrativeChip
+                  refiningChip
+                    ? "Describe the changes you want to make…"
+                    : createNarrativeChip
                     ? "Describe what the narrative should focus on…"
                     : isBottom
                     ? "Ask a follow-up question"
