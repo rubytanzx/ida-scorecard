@@ -660,12 +660,46 @@ function detectFlow(prompt: string): FlowId {
   return "africa-poverty";
 }
 
+interface CountryStory {
+  flag: string;
+  name: string;
+  iso?: string;
+  body: string;
+  /** Tiny stat shown on the right of each story card (e.g. project count). */
+  meta?: string;
+}
+
+interface IndicatorRow {
+  code: string;
+  label: string;
+  value: string;
+}
+
+interface Hero {
+  /** Short outcome name shown as the big page title. */
+  title: string;
+  /** Lead-in paragraph below the title. */
+  intro: string;
+  /** Large headline metric for the hero stat block. */
+  metric: { value: string; caption: string; code: string };
+}
+
 interface Section {
   id: string;
   title: string;
   body: string;
   bullets?: string[];
   Chart?: () => React.ReactElement;
+  /** Country case-study paragraphs — rendered below the chart inside the
+   *  Country Examples accordion when present. */
+  countryStories?: CountryStory[];
+}
+
+interface NarrativeContent {
+  hero: Hero;
+  sections: Section[];
+  indicators: IndicatorRow[];
+  methodology: { title: string; href: string };
 }
 
 const SECTIONS_AFRICA: Section[] = [
@@ -695,15 +729,36 @@ const SECTIONS_AFRICA: Section[] = [
   {
     id: "evidence",
     title: "Country Examples",
-    body: "FY25 headline numbers (IDA Results data · WBG global · June 2025) show measurable scaling against pipeline targets, with two indicators significantly behind plan.",
+    body: "FY25 headline numbers (IDA Results data · WBG global · June 2025) show measurable scaling against pipeline targets. The map below shows regional reach; bars compare achieved vs pipeline; country blocks summarise representative operations.",
     bullets: [
       "244M people through safety nets vs ~313M expected (+12% YoY)",
       "325M students supported vs ~452M expected",
       "215M / 576M electricity access — behind target",
-      "244M / 425M climate resilience — behind target",
-      "217M broadband users — 2× FY24",
     ],
     Chart: EvidenceChart,
+    countryStories: [
+      {
+        flag: "🇪🇹",
+        name: "Ethiopia",
+        iso: "ETH",
+        body: "Shock-responsive Productive Safety Net Programme reached 9.5M Ethiopians during the 2024 drought, with anticipatory transfers triggered within 14 days of a verified shock index. ICR rated outcomes 'Satisfactory'.",
+        meta: "11 PADs · 41 ICRs",
+      },
+      {
+        flag: "🇳🇪",
+        name: "Niger",
+        iso: "NER",
+        body: "Adaptive social registry now covers 38% of Niger's chronic-poor households; payment rails sit on biometric ID for sub-week onboarding during lean-season triggers.",
+        meta: "7 PADs · 19 ICRs",
+      },
+      {
+        flag: "🇰🇪",
+        name: "Kenya",
+        iso: "KEN",
+        body: "Secondary Education Quality Improvement Project supported 1.4M students with targeted social grants; combined with structured pedagogy reach 320,000 teachers received in-service coaching cycles.",
+        meta: "9 PADs · 23 ICRs",
+      },
+    ],
   },
   {
     id: "impact",
@@ -716,6 +771,26 @@ const SECTIONS_AFRICA: Section[] = [
     ],
     Chart: ImpactChart,
   },
+];
+
+const HERO_AFRICA: Hero = {
+  title: "Protection for the Poorest",
+  intro:
+    "FY25 IDA delivery converged on People-pillar programs — safety nets, education, and primary health — reaching 939M direct beneficiaries across the world's poorest countries. FCS-country efficiency is 2.3× higher for health coverage than non-FCS IDA peers, a structural finding worth elevating.",
+  metric: {
+    value: "30.4%",
+    caption: "of FCS-country populations live in extreme poverty (FY25)",
+    code: "CSC_CLI_EXT_POOR_FCS",
+  },
+};
+
+const INDICATORS_AFRICA: IndicatorRow[] = [
+  { code: "CSC_RES_SOC_SAF_PROG",    label: "Safety net beneficiaries",   value: "244M / 313M" },
+  { code: "CSC_RES_EDU_SUPP",        label: "Students supported",         value: "325M / 452M" },
+  { code: "CSC_RES_HEA_SERV",        label: "Health services",            value: "370M / 425M" },
+  { code: "CSC_RES_RESI_CLIM_RISK",  label: "Climate resilience",         value: "244M / 425M" },
+  { code: "CSC_RES_ELC_ACCS",        label: "Electricity access",         value: "215M / 576M" },
+  { code: "CSC_CLI_EXT_POOR_FCS",    label: "Extreme poverty (FCS)",      value: "30.4%" },
 ];
 
 // ─── Health-gap flow charts + sections ──────────────────────────────────────
@@ -948,7 +1023,7 @@ const SECTIONS_HEALTH: Section[] = [
     id: "evidence",
     title: "Country Examples",
     body:
-      "Bottom-5 country breakdown of Health Services results (FCS project data, FY2025). Each is below 50% of plan; collectively they account for ~37% of the global pipeline shortfall.",
+      "Bottom-5 country breakdown of Health Services results (FCS project data, FY2025). Each is below 50% of plan; collectively they account for ~37% of the global pipeline shortfall. The map shows regional reach; the bar chart isolates the bottom-5; country blocks summarise representative operations.",
     bullets: [
       "Yemen: 1.2M / 3.2M (38%)",
       "Sudan: 1.7M / 4.1M (41%)",
@@ -957,6 +1032,29 @@ const SECTIONS_HEALTH: Section[] = [
       "Myanmar: 1.5M / 3.1M (49%)",
     ],
     Chart: HealthEvidenceChart,
+    countryStories: [
+      {
+        flag: "🇾🇪",
+        name: "Yemen",
+        iso: "YEM",
+        body: "Emergency Health and Nutrition Project delivered HNP services to 1.2M against a 3.2M target; conflict-driven supply-chain disruption accounts for ~64% of the shortfall. UN-implemented delivery extended reach where direct IDA implementation was infeasible.",
+        meta: "8 PADs · 5 ICRs",
+      },
+      {
+        flag: "🇦🇫",
+        name: "Afghanistan",
+        iso: "AFG",
+        body: "Sehatmandi Project absorbed catastrophic regime-change shocks via a third-party-monitored delivery model; coverage held at 44% of plan with rural retention packages keeping CHWs in highest-need districts.",
+        meta: "6 PADs · 3 ICRs",
+      },
+      {
+        flag: "🇸🇩",
+        name: "Sudan",
+        iso: "SDN",
+        body: "Frontline health-worker payroll continuity via PFM-tagged disbursement triggers kept facilities operational through 2024 unrest. Pooled-buyer agreements with WHO covered 60% of critical medicines pipeline.",
+        meta: "5 PADs · 2 ICRs",
+      },
+    ],
   },
   {
     id: "impact",
@@ -973,11 +1071,54 @@ const SECTIONS_HEALTH: Section[] = [
   },
 ];
 
+const HERO_HEALTH: Hero = {
+  title: "Healthier Lives",
+  intro:
+    "Five FCS countries — Yemen, Sudan, Afghanistan, South Sudan and Myanmar — collectively account for ~37% of the FY25 HNP pipeline shortfall, all running below 50% of plan. Across the bottom-5, conflict-driven supply-chain disruption (38%) and health-worker shortages (27%) explain the bulk of the gap.",
+  metric: {
+    value: "32",
+    caption: "UHC service coverage index in FCS / 100 (LIC avg: 49)",
+    code: "SH_UHC_SRVS_CV_XD",
+  },
+};
+
+const INDICATORS_HEALTH: IndicatorRow[] = [
+  { code: "CSC_RES_HEA_SERV",         label: "Health services reach",        value: "370M / 425M" },
+  { code: "CSC_RES_HEA_EMER_BENE",    label: "Emergency-health beneficiaries", value: "44M" },
+  { code: "SH_STA_STNT_ME_ZS",        label: "Under-5 stunting (FCS)",       value: "33.6%" },
+  { code: "SH_UHC_SRVS_CV_XD",        label: "UHC index — FCS",              value: "32 / 100" },
+  { code: "SH_HEA_WORK_DENS",         label: "Health workforce density",     value: "0.8 / 1k" },
+];
+
+// Resolve all the per-flow content surfaced by the panel in one place. Adding
+// a new flow just requires extending detectFlow + this lookup.
+const CONTENT_BY_FLOW: Record<FlowId, NarrativeContent> = {
+  "africa-poverty": {
+    hero: HERO_AFRICA,
+    sections: SECTIONS_AFRICA,
+    indicators: INDICATORS_AFRICA,
+    methodology: {
+      title: "Outcome Area 1 · Protection for the Poorest methodology",
+      href: "https://scorecard.worldbank.org/en/narratives/protection-for-the-poorest/results-narrative",
+    },
+  },
+  "health-gap": {
+    hero: HERO_HEALTH,
+    sections: SECTIONS_HEALTH,
+    indicators: INDICATORS_HEALTH,
+    methodology: {
+      title: "Outcome Area 3 · Healthier Lives methodology",
+      href: "https://scorecard.worldbank.org/en/narratives/healthier-lives/results-narrative",
+    },
+  },
+};
+
 function Accordion({
   section,
   open,
   onToggle,
   enterDelay,
+  geography,
 }: {
   section: Section;
   open: boolean;
@@ -985,6 +1126,9 @@ function Accordion({
   /** Optional CSS animation-delay (e.g. "120ms") applied to the
    * narrative-content-enter animation so accordions cascade in. */
   enterDelay?: string;
+  /** Geography UI rendered above the chart in the Country Examples
+   *  section. Null for all other sections. */
+  geography?: React.ReactNode;
 }) {
   return (
     <div
@@ -1005,16 +1149,141 @@ function Accordion({
       </button>
       {open && (
         <div className="px-5 pb-4 pt-2 flex flex-col gap-3 bg-white border-t border-gray-100">
-          {section.Chart && <section.Chart />}
+          {/* Body text leads inside Country Examples to set up the visuals;
+              leads everywhere else too. */}
           <p className="text-[13px] text-gray-700 leading-relaxed">{section.body}</p>
+          {geography}
+          {section.Chart && <section.Chart />}
           {section.bullets && (
             <ul className="flex flex-col gap-1.5 pl-4 list-disc text-[12.5px] text-gray-600">
               {section.bullets.map((b, i) => <li key={i}>{b}</li>)}
             </ul>
           )}
+          {section.countryStories && section.countryStories.length > 0 && (
+            <ul className="flex flex-col gap-2 mt-1">
+              {section.countryStories.map((s) => (
+                <li
+                  key={s.iso ?? s.name}
+                  className="flex items-start gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2.5"
+                >
+                  <span className="text-[20px] leading-none shrink-0" aria-hidden>
+                    {s.flag}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-[12.5px] font-semibold text-gray-900">
+                        {s.name}
+                      </span>
+                      {s.meta && (
+                        <span className="text-[10.5px] text-gray-400 font-mono shrink-0">
+                          {s.meta}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[12.5px] text-gray-700 leading-relaxed">
+                      {s.body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+// Hero block — outcome title + intro + headline metric.
+function NarrativeHero({ hero }: { hero: Hero }) {
+  return (
+    <section
+      data-anchor="hero"
+      className="flex flex-col gap-3 scroll-mt-12 narrative-content-enter pb-4 border-b border-gray-100"
+    >
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-600">
+          Results narrative
+        </span>
+        <h2 className="text-[20px] font-bold text-gray-900 leading-tight">
+          {hero.title}
+        </h2>
+      </div>
+      <p className="text-[13px] text-gray-700 leading-relaxed">{hero.intro}</p>
+      <div className="mt-1 flex items-end gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+        <div className="flex flex-col">
+          <span className="text-[28px] font-bold text-gray-900 leading-none tabular-nums">
+            {hero.metric.value}
+          </span>
+          <span className="mt-2 text-[10.5px] font-mono text-gray-400">
+            {hero.metric.code}
+          </span>
+        </div>
+        <p className="flex-1 text-[12px] text-gray-600 leading-relaxed pb-0.5">
+          {hero.metric.caption}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// Related Indicators — a compact stat list rendered after the accordions.
+function RelatedIndicators({ rows }: { rows: IndicatorRow[] }) {
+  return (
+    <section
+      data-anchor="indicators"
+      className="flex flex-col gap-2 scroll-mt-12 narrative-content-enter"
+    >
+      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+        Related indicators
+      </h3>
+      <ul className="flex flex-col rounded-lg border border-gray-200 overflow-hidden">
+        {rows.map((r, i) => (
+          <li
+            key={r.code}
+            className={
+              "flex items-baseline justify-between gap-3 px-3 py-2 bg-white" +
+              (i < rows.length - 1 ? " border-b border-gray-100" : "")
+            }
+          >
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12px] text-gray-800 truncate">{r.label}</span>
+              <span className="text-[10px] font-mono text-gray-400 truncate">{r.code}</span>
+            </div>
+            <span className="text-[12.5px] font-semibold text-gray-900 tabular-nums shrink-0">
+              {r.value}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// Methodology footer — link to the corresponding scorecard page.
+function MethodologyFootnote({ title, href }: { title: string; href: string }) {
+  return (
+    <section
+      data-anchor="methodology"
+      className="flex flex-col gap-1 scroll-mt-12 narrative-content-enter text-[11px] text-gray-500"
+    >
+      <span className="font-semibold uppercase tracking-wider text-gray-400">
+        Methodology
+      </span>
+      <p>
+        Indicator definitions and computation rules come from the World Bank
+        Scorecard methodology note. Source figures: IDA Results data ·
+        FY2025 (Time_Period == 2025-06-30).
+      </p>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="self-start mt-1 text-violet-600 hover:text-violet-700 underline"
+      >
+        {title} ↗
+      </a>
+    </section>
   );
 }
 
@@ -1370,19 +1639,23 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
   const startWidth = useRef(0);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
-  const sections = flow === "health-gap" ? SECTIONS_HEALTH : SECTIONS_AFRICA;
+  const content = CONTENT_BY_FLOW[flow];
+  const { hero, sections, indicators, methodology } = content;
   // Scroll-linked stepper: tracks the section currently in view and which
   // accordions are open. The stepper fades in once the user begins scrolling
   // so it feels reactive rather than chrome.
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
-  const [activeAnchor, setActiveAnchor] = useState<string>("geography");
+  const [activeAnchor, setActiveAnchor] = useState<string>("hero");
   const [scrolled, setScrolled] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  // Anchor order: Geography leads now that the Summary section is gone.
+  // Anchor order: hero leads the document, sections follow, related
+  // indicators + methodology close it out.
   const anchors = useMemo(
     () => [
-      { id: "geography", label: "Geography" },
+      { id: "hero", label: "Overview" },
       ...sections.map((s) => ({ id: s.id, label: s.title })),
+      { id: "indicators", label: "Related indicators" },
+      { id: "methodology", label: "Methodology" },
     ],
     [sections]
   );
@@ -1584,34 +1857,13 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
           <NarrativeLoading />
         ) : (
         <div className="px-5 py-5 flex flex-col gap-5">
-          {/* Each section enters with a staggered fade+lift so the
-              narrative reveals top-to-bottom rather than slamming in. */}
+          {/* Hero — outcome title + intro + headline metric */}
+          <NarrativeHero hero={hero} />
 
-          {/* Geography — real world map, with WBG-region tiles below */}
-          <section
-            data-anchor="geography"
-            className="flex flex-col gap-2.5 scroll-mt-12 narrative-content-enter"
-            style={{ animationDelay: "120ms" }}
-          >
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
-              <IconMapPin size={12} className="text-gray-400" />
-              Geography in scope
-            </h3>
-            <WorldMap
-              prompt={prompt}
-              flow={flow}
-              selectedRegion={selectedRegion}
-              onSelectRegion={setSelectedRegion}
-            />
-            <RegionTiles
-              prompt={prompt}
-              flow={flow}
-              selectedRegion={selectedRegion}
-              onSelectRegion={setSelectedRegion}
-            />
-          </section>
-
-          {/* Accordions — each cascades in after geography lands. */}
+          {/* Accordions — each cascades in after the hero lands. The
+              Country Examples section gets a Geography block (WorldMap +
+              region tiles) rendered above its chart, plus a list of
+              named country case-study blocks below. */}
           <section className="flex flex-col -mx-5">
             {sections.map((s, i) => (
               <Accordion
@@ -1620,9 +1872,35 @@ export default function NarrativePanel({ open, prompt, onClose, width, onResize,
                 open={openSections.has(s.id)}
                 onToggle={() => toggleSection(s.id)}
                 enterDelay={`${260 + i * 70}ms`}
+                geography={
+                  s.id === "evidence" ? (
+                    <div className="flex flex-col gap-2.5">
+                      <h4 className="text-[10.5px] font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                        <IconMapPin size={11} className="text-gray-400" />
+                        Geography in scope
+                      </h4>
+                      <WorldMap
+                        prompt={prompt}
+                        flow={flow}
+                        selectedRegion={selectedRegion}
+                        onSelectRegion={setSelectedRegion}
+                      />
+                      <RegionTiles
+                        prompt={prompt}
+                        flow={flow}
+                        selectedRegion={selectedRegion}
+                        onSelectRegion={setSelectedRegion}
+                      />
+                    </div>
+                  ) : undefined
+                }
               />
             ))}
           </section>
+
+          {/* Related indicators + methodology footer */}
+          <RelatedIndicators rows={indicators} />
+          <MethodologyFootnote title={methodology.title} href={methodology.href} />
         </div>
         )}
         </div>
