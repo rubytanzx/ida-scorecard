@@ -12,6 +12,7 @@ import { IconX, IconNotebook, IconCheck, IconGripVertical, IconSparkles } from "
 import {
   FLOW_SKELETONS,
   type NarrativeSkeleton,
+  type Pathways,
 } from "./NarrativeSkeletons";
 import {
   NARRATIVE_PANEL_DEFAULT_WIDTH,
@@ -38,6 +39,10 @@ interface Props {
   /** Refinement-turn history. When the count changes the panel briefly
    *  fades to indicate the content has been re-derived. */
   refinementTurns?: string[];
+  /** When true, render the skeleton's extra country example alongside the
+   *  base two — mirrors the addition shown in the conversation's refined
+   *  widget after the user submitted a refinement. */
+  extraCountryApplied?: boolean;
 }
 
 export default function SkeletonPreviewPanel({
@@ -50,6 +55,7 @@ export default function SkeletonPreviewPanel({
   onProceed,
   onMakeChanges,
   refinementTurns = [],
+  extraCountryApplied = false,
 }: Props) {
   const skeleton =
     skeletonId == null
@@ -59,19 +65,22 @@ export default function SkeletonPreviewPanel({
   const refinedCount = refinementTurns.length;
   const isRefined = refinedCount > 0;
 
-  // When the refinement-turn count or the previewed skeleton changes, briefly
-  // fade the body to 0 then back to 1 so the reader gets a visual cue that
-  // the panel content has been re-derived (the "reload" the user asked for).
+  // When the refinement-turn count, the previewed skeleton, or the
+  // extra-country toggle changes, briefly fade the body to 0 then back to 1
+  // so the reader gets a visual cue that the panel content has been
+  // re-derived (the "reload" the user asked for).
   const [bodyOpacity, setBodyOpacity] = useState(1);
-  const lastReloadKeyRef = useRef<string>(`${skeletonId ?? ""}:${refinedCount}`);
+  const lastReloadKeyRef = useRef<string>(
+    `${skeletonId ?? ""}:${refinedCount}:${extraCountryApplied}`,
+  );
   useEffect(() => {
-    const key = `${skeletonId ?? ""}:${refinedCount}`;
+    const key = `${skeletonId ?? ""}:${refinedCount}:${extraCountryApplied}`;
     if (lastReloadKeyRef.current === key) return;
     lastReloadKeyRef.current = key;
     setBodyOpacity(0);
     const t = setTimeout(() => setBodyOpacity(1), 180);
     return () => clearTimeout(t);
-  }, [skeletonId, refinedCount]);
+  }, [skeletonId, refinedCount, extraCountryApplied]);
 
   // Same drag-to-resize affordance as NarrativePanel, so the right pane
   // behaves identically across the three panel types.
@@ -177,6 +186,7 @@ export default function SkeletonPreviewPanel({
           <PreviewBody
             skeleton={skeleton}
             latestRefinement={isRefined ? refinementTurns[refinedCount - 1] : null}
+            extraCountryApplied={extraCountryApplied}
           />
         ) : (
           <div className="p-6 text-[12.5px] text-gray-400">
@@ -213,25 +223,53 @@ export default function SkeletonPreviewPanel({
 function PreviewBody({
   skeleton,
   latestRefinement,
+  extraCountryApplied,
 }: {
   skeleton: NarrativeSkeleton;
   latestRefinement: string | null;
+  extraCountryApplied: boolean;
 }) {
   const {
     title,
+    outcomeArea,
     challengeText,
     interventionText,
     countryExamples,
-    pathwaysText,
+    extraCountryExample,
+    pathways,
     lessonsText,
     sourceCounts,
   } = skeleton;
+  const countries = extraCountryApplied
+    ? [...countryExamples, extraCountryExample]
+    : countryExamples;
+
+  // Scroll the freshly-added country into view the first time
+  // extraCountryApplied transitions to true. The parent fades the body for
+  // ~180ms when its reload-key changes, so we wait a bit longer than that
+  // before kicking off the smooth scroll — the user sees the panel re-fade
+  // back in already moving toward the new entry.
+  const addedRef = useRef<HTMLLIElement | null>(null);
+  const prevAppliedRef = useRef(extraCountryApplied);
+  useEffect(() => {
+    if (!prevAppliedRef.current && extraCountryApplied) {
+      const t = setTimeout(() => {
+        addedRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 360);
+      prevAppliedRef.current = extraCountryApplied;
+      return () => clearTimeout(t);
+    }
+    prevAppliedRef.current = extraCountryApplied;
+  }, [extraCountryApplied]);
 
   return (
     <div className="px-6 py-5 flex flex-col gap-6">
-      {/* Title block */}
+      {/* Title block — outcome-area tag, then title, then source caption. */}
       <div>
-        <h2 className="text-[20px] font-semibold text-gray-900 leading-tight">
+        <span className="inline-flex items-center text-[11px] font-medium px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700">
+          {outcomeArea.label}
+        </span>
+        <h2 className="mt-2 text-[20px] font-semibold text-gray-900 leading-tight">
           {title}
         </h2>
         <p className="mt-1 text-[12px] text-gray-500">
@@ -251,6 +289,7 @@ function PreviewBody({
         </div>
       )}
 
+      <Section label="Summary" body={`${pathways.challenge} ${pathways.wbgApproach}`} />
       <Section label="The Challenge" body={challengeText} />
       <Section label="Interventions" body={interventionText} />
 
@@ -260,22 +299,64 @@ function PreviewBody({
       <div>
         <SectionLabel>Country Examples</SectionLabel>
         <ul className="mt-2 flex flex-col gap-2.5">
-          {countryExamples.map((c) => (
-            <li key={c.name} className="flex items-start gap-2.5">
-              <span className="text-[18px] leading-none mt-0.5 shrink-0" aria-hidden>
-                {c.flag}
-              </span>
-              <p className="text-[13px] text-gray-800 leading-relaxed">
-                <span className="font-semibold text-gray-900">{c.name}:</span>{" "}
-                {c.description}
-              </p>
-            </li>
-          ))}
+          {countries.map((c, i) => {
+            const isAdded = extraCountryApplied && i === countries.length - 1;
+            return (
+              <li
+                key={c.name}
+                ref={isAdded ? addedRef : undefined}
+                className={`flex items-start gap-2.5 scroll-mt-6 ${
+                  isAdded
+                    ? "-mx-2 px-2 py-1.5 rounded-md bg-violet-50/60 border border-violet-200"
+                    : ""
+                }`}
+              >
+                <span className="text-[18px] leading-none mt-0.5 shrink-0" aria-hidden>
+                  {c.flag}
+                </span>
+                <p className="text-[13px] text-gray-800 leading-relaxed flex-1">
+                  <span className="font-semibold text-gray-900">{c.name}:</span>{" "}
+                  {c.description}
+                  {isAdded && (
+                    <span className="ml-1.5 inline-block align-middle text-[9px] font-semibold uppercase tracking-wider px-1 py-px rounded bg-violet-100 text-violet-700 border border-violet-200">
+                      Added
+                    </span>
+                  )}
+                </p>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
-      <Section label="Pathways to Outcomes" body={pathwaysText} />
+      <PathwaysSection pathways={pathways} />
       <Section label="Lessons Learned" body={lessonsText} />
+    </div>
+  );
+}
+
+// Pathways to Outcomes — rendered as the WBG prompt's four labelled
+// sub-bullets so the section structure mirrors the synthesis brief
+// rather than collapsing into a single paragraph.
+const PATHWAY_BULLETS: { key: keyof Pathways; label: string }[] = [
+  { key: "challenge",       label: "Challenge"       },
+  { key: "wbgApproach",     label: "WBG Approach"    },
+  { key: "outcomes",        label: "Outcomes"        },
+  { key: "longTermImpact",  label: "Long-term Impact"},
+];
+
+function PathwaysSection({ pathways }: { pathways: Pathways }) {
+  return (
+    <div>
+      <SectionLabel>Pathways to Outcomes</SectionLabel>
+      <ul className="mt-2 flex flex-col gap-2 pl-4 list-disc text-[13px] text-gray-800 leading-relaxed marker:text-gray-400">
+        {PATHWAY_BULLETS.map(({ key, label }) => (
+          <li key={key}>
+            <span className="font-semibold text-gray-900">{label}:</span>{" "}
+            {pathways[key]}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -9,9 +9,107 @@ import {
   IconNotebook,
   IconCheck,
   IconX,
+  IconSparkles,
+  IconArrowsUpDown,
+  IconBook2,
 } from "@tabler/icons-react";
 import MadLibsInput from "./MadLibsInput";
 import type { NarrativePhase } from "../app/page";
+
+// ── Suggested-prompts dropdown data ──────────────────────────────────────────
+
+const OUTCOME_AREAS = [
+  { id: "all",       label: "All" },
+  { id: "health",    label: "Health" },
+  { id: "education", label: "Education" },
+  { id: "private",   label: "Private Sector" },
+  { id: "climate",   label: "Climate" },
+] as const;
+
+type AreaId = (typeof OUTCOME_AREAS)[number]["id"];
+
+const AREA_PROMPTS: Record<AreaId, { compare: string[]; explore: string[] }> = {
+  all: {
+    compare: [
+      "What explains the difference in results between FY24 and FY25?",
+      "How do Sub-Saharan Africa outcomes compare to South Asia?",
+      "Which regions showed the biggest improvement this fiscal year?",
+      "Compare IDA and IBRD performance on private sector indicators",
+      "How do FY25 results track against IDA21 policy commitments?",
+    ],
+    explore: [
+      "How is People Reached with HNP Services measured?",
+      "What methodology is used for the Electricity Access indicator?",
+      "How does the Double Counting Flag affect aggregated results?",
+      "What does the Financial Inclusion indicator track?",
+      "How is climate co-benefit financing tracked across IDA operations?",
+    ],
+  },
+  health: {
+    compare: [
+      "How did health results change between FY24 and FY25?",
+      "Which regions improved most in health service delivery this year?",
+      "Compare maternal and child health outcomes across IDA regions",
+      "How does immunisation coverage vary across Sub-Saharan Africa?",
+      "How do IDA health outcomes track against IDA21 targets?",
+    ],
+    explore: [
+      "How is People Reached with Health, Nutrition and Population Services measured?",
+      "What qualifies as an immunisation result in the IDA Scorecard?",
+      "How does the Scorecard track nutrition and food security outcomes?",
+      "How are maternal mortality indicators compiled and reported?",
+      "Which health indicators are flagged for double-counting?",
+    ],
+  },
+  education: {
+    compare: [
+      "How did education results change between FY24 and FY25?",
+      "Which regions have the widest gap in learning outcomes?",
+      "Compare girls' education outcomes across IDA regions",
+      "How do IDA education results compare to IBRD country outcomes?",
+      "How do FY25 education results track against IDA21 targets?",
+    ],
+    explore: [
+      "How is the People Reached with Education Services indicator defined?",
+      "What counts as a learning outcome in the IDA Scorecard?",
+      "How does the Scorecard measure gender parity in education?",
+      "How are primary school completion rates tracked?",
+      "Which education indicators are most affected by double-counting?",
+    ],
+  },
+  private: {
+    compare: [
+      "How did private sector results change between FY24 and FY25?",
+      "Which regions attracted the most private investment this year?",
+      "Compare IFC and IDA private sector outcomes across regions",
+      "How do SME financing results vary across Sub-Saharan Africa?",
+      "How do FY25 private sector results track against IDA21 targets?",
+    ],
+    explore: [
+      "How is the Private Sector Jobs indicator measured in the Scorecard?",
+      "What qualifies as an MSME reached in IDA operations?",
+      "How is private sector mobilisation tracked across operations?",
+      "What methodology underpins the Financial Inclusion indicator?",
+      "How does the Scorecard track outcomes for women-owned businesses?",
+    ],
+  },
+  climate: {
+    compare: [
+      "How did climate finance results change between FY24 and FY25?",
+      "Which regions received the most climate co-benefit financing?",
+      "Compare adaptation and mitigation outcomes across IDA regions",
+      "How do IDA climate results compare to IBRD climate portfolios?",
+      "How do FY25 climate results track against the IDA21 climate targets?",
+    ],
+    explore: [
+      "How is climate co-benefit financing defined in the Scorecard?",
+      "What qualifies as a climate adaptation result in IDA operations?",
+      "How does the Scorecard track People Reached with Clean Energy?",
+      "How is the Renewable Energy Capacity indicator compiled?",
+      "Which climate indicators changed methodology since FY24?",
+    ],
+  },
+};
 
 type Mode = "hero" | "bottom";
 type WidthMode = "compact" | "wide";
@@ -63,6 +161,12 @@ interface Props {
   /** Fires immediately when the user hits Enter / clicks send. Lets the parent
    *  scroll the home view back to the hero before the beam runs. */
   onSubmit?: () => void;
+  /** When set, renders an "Editing: [excerpt]" chip above the input and routes
+   *  submit to onContentModifySubmit. Mutually exclusive with other chips. */
+  contentModifyChip?: { text: string; onDismiss: () => void };
+  onContentModifySubmit?: (instruction: string) => void;
+  /** Optional ref forwarded to the underlying text input so parent can call .focus(). */
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 const HERO_TOP = 112;
@@ -95,6 +199,9 @@ export default function PromptBar({
   onCreateNarrativeSubmit,
   inConversation = false,
   onSubmit,
+  contentModifyChip,
+  onContentModifySubmit,
+  inputRef,
 }: Props) {
   const widthCss = widthMode === "wide"
     ? "min(680px, calc(100% - 48px))"
@@ -108,9 +215,42 @@ export default function PromptBar({
   const [submitted, setSubmitted] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Suffix text typed after the "Create a narrative" prefix in bottom-bar mode.
+  const [narrativeSuffix, setNarrativeSuffix] = useState("");
+
+  // ── Suggestions dropdown ──────────────────────────────────────────────────
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<AreaId>("all");
+  const [visibleSection, setVisibleSection] = useState<"compare" | "explore" | "all">("all");
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [dropdownPos, setDropdownPos] = useState({
+    topAnchor: 0, bottomAnchor: 0, left: 0, width: 0,
+  });
+
+  const openSuggestions = () => {
+    const el = formRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setDropdownPos({
+      topAnchor: r.bottom + 8,
+      bottomAnchor: window.innerHeight - r.top + 8,
+      left: r.left,
+      width: r.width,
+    });
+    // Show only the relevant section when a pill pre-filled the bar.
+    const v = value.toLowerCase();
+    if (v.startsWith("compare results")) {
+      setVisibleSection("compare");
+    } else if (v.startsWith("explore an indicator")) {
+      setVisibleSection("explore");
+    } else {
+      setVisibleSection("all");
+    }
+    setShowSuggestions(true);
+  };
 
   const isBottom = mode === "bottom";
-  const hasChip = !!refiningChip || !!createNarrativeChip;
+  const hasChip = !!refiningChip || !!createNarrativeChip || !!contentModifyChip;
   const extraHeight = hasChip ? REFINING_EXTRA : 0;
 
   useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
@@ -129,6 +269,12 @@ export default function PromptBar({
   const submit = () => {
     const v = value.trim();
     if (!v) return;
+    // Content-modify flow: hand the instruction to the panel and exit.
+    if (onContentModifySubmit) {
+      onContentModifySubmit(v);
+      onChange("");
+      return;
+    }
     // Refining flow: short-circuit the new-conversation path and hand the
     // text to the parent's refinement handler instead.
     if (onRefineSubmit) {
@@ -165,6 +311,17 @@ export default function PromptBar({
     if (mode !== "hero") { setSubmitted(false); setExpanded(false); }
   }, [mode]);
 
+  // When the create-narrative chip activates in bottom-bar mode, pre-fill the
+  // parent value with the fixed prefix and reset the local suffix field.
+  // Dependency is the boolean coercion so this only fires on activate/deactivate.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!createNarrativeChip) { setNarrativeSuffix(""); return; }
+    setNarrativeSuffix("");
+    onChange("Create a narrative ");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!createNarrativeChip]);
+
   // Close expanded when clicking outside
   useEffect(() => {
     if (!expanded) return;
@@ -177,6 +334,28 @@ export default function PromptBar({
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, [expanded]);
+
+  // Close suggestions dropdown on outside click or Escape
+  useEffect(() => {
+    if (!showSuggestions) return;
+    const onDown = (e: MouseEvent) => {
+      const form = formRef.current;
+      const drop = document.getElementById("prompt-suggestions-dropdown");
+      const t = e.target as Node;
+      if (form && !form.contains(t) && (!drop || !drop.contains(t))) {
+        setShowSuggestions(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowSuggestions(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [showSuggestions]);
 
   const handleMadLibsSubmit = (prompt: string) => {
     setExpanded(false);
@@ -300,6 +479,7 @@ export default function PromptBar({
 
       {/* ── Single bar — same pill, grows taller when expanded ── */}
       <form
+        ref={formRef}
         id="madlibs-card"
         onSubmit={(e) => { e.preventDefault(); submit(); }}
         className={`fixed ${suppressTransition ? "" : "transition-[left,width] duration-[900ms]"}`}
@@ -335,17 +515,16 @@ export default function PromptBar({
               : "0 0 0 1px rgba(15,118,110,0.22), 0 0 24px rgba(45,212,191,0.32), 0 0 56px rgba(15,118,110,0.14), 0 1px 2px rgba(0,0,0,0.04)",
           }}
           onClick={() => {
-            // In refining mode (basic input) we never auto-expand. In
-            // create-narrative mode we DO render MadLibs (the user wants the
-            // Geography/Financing pills available), so let the click set
-            // expanded=true if it isn't already — but skip the expand path
-            // entirely once MadLibs is already mounted to avoid a re-render.
             if (refiningChip) return;
+            // Create-narrative mode: expand to MadLibs as before.
             if (createNarrativeChip) {
               if (!expanded) setExpanded(true);
               return;
             }
-            if (!isBottom && !inConversation && !expanded) setExpanded(true);
+            if (inConversation) return;
+            // All other landing-page clicks: open suggestions dropdown instead
+            // of MadLibs (prevents MadLibs auto-submit on pre-filled text).
+            if (!showSuggestions && !hasChip) openSuggestions();
           }}
         >
           <div className="flex flex-col">
@@ -361,6 +540,23 @@ export default function PromptBar({
                       refiningChip.onDismiss();
                     }}
                     aria-label="Cancel refining"
+                    className="ml-0.5 -mr-0.5 w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-violet-200/70 transition-colors shrink-0"
+                  >
+                    <IconX size={10} />
+                  </button>
+                </span>
+              </div>
+            )}
+            {contentModifyChip && !refiningChip && !createNarrativeChip && (
+              <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-50 border border-violet-200 text-[11.5px] font-medium text-violet-800 max-w-full">
+                  <IconSparkles size={11} className="shrink-0 text-violet-500" />
+                  <span className="opacity-60 shrink-0">Editing:</span>
+                  <span className="truncate max-w-[200px]">{contentModifyChip.text}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); contentModifyChip.onDismiss(); }}
+                    aria-label="Cancel editing"
                     className="ml-0.5 -mr-0.5 w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-violet-200/70 transition-colors shrink-0"
                   >
                     <IconX size={10} />
@@ -398,35 +594,66 @@ export default function PromptBar({
                   if (!createNarrativeChip) setExpanded(false);
                 }}
                 onAllPlaced={handleMadLibsAllPlaced}
+                includeOutcomeArea={!!createNarrativeChip}
+                placeholder={
+                  createNarrativeChip
+                    ? "Which outcome area and angle should this year's narrative focus on?"
+                    : undefined
+                }
               />
             ) : (
             <div className={`flex items-center gap-2 px-4 ${hasChip ? "pb-3 pt-1" : "py-2.5"}`}>
-              <IconPlus size={15} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => {
-                  onChange(e.target.value);
-                  if (submitted) setSubmitted(false);
-                }}
-                onFocus={() => {
-                  if (hasChip) return;
-                  if (!isBottom && !inConversation) setExpanded(true);
-                }}
-                placeholder={
-                  refiningChip
-                    ? "Describe the changes you want to make…"
-                    : createNarrativeChip
-                    ? "Describe what the narrative should focus on…"
-                    : isBottom
-                    ? "Ask a follow-up question"
-                    : "What do you want to learn about IDA results?"
-                }
-                className="flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none"
-                aria-label="Search the scorecard"
-                readOnly={!hasChip && !isBottom && !inConversation}
-                autoFocus={!!createNarrativeChip}
-              />
+              {isBottom && createNarrativeChip
+                ? <IconNotebook size={15} className="text-violet-500 shrink-0" />
+                : <IconPlus size={15} className="text-gray-400 shrink-0" />
+              }
+              {isBottom && createNarrativeChip ? (
+                <>
+                  <span className="text-[14px] font-medium text-gray-800 shrink-0 select-none">
+                    Create a narrative
+                  </span>
+                  <input
+                    type="text"
+                    value={narrativeSuffix}
+                    onChange={(e) => {
+                      setNarrativeSuffix(e.target.value);
+                      onChange("Create a narrative " + e.target.value);
+                      if (submitted) setSubmitted(false);
+                    }}
+                    placeholder="for protection for the poorest in Sub-Saharan Africa"
+                    className="flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none"
+                    aria-label="Describe the narrative"
+                    autoFocus
+                  />
+                </>
+              ) : (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e.target.value);
+                    if (submitted) setSubmitted(false);
+                    if (showSuggestions) setShowSuggestions(false);
+                  }}
+                  onFocus={() => {
+                    if (hasChip || inConversation) return;
+                    if (!showSuggestions) openSuggestions();
+                  }}
+                  placeholder={
+                    contentModifyChip
+                      ? "Describe the change you want to make to this passage…"
+                      : refiningChip
+                      ? "Describe the changes you want to make…"
+                      : isBottom
+                      ? "Ask a follow-up question"
+                      : "What do you want to learn about IDA results?"
+                  }
+                  className="flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none"
+                  aria-label="Search the scorecard"
+                  autoFocus={!!contentModifyChip}
+                />
+              )}
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
@@ -450,6 +677,95 @@ export default function PromptBar({
           </div>
         </motion.div>
       </form>
+
+      {/* ── Suggested-prompts dropdown ──────────────────────────────────────
+          Renders as a fixed panel below (hero) or above (bottom) the bar.
+          Uses portals via fixed positioning — no DOM ancestor needed. */}
+      {showSuggestions && !hasChip && !inConversation && (
+        <div
+          id="prompt-suggestions-dropdown"
+          className="bg-white border border-gray-200 rounded-2xl overflow-hidden animate-fade-in"
+          style={{
+            position: "fixed",
+            left: dropdownPos.left,
+            width: dropdownPos.width,
+            zIndex: 51,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
+            ...(isBottom
+              ? { bottom: dropdownPos.bottomAnchor }
+              : { top: dropdownPos.topAnchor }),
+          }}
+        >
+          {/* Outcome area filter pills */}
+          <div className="flex items-center gap-1.5 px-3 pt-3 pb-2 flex-wrap">
+            {OUTCOME_AREAS.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setSelectedArea(id)}
+                className={`px-3 py-1 text-[11.5px] font-medium rounded-full transition-colors ${
+                  selectedArea === id
+                    ? "bg-[#0288D1] text-white"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-px bg-gray-100 mx-3 mb-1" />
+
+          {/* Compare results */}
+          {(visibleSection === "all" || visibleSection === "compare") && (
+            <div className="px-2 pb-1">
+              <div className="flex items-center gap-1.5 px-3 py-1.5">
+                <IconArrowsUpDown size={11} className="text-gray-400" />
+                <span className="text-[10.5px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Compare results
+                </span>
+              </div>
+              {AREA_PROMPTS[selectedArea].compare.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(p); setShowSuggestions(false); }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-[13px] text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {visibleSection === "all" && <div className="h-px bg-gray-100 mx-3 my-1" />}
+
+          {/* Explore an indicator */}
+          {(visibleSection === "all" || visibleSection === "explore") && (
+            <div className="px-2 pt-1 pb-3">
+              <div className="flex items-center gap-1.5 px-3 py-1.5">
+                <IconBook2 size={11} className="text-gray-400" />
+                <span className="text-[10.5px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Explore an indicator
+                </span>
+              </div>
+              {AREA_PROMPTS[selectedArea].explore.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(p); setShowSuggestions(false); }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-[13px] text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

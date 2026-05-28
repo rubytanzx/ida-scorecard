@@ -23,6 +23,9 @@ import {
   IconChartBar,
   IconCheck,
   IconPencil,
+  IconPhoto,
+  IconPlus,
+  IconQuote,
 } from "@tabler/icons-react";
 import {
   ResponsiveContainer,
@@ -36,8 +39,6 @@ import {
 import type { NarrativePhase } from "../../app/page";
 import NarrativeSkeletonChoice from "./NarrativeSkeletonChoice";
 import SkeletonRefinedMessage from "./SkeletonRefinedMessage";
-import InteractiveElementsMessage from "./InteractiveElementsMessage";
-import type { InteractiveElement } from "../../app/page";
 
 const F = "'Open Sans', sans-serif";
 
@@ -91,12 +92,10 @@ interface Props {
   onRefinedProceed?: () => void;
   /** Fires when the user clicks "Make changes" inside the inline refined widget. */
   onRefinedMakeChanges?: () => void;
-  /** Interactive-elements multi-select state. */
-  interactiveElements?: InteractiveElement[];
-  /** Toggle an interactive element on/off. */
-  onToggleInteractiveElement?: (el: InteractiveElement) => void;
-  /** Fires when the user clicks "Proceed" in the interactive-elements message. */
-  onProceedFromInteractive?: () => void;
+  /** True once the user has submitted a refinement that adds a third
+   *  country to the skeleton. Surfaces inside the refined widget (and
+   *  carries through to the final narrative panel). */
+  extraCountryApplied?: boolean;
   /** When true, the conversation was opened via the landing-page
    *  "Create a narrative" pill — skip the AI Q&A response block and start
    *  the narrative-creation flow directly. */
@@ -110,10 +109,34 @@ interface Props {
 // Flow detection — keyword-driven. Anything mentioning "health services target"
 // resolves to the health-gap flow; anything with "extreme poverty" resolves to
 // the africa-poverty flow. Falls back to africa-poverty otherwise (the default).
-export type FlowId = "africa-poverty" | "health-gap" | "electricity-fcs";
+export type FlowId =
+  | "africa-poverty"
+  | "health-gap"
+  | "electricity-fcs"
+  | "fy24-fy25-delta"
+  | "hnp-measurement";
 
 export function detectFlow(prompt: string): FlowId {
   const t = prompt.toLowerCase();
+  // Methodology / definition questions about a specific HNP indicator. Must
+  // be checked before health-gap because both share the "health services"
+  // keyword — the verb ("measured" / "defined" / "how is") disambiguates.
+  if (
+    (t.includes("hnp") ||
+      t.includes("health, nutrition") ||
+      t.includes("health and nutrition") ||
+      t.includes("health services")) &&
+    (t.includes("measured") ||
+      t.includes("defined") ||
+      t.includes("methodology") ||
+      t.includes("how is people reached"))
+  ) return "hnp-measurement";
+  // Year-over-year comparison across the FY24 → FY25 cycle.
+  if (
+    (t.includes("fy24") && t.includes("fy25")) ||
+    t.includes("difference in results between fy24") ||
+    (t.includes("year-over-year") && t.includes("scorecard"))
+  ) return "fy24-fy25-delta";
   if (
     t.includes("electricity") ||
     t.includes("energy access") ||
@@ -214,6 +237,58 @@ const ELECTRICITY_FCS_SIGNALS: SignalCard[] = [
   { iconSrc: `${OA}/Connected%20Communities.svg`,                                                                       label: "Households still unconnected (FCS)",   value: "78M"     },
 ];
 
+const YOY_DELTA_SIGNALS: SignalCard[] = [
+  { iconSrc: `${OA}/protection%20for%20the%20pooresr.svg`,                                                              label: "People-pillar reach (YoY)",            value: "+12%"    },
+  { iconSrc: `${OA}/Digital%20Connectivity.svg`,                                                                        label: "Broadband users (FY24 → FY25)",        value: "2×"      },
+  { iconSrc: `${OA}/Affordable%2C%20Reliable%20and%20Sustainable%20Energy%20for%20All.svg`,                            label: "Electricity reach (YoY)",              value: "+5%"     },
+  { iconSrc: `${OA}/Green%20Planet.svg`,                                                                                label: "Climate resilience (YoY)",             value: "−2%"     },
+];
+
+const HNP_METHOD_SIGNALS: SignalCard[] = [
+  { iconSrc: `${OA}/healthier%20lives.svg`,                                                                             label: "FY25 HNP reach (unique people)",       value: "370M"    },
+  { iconSrc: `${OA}/healthier%20lives.svg`,                                                                             label: "FY25 HNP pipeline target",             value: "425M"    },
+  { iconSrc: `${OA}/Sustainable%20Food%20Systems.svg`,                                                                  label: "Operations contributing to the count", value: "182"     },
+  { iconSrc: `${OA}/Better%20Lives%20for%20People%20in%20Fragility%2C%20Conflict%2C%20and%20Violence.svg`,             label: "Double-counting flag affected rows",   value: "9.4%"    },
+];
+
+// ─── FY24 → FY25 delta flow data ────────────────────────────────────────────
+// FY24 baselines back-derived from the "+12% YoY" / "2× vs FY24" notes already
+// in CHART_DATA. Where the source is silent (climate, electricity, tax) we
+// keep the FY24 values consistent with the "Behind target" / "Persistent"
+// signal — i.e. FY25 is roughly flat or slightly worse.
+interface YoYRow {
+  name: string;
+  code: string;
+  vertical: Vertical;
+  fy24: number;
+  fy25: number;
+  unit: string;
+  /** A short qualitative tag rendered next to the bar (e.g. "Behind target"). */
+  note?: string;
+}
+const YOY_DATA: YoYRow[] = [
+  { name: "Health services",      code: "CSC_RES_HEA_SERV",       vertical: "People",         fy24: 330, fy25: 370, unit: "M people",   note: "+12% YoY" },
+  { name: "Students supported",   code: "CSC_RES_EDU_SUPP",       vertical: "People",         fy24: 290, fy25: 325, unit: "M students",  note: "+12% YoY" },
+  { name: "Social safety nets",   code: "CSC_RES_SOC_SAF_PROG",   vertical: "People",         fy24: 218, fy25: 244, unit: "M people",   note: "+12% YoY" },
+  { name: "Conservation hectares",code: "CSC_RES_TER_AQU_HECT",   vertical: "Planet",         fy24:  83, fy25:  93, unit: "M hectares",  note: "+12% YoY" },
+  { name: "Broadband users",      code: "CSC_RES_BRO_INTE",       vertical: "Digital",        fy24: 109, fy25: 217, unit: "M people",   note: "2× vs FY24" },
+  { name: "Electricity access",   code: "CSC_RES_ELC_ACCS",       vertical: "Infrastructure", fy24: 205, fy25: 215, unit: "M people",   note: "Behind target" },
+  { name: "Climate resilience",   code: "CSC_RES_RESI_CLIM_RISK", vertical: "Planet",         fy24: 250, fy25: 244, unit: "M people",   note: "Slipped vs FY24" },
+  { name: "Tax-to-GDP <15%",      code: "CSC_RES_TAX_REV_GDP",    vertical: "Prosperity",     fy24:  58, fy25:  56, unit: "countries",   note: "Persistent" },
+];
+
+// ─── HNP measurement flow data ──────────────────────────────────────────────
+// 5-year trend of CSC_RES_HEA_SERV used to anchor the methodology card. The
+// numbers track the same trajectory the other flows reference (FY25 = 370M).
+interface TrendPoint { fy: string; value: number }
+const HNP_TREND: TrendPoint[] = [
+  { fy: "FY21", value: 245 },
+  { fy: "FY22", value: 280 },
+  { fy: "FY23", value: 305 },
+  { fy: "FY24", value: 330 },
+  { fy: "FY25", value: 370 },
+];
+
 // ─── Per-flow content map ────────────────────────────────────────────────────
 interface FlowContent {
   title: string;
@@ -273,6 +348,54 @@ const FLOW_CONTENT: Record<FlowId, FlowContent> = {
       "Renewable energy methodology note — FY25",
       "FCS portfolio overview — energy operations",
       "WBG energy strategy — FY25 progress",
+    ],
+  },
+  "fy24-fy25-delta": {
+    title: "What changed between FY24 and FY25",
+    defaultPrompt: "What explains the difference in results between FY24 and FY25?",
+    leadAnswer:
+      "FY25 People-pillar indicators grew +12% YoY and broadband doubled — but climate resilience slipped 2% and electricity access only ticked up 5%, widening the gap to its FY25 pipeline target.",
+    bodyText:
+      "Across the eight Scorecard headline indicators, six rose vs FY24 and two declined. People-pillar reach (safety nets, students, health services) tracked consistently around +12% YoY — the strongest signal in the portfolio. Digital connectivity doubled off a small base. The exceptions sit in Infrastructure and Planet: electricity access reached 215M (FY24: 205M) but the FY25 pipeline target jumped to 576M, so the gap widened; climate resilience actually contracted as the FY24 anticipatory-action surge wasn't repeated.",
+    filterCaption:
+      "FY24 actuals vs FY25 (end-June 2025). Filter by direction:",
+    chartTitle: "Indicator change — FY24 → FY25",
+    signalsHeader: "Year-over-year signals",
+    continueExploring: [
+      "Why did climate resilience contract this year?",
+      "Which regions drove the People-pillar gain?",
+      "What expanded the electricity-access target so much?",
+      "How did FCS countries change between FY24 and FY25?",
+    ],
+    sources: [
+      "FY2024 and FY2025 IDA Results aggregate · indicator-level Achieved values",
+      "Scorecard Metadata · Double_Counting_Flag (FY24/FY25 comparability)",
+      "Digital Connectivity methodology note — FY24 baseline restatement",
+      "Climate Resilience methodology note — anticipatory-action accounting change",
+    ],
+  },
+  "hnp-measurement": {
+    title: "How HNP Services reach is measured",
+    defaultPrompt: "How is People Reached with HNP Services measured?",
+    leadAnswer:
+      "CSC_RES_HEA_SERV counts unique people who received at least one IDA-financed health, nutrition, or population service in the reporting period — deduplicated across operations using country + beneficiary-program identifiers.",
+    bodyText:
+      "Operations contribute project-level Achieved counts to the indicator each fiscal year. A person counted under more than one IDA-financed program in the same country is recorded once — the Double_Counting_Flag at the project row tells the aggregator when to drop duplicates. Services that count include primary care visits, maternal and child health touchpoints, immunisations, nutrition consultations, and disease-specific outreach. Pure infrastructure (e.g. clinic construction) and one-off equipment grants do not count as a service to a person.",
+    filterCaption:
+      "Indicator definition (CSC_RES_HEA_SERV) and 5-year trajectory:",
+    chartTitle: "People Reached with HNP Services · 5-year reach",
+    signalsHeader: "Indicator at a glance",
+    continueExploring: [
+      "Show me the FY25 country breakdown for HNP",
+      "How does the Double Counting Flag work in practice?",
+      "Which projects contribute the most HNP reach?",
+      "Compare HNP counting rules to Safety-Net counting",
+    ],
+    sources: [
+      "HNP Services methodology note — beneficiary counting definition",
+      "Scorecard Metadata · CSC_RES_HEA_SERV row and Double_Counting_Flag",
+      "Health Services results · FY2025 project-level data",
+      "WBG Results Measurement System — deduplication rules",
     ],
   },
   "health-gap": {
@@ -470,7 +593,7 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: ChartTo
   );
 }
 
-function PovertyChart({ title }: { title: string }) {
+function PovertyChart({ title, disabled = false }: { title: string; disabled?: boolean }) {
   const [active, setActive] = useState<FilterTab>("All");
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -479,19 +602,27 @@ function PovertyChart({ title }: { title: string }) {
     : CHART_DATA.filter((r) => r.vertical === active);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+    <div className={`bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4 ${disabled ? "opacity-90" : ""}`}>
       <h4 className="text-[15px] font-bold text-gray-900">{title}</h4>
 
-      {/* Interactive filter tabs */}
+      {/* Interactive filter tabs — locked once the user moves into the
+          narrative-creation flow so the conversation chart freezes at
+          whatever view they chose. */}
       <div className="flex items-center gap-2 flex-wrap">
         {FILTER_TABS.map((t) => (
           <button
             key={t}
-            onClick={() => setActive(t)}
+            type="button"
+            onClick={() => !disabled && setActive(t)}
+            disabled={disabled && active !== t}
+            aria-disabled={disabled || undefined}
             className={`px-3 py-1 rounded-md text-[12px] font-medium border transition-colors ${
               active === t
                 ? "border-gray-900 text-gray-900 bg-white"
-                : "border-gray-200 text-gray-500 bg-white hover:border-gray-300 hover:text-gray-700"
+                : "border-gray-200 text-gray-500 bg-white" +
+                  (disabled
+                    ? " opacity-50 cursor-not-allowed"
+                    : " hover:border-gray-300 hover:text-gray-700")
             }`}
           >
             {t}
@@ -510,7 +641,7 @@ function PovertyChart({ title }: { title: string }) {
         </span>
       </div>
 
-      <div style={{ height: Math.max(180, data.length * 52) }} className="w-full">
+      <div style={{ height: Math.max(180, data.length * 52) }} className={`w-full ${disabled ? "pointer-events-none" : ""}`}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
@@ -541,7 +672,7 @@ function PovertyChart({ title }: { title: string }) {
               fill="#5B5BD6"
               radius={[0, 3, 3, 0]}
               barSize={10}
-              onMouseEnter={(d: { payload?: ChartRow }) => setHovered(d.payload?.code ?? null)}
+              onMouseEnter={(d: { payload?: ChartRow }) => !disabled && setHovered(d.payload?.code ?? null)}
               fillOpacity={1}
             />
             <Bar
@@ -549,7 +680,7 @@ function PovertyChart({ title }: { title: string }) {
               fill="#C7C7F0"
               radius={[0, 3, 3, 0]}
               barSize={10}
-              onMouseEnter={(d: { payload?: ChartRow }) => setHovered(d.payload?.code ?? null)}
+              onMouseEnter={(d: { payload?: ChartRow }) => !disabled && setHovered(d.payload?.code ?? null)}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -557,16 +688,18 @@ function PovertyChart({ title }: { title: string }) {
 
       {/* Footnote that updates with hover for a bit of feedback */}
       <div className="text-[11px] text-gray-400 -mt-1 pl-1 min-h-[14px]">
-        {hovered
-          ? `Indicator code: ${hovered}`
-          : `${data.length} indicator${data.length === 1 ? "" : "s"} · hover bars for detail`}
+        {disabled
+          ? `${data.length} indicator${data.length === 1 ? "" : "s"} · view locked while narrative is in progress`
+          : hovered
+            ? `Indicator code: ${hovered}`
+            : `${data.length} indicator${data.length === 1 ? "" : "s"} · hover bars for detail`}
       </div>
     </div>
   );
 }
 
 // Health-gap flow — country-level achievement chart with status filter.
-function HealthGapChart({ title, caption }: { title: string; caption: string }) {
+function HealthGapChart({ title, caption, disabled = false }: { title: string; caption: string; disabled?: boolean }) {
   const [active, setActive] = useState<HealthFilterTab>("All countries");
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -580,18 +713,24 @@ function HealthGapChart({ title, caption }: { title: string; caption: string }) 
     .sort((a, b) => a.achieved / a.expected - b.achieved / b.expected); // worst first
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+    <div className={`bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4 ${disabled ? "opacity-90" : ""}`}>
       <h4 className="text-[15px] font-bold text-gray-900">{title}</h4>
 
       <div className="flex items-center gap-2 flex-wrap">
         {HEALTH_FILTER_TABS.map((t) => (
           <button
             key={t}
-            onClick={() => setActive(t)}
+            type="button"
+            onClick={() => !disabled && setActive(t)}
+            disabled={disabled && active !== t}
+            aria-disabled={disabled || undefined}
             className={`px-3 py-1 rounded-md text-[12px] font-medium border transition-colors ${
               active === t
                 ? "border-gray-900 text-gray-900 bg-white"
-                : "border-gray-200 text-gray-500 bg-white hover:border-gray-300 hover:text-gray-700"
+                : "border-gray-200 text-gray-500 bg-white" +
+                  (disabled
+                    ? " opacity-50 cursor-not-allowed"
+                    : " hover:border-gray-300 hover:text-gray-700")
             }`}
           >
             {t}
@@ -610,19 +749,19 @@ function HealthGapChart({ title, caption }: { title: string; caption: string }) 
         </span>
       </div>
 
-      <ul className="flex flex-col gap-2.5">
+      <ul className={`flex flex-col gap-2.5 ${disabled ? "pointer-events-none" : ""}`}>
         {data.map((row) => {
           const ratio = row.achieved / row.expected;
           const pct = Math.round(ratio * 100);
-          const isHover = hovered === row.iso3;
+          const isHover = !disabled && hovered === row.iso3;
           const barColor =
             ratio < 0.5  ? "#D04040" :
             ratio < 0.75 ? "#E88B2B" : "#2E8B57";
           return (
             <li
               key={row.iso3}
-              onMouseEnter={() => setHovered(row.iso3)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseEnter={() => !disabled && setHovered(row.iso3)}
+              onMouseLeave={() => !disabled && setHovered(null)}
               className="flex flex-col gap-1"
             >
               <div className="flex items-baseline justify-between gap-3">
@@ -654,7 +793,278 @@ function HealthGapChart({ title, caption }: { title: string; caption: string }) 
       </ul>
 
       <div className="text-[11px] text-gray-400 -mt-1">
-        {caption}
+        {disabled ? `${caption} · view locked while narrative is in progress` : caption}
+      </div>
+    </div>
+  );
+}
+
+// FY24 → FY25 delta flow — paired FY24/FY25 bars per indicator with a delta
+// chip on the right. Filter chips at top split rows into Gainers / Slippers
+// to make the directional split immediately readable.
+const YOY_FILTER_TABS = ["All", "Gainers", "Slippers"] as const;
+type YoYFilterTab = typeof YOY_FILTER_TABS[number];
+
+function YoYDeltaChart({ title, disabled = false }: { title: string; disabled?: boolean }) {
+  const [active, setActive] = useState<YoYFilterTab>("All");
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const rows = YOY_DATA
+    .filter((r) => {
+      if (active === "Gainers")  return r.fy25 > r.fy24;
+      if (active === "Slippers") return r.fy25 <= r.fy24;
+      return true;
+    })
+    .slice()
+    .sort((a, b) => (b.fy25 / b.fy24) - (a.fy25 / a.fy24)); // biggest gainers first
+
+  // Shared scale across both bars so visual length is comparable across rows.
+  const max = Math.max(...YOY_DATA.flatMap((r) => [r.fy24, r.fy25]));
+
+  return (
+    <div className={`bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4 ${disabled ? "opacity-90" : ""}`}>
+      <h4 className="text-[15px] font-bold text-gray-900">{title}</h4>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        {YOY_FILTER_TABS.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => !disabled && setActive(t)}
+            disabled={disabled && active !== t}
+            aria-disabled={disabled || undefined}
+            className={`px-3 py-1 rounded-md text-[12px] font-medium border transition-colors ${
+              active === t
+                ? "border-gray-900 text-gray-900 bg-white"
+                : "border-gray-200 text-gray-500 bg-white" +
+                  (disabled
+                    ? " opacity-50 cursor-not-allowed"
+                    : " hover:border-gray-300 hover:text-gray-700")
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-4 text-[11.5px] text-gray-600">
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm" style={{ background: "#C7C7F0" }} />
+          FY24
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm" style={{ background: "#5B5BD6" }} />
+          FY25
+        </span>
+      </div>
+
+      <ul className={`flex flex-col gap-3 ${disabled ? "pointer-events-none" : ""}`}>
+        {rows.map((row) => {
+          const delta = row.fy25 - row.fy24;
+          const pct = row.fy24 ? Math.round((delta / row.fy24) * 100) : 0;
+          const isUp = delta > 0;
+          const isFlat = delta === 0;
+          const isHover = hovered === row.code;
+          const fy24Pct = (row.fy24 / max) * 100;
+          const fy25Pct = (row.fy25 / max) * 100;
+          const deltaColor = isFlat ? "#94a3b8" : isUp ? "#2E8B57" : "#D04040";
+          return (
+            <li
+              key={row.code}
+              onMouseEnter={() => !disabled && setHovered(row.code)}
+              onMouseLeave={() => !disabled && setHovered(null)}
+              className="flex flex-col gap-1.5"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[12.5px] font-semibold text-gray-900 flex items-center gap-1.5">
+                  {row.name}
+                  {row.note && (
+                    <span className="text-[9.5px] font-medium uppercase tracking-wider px-1 py-px rounded bg-gray-50 text-gray-500 border border-gray-200">
+                      {row.note}
+                    </span>
+                  )}
+                </span>
+                <span
+                  className="text-[11.5px] font-semibold tabular-nums flex items-center gap-1 shrink-0"
+                  style={{ color: deltaColor }}
+                >
+                  {isUp ? <IconArrowUpRight size={12} /> : isFlat ? <IconMinus size={12} /> : <IconArrowDown size={12} />}
+                  {isUp && "+"}{pct}%
+                </span>
+              </div>
+              {/* Paired bars — FY24 on top, FY25 below. Sharing the global
+                  max keeps lengths comparable across rows. */}
+              <div className="flex flex-col gap-1">
+                <div className="h-[7px] bg-gray-50 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${fy24Pct}%`, background: "#C7C7F0", opacity: isHover ? 1 : 0.9 }} />
+                </div>
+                <div className="h-[7px] bg-gray-50 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-300" style={{ width: `${fy25Pct}%`, background: "#5B5BD6", opacity: isHover ? 1 : 0.9 }} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[10.5px] tabular-nums text-gray-400">
+                <span>FY24 {row.fy24} {row.unit}</span>
+                <span className={isHover ? "text-gray-700" : ""}>FY25 {row.fy25} {row.unit}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="text-[11px] text-gray-400 -mt-1">
+        {disabled
+          ? `${rows.length} indicator${rows.length === 1 ? "" : "s"} · view locked while narrative is in progress`
+          : hovered
+            ? `Indicator code: ${hovered}`
+            : `${rows.length} indicator${rows.length === 1 ? "" : "s"} · FY25 − FY24 delta · hover rows for code`}
+      </div>
+    </div>
+  );
+}
+
+// HNP measurement flow — a methodology card. Left column documents what
+// counts (and what doesn't); right column charts the 5-year reach trajectory
+// so the indicator's recent history is visible alongside the definition.
+function IndicatorMethodologyCard({ title, disabled = false }: { title: string; disabled?: boolean }) {
+  const [hoverPoint, setHoverPoint] = useState<TrendPoint | null>(null);
+  const max = Math.max(...HNP_TREND.map((p) => p.value));
+  const min = Math.min(...HNP_TREND.map((p) => p.value));
+  // Inline SVG instead of recharts — a single-series sparkline with markers
+  // reads as "indicator history" rather than another full chart panel.
+  const W = 280;
+  const H = 110;
+  const padX = 28;
+  const padY = 14;
+  const innerW = W - padX * 2;
+  const innerH = H - padY * 2;
+  const xFor = (i: number) => padX + (i / (HNP_TREND.length - 1)) * innerW;
+  const yFor = (v: number) =>
+    padY + innerH - ((v - min) / Math.max(1, max - min)) * innerH;
+  const path = HNP_TREND.map((p, i) => `${i === 0 ? "M" : "L"} ${xFor(i)} ${yFor(p.value)}`).join(" ");
+  const areaPath = `${path} L ${xFor(HNP_TREND.length - 1)} ${padY + innerH} L ${xFor(0)} ${padY + innerH} Z`;
+
+  return (
+    <div className={`bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4 ${disabled ? "opacity-90" : ""}`}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h4 className="text-[15px] font-bold text-gray-900">{title}</h4>
+        <span className="text-[10.5px] font-mono text-gray-400">CSC_RES_HEA_SERV</span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+        {/* Definition + counting rules */}
+        <div className="flex flex-col gap-3">
+          <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Definition</span>
+            <p className="mt-1.5 text-[12.5px] text-gray-800 leading-relaxed">
+              Unique people who received at least one IDA-financed health, nutrition, or population service during the reporting fiscal year, deduplicated across operations using country + beneficiary-program identifiers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-3">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 flex items-center gap-1">
+                <IconCheck size={10} stroke={3} /> Counts
+              </span>
+              <ul className="mt-1.5 flex flex-col gap-1 text-[11.5px] text-gray-700 leading-snug">
+                <li>Primary care visits</li>
+                <li>Maternal &amp; child touchpoints</li>
+                <li>Immunisations administered</li>
+                <li>Nutrition consultations</li>
+                <li>Disease-specific outreach</li>
+              </ul>
+            </div>
+            <div className="rounded-lg border border-rose-200 bg-rose-50/40 p-3">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                <IconX size={10} stroke={3} /> Doesn&rsquo;t count
+              </span>
+              <ul className="mt-1.5 flex flex-col gap-1 text-[11.5px] text-gray-700 leading-snug">
+                <li>Clinic construction</li>
+                <li>Equipment-only grants</li>
+                <li>Health-worker training (alone)</li>
+                <li>Insurance-scheme enrolment (alone)</li>
+                <li>Duplicate program touchpoints</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-3 flex items-start gap-2.5">
+            <IconFilter size={13} className="text-blue-600 mt-0.5 shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[11.5px] font-semibold text-gray-900">Double-counting handled at aggregation</span>
+              <p className="text-[11.5px] text-gray-600 leading-snug">
+                Project rows flagged <span className="font-mono text-[11px]">Double_Counting_Flag = Y</span> contribute only once to the country total; country totals roll up to the global indicator without further deduplication.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 5-year reach trend */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+            5-year reach (M people)
+          </span>
+          <div className="rounded-lg border border-gray-200 bg-white p-2.5">
+            <svg
+              viewBox={`0 0 ${W} ${H}`}
+              className="w-full h-[140px]"
+              role="img"
+              aria-label="People reached with HNP Services, FY21 to FY25"
+            >
+              {/* gridlines */}
+              {[0, 0.5, 1].map((t) => {
+                const y = padY + innerH * (1 - t);
+                return <line key={t} x1={padX} y1={y} x2={W - padX} y2={y} stroke="#F1F5F9" strokeWidth={1} />;
+              })}
+              {/* area + line */}
+              <path d={areaPath} fill="#5B5BD6" opacity={0.08} />
+              <path d={path} fill="none" stroke="#5B5BD6" strokeWidth={2} />
+              {/* markers */}
+              {HNP_TREND.map((p, i) => {
+                const isHover = !disabled && hoverPoint?.fy === p.fy;
+                return (
+                  <g key={p.fy}
+                    onMouseEnter={() => !disabled && setHoverPoint(p)}
+                    onMouseLeave={() => !disabled && setHoverPoint(null)}
+                    style={{ cursor: disabled ? "default" : "pointer" }}
+                  >
+                    <circle cx={xFor(i)} cy={yFor(p.value)} r={isHover ? 5 : 3.5} fill="#5B5BD6" stroke="white" strokeWidth={1.5} />
+                    {/* invisible hit target for easier hover */}
+                    <rect x={xFor(i) - 14} y={padY} width={28} height={innerH} fill="transparent" />
+                  </g>
+                );
+              })}
+              {/* axis labels */}
+              {HNP_TREND.map((p, i) => (
+                <text key={p.fy} x={xFor(i)} y={H - 2} fontSize={9} textAnchor="middle" fill="#94a3b8">{p.fy}</text>
+              ))}
+            </svg>
+            <div className="flex items-baseline justify-between mt-1 px-1">
+              <span className="text-[10.5px] text-gray-400">
+                {hoverPoint ? `${hoverPoint.fy} · ${hoverPoint.value}M people` : "Hover for year"}
+              </span>
+              <span className="text-[10.5px] font-semibold text-gray-700 tabular-nums">
+                +51% over 5y
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-3 flex flex-col gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Aggregation path</span>
+            <div className="flex items-center gap-1.5 text-[11.5px] text-gray-700 flex-wrap">
+              <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 font-mono text-[10.5px]">project row</span>
+              <IconChevronRight size={11} className="text-gray-400" />
+              <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 font-mono text-[10.5px]">country</span>
+              <IconChevronRight size={11} className="text-gray-400" />
+              <span className="px-1.5 py-0.5 rounded bg-white border border-gray-200 font-mono text-[10.5px]">global</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-[11px] text-gray-400 -mt-1">
+        {disabled
+          ? "Methodology view locked while narrative is in progress"
+          : "Source: HNP Services methodology note · FY25 reporting cycle"}
       </div>
     </div>
   );
@@ -701,6 +1111,20 @@ const THOUGHT_STEPS_ELECTRICITY: ThoughtStep[] = [
   { type: "analyze", text: "Identifying delivery-side drivers — utility performance, project maturation, supply mix",    detail: "Capacity vs access concentration" },
 ];
 
+const THOUGHT_STEPS_YOY: ThoughtStep[] = [
+  { type: "search",  text: "Loading FY24 and FY25 indicator aggregates from the Results catalogue",                     detail: "8 headline indicators paired" },
+  { type: "compute", text: "Computing FY25 − FY24 deltas and percent change per indicator",                              detail: "Δ% calculated · sign retained" },
+  { type: "filter",  text: "Flagging indicators with restated FY24 baselines for comparability",                         detail: "2 indicators restated · noted" },
+  { type: "analyze", text: "Grouping by direction (gainers vs slippers) and surfacing dominant outliers",                detail: "6 up · 2 down · broadband leads" },
+];
+
+const THOUGHT_STEPS_HNP_METHOD: ThoughtStep[] = [
+  { type: "search",  text: "Reading the HNP Services methodology note for the FY25 reporting cycle",                    detail: "CSC_RES_HEA_SERV definition pulled" },
+  { type: "filter",  text: "Extracting counting rules — what qualifies as a service, what doesn't",                      detail: "5 service categories · 2 exclusions" },
+  { type: "compute", text: "Applying Double_Counting_Flag to project rows to estimate dedup impact",                     detail: "9.4% of rows flagged · aggregated once" },
+  { type: "analyze", text: "Building 5-year reach trajectory (FY21 → FY25) and surfacing aggregation steps",             detail: "Project → country → global" },
+];
+
 const NARRATIVE_PLAN_STEPS: ThoughtStep[] = [
   { type: "search",  text: "Reading conversation context",          detail: "africa-poverty signal · 1 query" },
   { type: "search",  text: "Loading indicator catalogue",           detail: "IDA_Scorecard_Metadata_1.xlsx · 21 Results indicators" },
@@ -733,11 +1157,30 @@ function StreamingText({
   return <>{words.slice(0, count).join(" ")}</>;
 }
 
-function ThoughtProcess({ flow, onComplete }: { flow: FlowId; onComplete?: () => void }) {
-  const steps =
-    flow === "health-gap"     ? THOUGHT_STEPS_HEALTH      :
-    flow === "electricity-fcs" ? THOUGHT_STEPS_ELECTRICITY :
-                                THOUGHT_STEPS_AFRICA;
+function ThoughtProcess({
+  flow,
+  customSteps,
+  label = "Thought Process",
+  onComplete,
+}: {
+  flow: FlowId;
+  /** When provided, overrides the flow-based step list — used for the
+   *  short transitional loader before the interactive-elements picker. */
+  customSteps?: ThoughtStep[];
+  /** Header label displayed next to the sparkle icon. Defaults to
+   *  "Thought Process" for the original Q&A use; the proceed-loader passes
+   *  "Preparing interactive elements" so the user reads it as a distinct
+   *  pause rather than a duplicate of the upstream analysis log. */
+  label?: string;
+  onComplete?: () => void;
+}) {
+  const steps = customSteps ?? (
+    flow === "health-gap"       ? THOUGHT_STEPS_HEALTH      :
+    flow === "electricity-fcs"  ? THOUGHT_STEPS_ELECTRICITY :
+    flow === "fy24-fy25-delta"  ? THOUGHT_STEPS_YOY         :
+    flow === "hnp-measurement"  ? THOUGHT_STEPS_HNP_METHOD  :
+                                  THOUGHT_STEPS_AFRICA
+  );
   const [visibleCount, setVisibleCount] = useState(0);
   const [open, setOpen] = useState(true);
   const done = visibleCount >= steps.length;
@@ -766,7 +1209,7 @@ function ThoughtProcess({ flow, onComplete }: { flow: FlowId; onComplete?: () =>
         <span className="w-6 h-6 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0">
           <IconSparkles size={13} className={done ? "text-blue-500" : "text-blue-500 animate-pulse"} />
         </span>
-        <span className="text-[13px] font-semibold text-gray-700">Thought Process</span>
+        <span className="text-[13px] font-semibold text-gray-700">{label}</span>
         <span className="text-[11px] text-gray-300">·</span>
         <span className="text-[11px] text-gray-500 font-mono">{steps.length} steps</span>
         {done ? (
@@ -998,6 +1441,225 @@ function NarrativeGeneratingMessage({ generating }: { generating: boolean }) {
   );
 }
 
+// Shown once when the user enters refining mode (clicked "Make changes" from
+// any entry point). Plain bulleted text list of things the user might want
+// to tweak — explicitly the simple variant the user picked over chips.
+function MakeChangesSuggestionsMessage() {
+  const suggestions = [
+    "Add another country example so the angle isn't just one or two case studies.",
+    "Sharpen the lessons learned with a specific success-vs-pitfall pair.",
+    "Swap one of the country examples for one in a different region.",
+    "Reframe the challenge paragraph around a different bottleneck.",
+  ];
+  return (
+    <div className="flex items-start gap-3 narrative-content-enter">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <div className="flex-1 min-w-0 pt-1 flex flex-col gap-2">
+        <p className="text-[13.5px] text-gray-700 leading-relaxed">
+          Sure — a few things you might want to change:
+        </p>
+        <ul className="flex flex-col gap-1.5 pl-5 list-disc text-[13px] text-gray-700 leading-relaxed marker:text-gray-400">
+          {suggestions.map((s) => <li key={s}>{s}</li>)}
+        </ul>
+        <p className="text-[12.5px] text-gray-500 leading-relaxed mt-1">
+          Type your change in the prompt bar below, or describe something else entirely.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// User's "Proceed to create narrative" bubble. The AI now picks
+// interactive visuals on its own and surfaces a summary message once the
+// draft lands — so the older thought-process loader has been removed.
+function ProceedMessage() {
+  return (
+    <div className="self-end flex items-center gap-3 max-w-[85%] narrative-content-enter">
+      <div className="bg-blue-50 text-gray-900 px-4 py-3 rounded-2xl text-[14px] leading-relaxed">
+        Proceed to create narrative
+      </div>
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        NT
+      </div>
+    </div>
+  );
+}
+
+// AI message that lands once the narrative draft is ready. Lists every
+// interactive element + section the AI baked into the panel as a collapsed
+// checklist the user can expand to scan.
+const NARRATIVE_READY_ITEMS = [
+  { label: "Interactive map", section: "Country Examples" },
+  { label: "Time-series chart", section: "The Challenge" },
+  { label: "Country examples", section: "Country Examples" },
+  { label: "Pathways to Outcomes", section: "Pathways to Outcomes" },
+  { label: "Lessons Learned", section: "Lessons Learned" },
+];
+
+function NarrativeReadyMessage() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex items-start gap-3 narrative-content-enter">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <div className="flex-1 min-w-0 pt-1 flex flex-col gap-2">
+        <p className="text-[13.5px] text-gray-700 leading-relaxed">
+          Your draft is ready in the panel on the right. I&apos;ve baked in an{" "}
+          <span className="font-semibold text-gray-900">interactive map</span>{" "}
+          (in Country Examples) and a{" "}
+          <span className="font-semibold text-gray-900">time-series chart</span>{" "}
+          (in The Challenge), alongside the supporting sections.
+        </p>
+        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 hover:bg-gray-50 transition-colors text-left"
+            aria-expanded={open}
+          >
+            <span className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                <IconCheck size={11} stroke={3} className="text-emerald-600" />
+              </span>
+              <span className="text-[12.5px] font-semibold text-gray-800">
+                What I added
+              </span>
+              <span className="text-[10.5px] font-mono text-gray-400">
+                {NARRATIVE_READY_ITEMS.length} elements
+              </span>
+            </span>
+            <IconChevronDown
+              size={14}
+              className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </button>
+          {open && (
+            <ul className="border-t border-gray-100 px-3 py-2 flex flex-col gap-1.5">
+              {NARRATIVE_READY_ITEMS.map((item) => (
+                <li
+                  key={item.label}
+                  className="flex items-center justify-between gap-3 text-[12px] text-gray-700"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <IconCheck size={10} stroke={3} className="text-emerald-500 shrink-0" />
+                    {item.label}
+                  </span>
+                  <span className="text-[10.5px] text-gray-400">
+                    in <span className="text-gray-600">{item.section}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p className="text-[12.5px] text-gray-500 leading-relaxed">
+          Want to tweak anything? Just say the word — or add more visuals from the suggestions below.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Sections the user can assign a visual to — matches accordion titles in NarrativePanel.
+const NARRATIVE_SECTIONS = [
+  "Summary",
+  "The Challenge",
+  "Pathways to Outcomes",
+  "Country Examples",
+  "Lessons Learned",
+];
+
+export type AddedVisual = { id: string; type: string; section: string };
+
+// Thumbnail components for each visual suggestion.
+function HeroImageThumb({ active }: { active: boolean }) {
+  const sky = active ? "#7c3aed" : "#60a5fa";
+  const land = active ? "#a78bfa" : "#34d399";
+  return (
+    <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
+      <rect x={0} y={0} width={120} height={38} rx={0} fill={sky} opacity={0.5} />
+      <rect x={0} y={38} width={120} height={26} rx={0} fill={land} opacity={0.45} />
+      {/* sun / moon */}
+      <circle cx={90} cy={16} r={7} fill={active ? "#c4b5fd" : "#fde68a"} opacity={0.9} />
+      {/* horizon hills */}
+      <ellipse cx={30} cy={42} rx={28} ry={10} fill={active ? "#7c3aed" : "#059669"} opacity={0.45} />
+      <ellipse cx={88} cy={44} rx={22} ry={8} fill={active ? "#5b21b6" : "#065f46"} opacity={0.4} />
+    </svg>
+  );
+}
+
+function ChartThumb({ active }: { active: boolean }) {
+  const rows = [
+    { width: 78, color: active ? "#a78bfa" : "#2E8B57" },
+    { width: 64, color: active ? "#7c3aed" : "#E88B2B" },
+    { width: 48, color: active ? "#a78bfa" : "#E88B2B" },
+    { width: 32, color: active ? "#7c3aed" : "#D04040" },
+  ];
+  return (
+    <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
+      {rows.map((r, i) => {
+        const y = 12 + i * 12;
+        return (
+          <g key={i}>
+            <rect x={10} y={y} width={100} height={4} rx={2} fill="#e2e8f0" />
+            <rect x={10} y={y} width={r.width} height={4} rx={2} fill={r.color} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function QuoteThumb({ active }: { active: boolean }) {
+  const c = active ? "#7c3aed" : "#94a3b8";
+  const fill = active ? "rgba(124,58,237,0.08)" : "rgba(148,163,184,0.12)";
+  return (
+    <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="none">
+      <rect x={8} y={10} width={104} height={44} rx={4} fill={fill} />
+      {/* quote mark */}
+      <text x={18} y={36} fontSize="22" fill={c} opacity={0.45} fontFamily="Georgia, serif">&ldquo;</text>
+      {/* text lines */}
+      <rect x={34} y={20} width={66} height={2.5} rx={1.25} fill={c} opacity={0.3} />
+      <rect x={34} y={27} width={58} height={2.5} rx={1.25} fill={c} opacity={0.3} />
+      <rect x={34} y={34} width={50} height={2.5} rx={1.25} fill={c} opacity={0.3} />
+      <rect x={34} y={41} width={30} height={2.5} rx={1.25} fill={c} opacity={0.2} />
+    </svg>
+  );
+}
+
+// Follow-up assistant message that lands once the draft narrative has
+// mounted in the right pane. Instructional: points the user at the
+// per-section "+ Add visual" button inside the panel rather than offering
+// thumbnail cards in the chat. The in-panel interaction is now the single
+// path for adding supporting visuals.
+function VisualSupportMessage() {
+  return (
+    <div className="flex items-start gap-3 narrative-content-enter">
+      <div className="w-8 h-8 rounded-full bg-[#0288D1] flex items-center justify-center shrink-0 text-white text-[11px] font-bold">
+        SC
+      </div>
+      <div className="flex-1 min-w-0 flex flex-col gap-2 pt-1">
+        <p className="text-[13.5px] text-gray-700 leading-relaxed">
+          You can add supporting visualizations — hero images, additional charts, or callout quotes — directly to any section of the draft. Look for the{" "}
+          <span className="inline-flex items-center gap-1 align-baseline px-1.5 py-0.5 rounded border border-dashed border-gray-300 bg-white text-gray-600 text-[12px] font-medium">
+            <IconPlus size={11} />
+            Add visual
+          </span>{" "}
+          button at the bottom of each section in the panel on the right.
+        </p>
+        <p className="text-[12.5px] text-gray-500 leading-relaxed">
+          You can also highlight any passage of the draft and use{" "}
+          <span className="font-medium text-gray-700">Modify content</span>{" "}
+          to rewrite it without leaving the panel.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // Hover-to-edit conversation title — pencil glyph appears on hover; click to
 // switch to a centered text input that commits on Enter or blur, cancels on
 // Escape. Used in the conversation header so users can override the
@@ -1106,17 +1768,17 @@ export default function ConversationView({
   refinementTurns = [],
   onRefinedProceed,
   onRefinedMakeChanges,
-  interactiveElements = [],
-  onToggleInteractiveElement,
-  onProceedFromInteractive,
+  extraCountryApplied = false,
   narrativeDirect = false,
 }: Props) {
   const flow = useMemo(() => detectFlow(prompt), [prompt]);
   const content = FLOW_CONTENT[flow];
   const signals =
-    flow === "health-gap"      ? HEALTH_RELATED_SIGNALS    :
-    flow === "electricity-fcs" ? ELECTRICITY_FCS_SIGNALS   :
-                                 RELATED_SIGNALS;
+    flow === "health-gap"       ? HEALTH_RELATED_SIGNALS    :
+    flow === "electricity-fcs"  ? ELECTRICITY_FCS_SIGNALS   :
+    flow === "fy24-fy25-delta"  ? YOY_DELTA_SIGNALS         :
+    flow === "hnp-measurement"  ? HNP_METHOD_SIGNALS        :
+                                  RELATED_SIGNALS;
   const narratives = useMemo(() => pickNarratives(prompt, 4), [prompt]);
 
   const [thoughtDone, setThoughtDone] = useState(false);
@@ -1139,20 +1801,32 @@ export default function ConversationView({
     narrativePhase === "skeleton-ready" ||
     narrativePhase === "refining" ||
     narrativePhase === "refined-ready" ||
-    narrativePhase === "interactive-choice" ||
     narrativePhase === "generating" ||
     !!narrativeArtefact;
+  // Make-changes suggestions: shown once the user enters refining mode and
+  // persisted through every later phase (incl. post-narrative). refiningSkeletonId
+  // is cleared at conversation boundaries, so this naturally stays scoped
+  // to the refining-driven flow.
+  const showMakeChangesSuggestions =
+    refiningSkeletonId != null &&
+    (narrativePhase === "refining" ||
+      narrativePhase === "refined-ready" ||
+      narrativePhase === "generating" ||
+      !!narrativeArtefact);
   const showRefinementBlock =
     refiningSkeletonId != null &&
     (refinementTurns.length > 0 ||
       narrativePhase === "refined-ready" ||
-      narrativePhase === "interactive-choice" ||
-      narrativePhase === "generating");
-  const showInteractiveBlock =
-    narrativePhase === "interactive-choice" ||
-    narrativePhase === "generating" ||
-    !!narrativeArtefact;
+      narrativePhase === "generating" ||
+      !!narrativeArtefact);
+  // "Proceed to create narrative" user bubble. Renders the moment proceed
+  // is clicked (phase flips to generating) and stays in the chat.
+  const showProceedBubble =
+    narrativePhase === "generating" || !!narrativeArtefact;
   const showBlock3 = narrativePhase === "generating" || !!narrativeArtefact;
+  // AI summary message — lands once the narrative artefact has been saved
+  // and generation has finished (phase reset to "idle" by the kickoff timer).
+  const showNarrativeReady = !!narrativeArtefact && narrativePhase !== "generating";
 
   // Files dropdown state
   const [filesOpen, setFilesOpen] = useState(false);
@@ -1315,14 +1989,22 @@ export default function ConversationView({
                     {content.filterCaption}
                   </p>
 
-                  {/* Chart — flow-specific */}
+                  {/* Chart — flow-specific. Once the user moves into the
+                      narrative-creation flow (showBlock1), the chart's
+                      filter + hover interactions lock so the Q&A view
+                      can't drift while the next step is in progress. */}
                   {flow === "health-gap" ? (
                     <HealthGapChart
                       title={content.chartTitle}
                       caption="Health Services results · project-level data · FY2025"
+                      disabled={showBlock1}
                     />
+                  ) : flow === "fy24-fy25-delta" ? (
+                    <YoYDeltaChart title={content.chartTitle} disabled={showBlock1} />
+                  ) : flow === "hnp-measurement" ? (
+                    <IndicatorMethodologyCard title={content.chartTitle} disabled={showBlock1} />
                   ) : (
-                    <PovertyChart title={content.chartTitle} />
+                    <PovertyChart title={content.chartTitle} disabled={showBlock1} />
                   )}
 
                   {/* Related Signals — horizontal indicator-row format, two
@@ -1399,27 +2081,27 @@ export default function ConversationView({
               animate={narrativePhase === "skeleton-ready"}
             />
           )}
+          {showMakeChangesSuggestions && <MakeChangesSuggestionsMessage />}
           {showRefinementBlock && refiningSkeletonId && (
             <SkeletonRefinedMessage
               flow={flow}
               skeletonId={refiningSkeletonId}
               turns={refinementTurns}
               active={narrativePhase === "refined-ready"}
+              extraCountryApplied={extraCountryApplied}
               onProceed={() => onRefinedProceed?.()}
               onMakeChanges={() => onRefinedMakeChanges?.()}
             />
           )}
-          {showInteractiveBlock && (
-            <InteractiveElementsMessage
-              flow={flow}
-              skeletonId={refiningSkeletonId ?? selectedSkeletonId}
-              selected={interactiveElements}
-              active={narrativePhase === "interactive-choice"}
-              onToggle={(el) => onToggleInteractiveElement?.(el)}
-              onProceed={() => onProceedFromInteractive?.()}
-            />
-          )}
+          {showProceedBubble && <ProceedMessage />}
           {showBlock3 && <NarrativeGeneratingMessage generating={narrativePhase === "generating"} />}
+          {showNarrativeReady && <NarrativeReadyMessage />}
+
+          {/* Visual-support guidance — appears once the artefact has been
+              created (the panel is rendering the draft). Suggests image /
+              chart / quote additions and surfaces the highlight-to-modify
+              gesture in the right pane. */}
+          {narrativeArtefact && narrativePhase !== "generating" && <VisualSupportMessage />}
 
           <div className="h-8" />
         </div>

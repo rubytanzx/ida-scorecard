@@ -12,7 +12,7 @@ import AppHeader from "@/components/AppHeader";
 import SearchHero from "@/components/SearchHero";
 import AppFooter from "@/components/AppFooter";
 import StoryDetailModal from "@/components/StoryDetailModal";
-import ConversationView from "@/components/conversation/ConversationView";
+import ConversationView, { type AddedVisual } from "@/components/conversation/ConversationView";
 import NarrativePanel, { NARRATIVE_PANEL_DEFAULT_WIDTH } from "@/components/conversation/NarrativePanel";
 import InfographicPanel from "@/components/conversation/InfographicPanel";
 import SkeletonPreviewPanel from "@/components/conversation/SkeletonPreviewPanel";
@@ -163,16 +163,15 @@ const AI_SUGGESTIONS = [
 //                       shows a reference chip and accepts feedback
 //   refined-ready     — refined-skeleton widget shown inline; user can
 //                       Proceed or iterate ("Make changes" again)
-//   interactive-choice — AI asks which interactive elements to include;
-//                       user multi-selects chips, then Proceeds
-//   generating        — opening the final NarrativePanel
+//   generating        — opening the final NarrativePanel. The AI picks
+//                       interactive visuals on its own and surfaces them
+//                       via a summary message once the draft is ready.
 export type NarrativePhase =
   | "idle"
   | "planning"
   | "skeleton-ready"
   | "refining"
   | "refined-ready"
-  | "interactive-choice"
   | "generating";
 
 export type InteractiveElement = "map" | "charts" | "tables" | "timeline";
@@ -187,6 +186,7 @@ export default function HomePage() {
   const [view, setView] = useState<"home" | "conversation" | "workspace" | "viewer">("home");
   const [conversationPrompt, setConversationPrompt] = useState("");
   const [promptValue, setPromptValue] = useState("");
+  const promptInputRef = useRef<HTMLInputElement>(null);
   // Single discriminator for which right-side artefact pane is open.
   // null = closed; only one pane can be visible at a time.
   type RightPane = "narrative" | "infographic" | "skeleton-preview" | null;
@@ -216,6 +216,22 @@ export default function HomePage() {
     new Set(),
   );
   const [narrativePanelLoading, setNarrativePanelLoading] = useState(false);
+  const [addedVisuals, setAddedVisuals] = useState<AddedVisual[]>([]);
+  // Content-modify flow: tracks the currently selected passage + fires a
+  // signal to NarrativePanel when the user submits an edit instruction.
+  const [contentModifyTarget, setContentModifyTarget] = useState<
+    { text: string; sectionId: string | null } | null
+  >(null);
+  const [contentModifySignal, setContentModifySignal] = useState<
+    { sectionId: string | null; instruction: string; nonce: number } | null
+  >(null);
+  // Conversations that have applied the "add one more country example"
+  // refinement step. Drives the extra story rendered inside the narrative
+  // panel's Country Examples section, plus the user/AI turn in the
+  // conversation thread.
+  const [extraCountryByConvId, setExtraCountryByConvId] = useState<Set<string>>(
+    new Set(),
+  );
   // True for ~3.5s after the user picks "Generate · Infographic" —
   // drives the beam + cycling text loader inside the infographic pane.
   const [infographicGenerating, setInfographicGenerating] = useState(false);
@@ -278,6 +294,7 @@ export default function HomePage() {
 
   const handleSearchComplete = (text: string) => {
     const id = Date.now().toString();
+    resetNarrativeStateForNewConversation();
     setConversations((prev) => [
       ...prev,
       {
@@ -307,6 +324,7 @@ export default function HomePage() {
   // ConversationView knows to suppress the Q&A block.
   const handleCreateNarrativeSubmit = (text: string) => {
     const id = Date.now().toString();
+    resetNarrativeStateForNewConversation();
     setConversations((prev) => [
       ...prev,
       {
@@ -327,7 +345,6 @@ export default function HomePage() {
     setPromptValue("");
     setCreateNarrativeMode(false);
     setHomeScrolled(false);
-    setSelectedSkeletonId(null);
     setView("conversation");
     setNarrativePhase("planning");
   };
@@ -348,20 +365,42 @@ export default function HomePage() {
     setNarrativePhase("skeleton-ready");
   };
 
-  // Shared entry point into the interactive-elements question. Seeds the
-  // multi-select with the AI's default recommendation (map + timeline) so
-  // the user can just hit Proceed unless they want to change it.
-  const enterInteractiveChoice = () => {
+  // Shared entry point for kicking off narrative generation. Seeds the
+  // interactive-elements selection with the AI's default (map + timeline)
+  // — the AI now bakes those into the draft on its own and surfaces a
+  // summary message once the panel is ready, rather than asking the user
+  // to confirm.
+  const kickoffNarrativeGeneration = () => {
+    if (!currentConversationId) return;
     setInteractiveElements(["map", "timeline"]);
-    setNarrativePhase("interactive-choice");
+    setNarrativePhase("generating");
+    const a: Artefact = {
+      id: Date.now().toString(),
+      kind: "narrative",
+      title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
+      prompt: conversationPrompt,
+      createdAt: Date.now(),
+      skeletonId: selectedSkeletonId ?? undefined,
+    };
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c
+      )
+    );
+    narrativeConfirmTimerRef.current = window.setTimeout(() => {
+      setRightPane("narrative");
+      setNarrativePanelLoading(true);
+      window.setTimeout(() => {
+        setNarrativePanelLoading(false);
+        setNarrativePhase("idle");
+      }, 4500);
+    }, 500);
   };
 
-  // The original prompt-bar "Yes, create narrative" path. Instead of jumping
-  // straight to generation, route through the interactive-elements question
-  // so both this path and the preview-panel Proceed path converge.
+  // Prompt-bar "Yes, create narrative" path. Skeleton must be selected.
   const handleNarrativeConfirm = () => {
     if (!currentConversationId || selectedSkeletonId == null) return;
-    enterInteractiveChoice();
+    kickoffNarrativeGeneration();
   };
 
   // "Make changes" from the prompt-bar pill in skeleton-ready phase. The
@@ -390,13 +429,18 @@ export default function HomePage() {
   // Preview-panel "Proceed to Create Full Narrative" — commits this angle
   // as the selection, closes the panel, and advances to the
   // interactive-elements question.
+  //
+  // We intentionally DO NOT clear refiningSkeletonId / refinementTurns here.
+  // Those drive the in-chat persistence of the Make-changes suggestions and
+  // the "Narrative updated" bubble — both need to stay visible after the
+  // user proceeds. Cross-conversation isolation is handled by the
+  // currentConversationId effect below, so state still resets when the user
+  // switches to a different conversation.
   const handleProceedFromPreview = (id: string) => {
     setSelectedSkeletonId(id);
-    setRightPane(null);
-    setPreviewSkeletonId(null);
-    setRefiningSkeletonId(null);
-    setRefinementTurns([]);
-    enterInteractiveChoice();
+    // Keep skeleton-preview open — it closes naturally when the narrative
+    // panel opens via the kickoff timer.
+    kickoffNarrativeGeneration();
   };
 
   // Preview-panel "Make changes" — keeps the preview open so the user can
@@ -418,12 +462,22 @@ export default function HomePage() {
     setNarrativePhase("refining");
   };
 
-  // User submitted feedback while in the refining phase. Append the turn
-  // and advance to refined-ready so the AI response + widget render.
+  // User submitted feedback while in the refining phase. Append the turn,
+  // mark the conversation as having added the extra country (mock: any
+  // refinement triggers the addition), and advance to refined-ready so the
+  // AI response + widget render.
   const handleSubmitRefinement = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setRefinementTurns((prev) => [...prev, trimmed]);
+    if (currentConversationId) {
+      setExtraCountryByConvId((prev) => {
+        if (prev.has(currentConversationId)) return prev;
+        const next = new Set(prev);
+        next.add(currentConversationId);
+        return next;
+      });
+    }
     setPromptValue("");
     setNarrativePhase("refined-ready");
   };
@@ -442,10 +496,11 @@ export default function HomePage() {
     setNarrativePhase("refining");
   };
 
-  // Inline refined-widget "Proceed to Create Full Narrative" — advances
-  // to the interactive-elements question.
+  // Inline refined-widget "Proceed to Create Full Narrative" — kicks off
+  // generation directly. The interactive-elements picker has been retired
+  // in favour of an AI summary message that lands once the draft is ready.
   const handleProceedFromRefined = () => {
-    enterInteractiveChoice();
+    kickoffNarrativeGeneration();
   };
 
   // Cancel the refining session entirely (user dismissed the chip). Returns
@@ -454,39 +509,6 @@ export default function HomePage() {
     setRefiningSkeletonId(null);
     setRefinementTurns([]);
     setNarrativePhase("skeleton-ready");
-  };
-
-  // Multi-select toggle for the interactive-elements picker.
-  const handleToggleInteractiveElement = (el: InteractiveElement) => {
-    setInteractiveElements((prev) =>
-      prev.includes(el) ? prev.filter((x) => x !== el) : [...prev, el],
-    );
-  };
-
-  // Final "Proceed" — runs the same path as the old narrative-confirm:
-  // creates the artefact, opens NarrativePanel, fires the beam.
-  const handleProceedFromInteractive = () => {
-    if (!currentConversationId) return;
-    setNarrativePhase("generating");
-    const a: Artefact = {
-      id: Date.now().toString(),
-      kind: "narrative",
-      title: deriveArtefactTitle(conversationPrompt) || "Untitled narrative",
-      prompt: conversationPrompt,
-      createdAt: Date.now(),
-      skeletonId: selectedSkeletonId ?? undefined,
-    };
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === currentConversationId ? { ...c, artefacts: [...c.artefacts, a] } : c
-      )
-    );
-    narrativeConfirmTimerRef.current = window.setTimeout(() => {
-      setRightPane("narrative");
-      setNarrativePanelLoading(true);
-      setNarrativePhase("idle");
-      window.setTimeout(() => setNarrativePanelLoading(false), 4500);
-    }, 500);
   };
 
   // Generate format from the narrative panel. Only "infographic" is
@@ -545,6 +567,11 @@ export default function HomePage() {
     setRightPane(a.kind);
   };
 
+  const extraCountryApplied =
+    currentConversationId != null && extraCountryByConvId.has(currentConversationId);
+  const narrativeArtefact = currentArtefacts.find((a) => a.kind === "narrative");
+  const narrativeSkeletonForCurrent = narrativeArtefact?.skeletonId ?? selectedSkeletonId;
+
   // Open the shared-link viewer for a home-page card (e.g. a featured
   // narrative). If a conversation for that prompt already exists, jump
   // back into it; otherwise fabricate a stub conversation with a
@@ -585,10 +612,25 @@ export default function HomePage() {
   const handleSelectConversation = (id: string) => {
     const conv = conversations.find((c) => c.id === id);
     if (!conv) return;
+    resetNarrativeStateForNewConversation();
     setCurrentConversationId(id);
     setConversationPrompt(conv.prompt);
     setRightPane(null);
     setView("conversation");
+  };
+
+  // Reset transient narrative-creation state when the user moves to a
+  // different conversation. refiningSkeletonId / refinementTurns /
+  // selectedSkeletonId are global so the chat can stay cumulative inside
+  // one conversation — but they need to be cleared at conversation
+  // boundaries or they'd leak into the next chat. Called explicitly from
+  // the conversation-entry handlers (not via useEffect) so it can't
+  // clobber state the handler set after currentConversationId.
+  const resetNarrativeStateForNewConversation = () => {
+    setRefiningSkeletonId(null);
+    setRefinementTurns([]);
+    setSelectedSkeletonId(null);
+    setNarrativePhase("idle");
   };
 
   // + button menu state
@@ -677,6 +719,25 @@ export default function HomePage() {
         onCreateNarrativeSubmit={
           view === "home" && createNarrativeMode ? handleCreateNarrativeSubmit : undefined
         }
+        contentModifyChip={
+          contentModifyTarget
+            ? {
+                text: contentModifyTarget.text.length > 50
+                  ? contentModifyTarget.text.slice(0, 50) + "…"
+                  : contentModifyTarget.text,
+                onDismiss: () => setContentModifyTarget(null),
+              }
+            : undefined
+        }
+        onContentModifySubmit={contentModifyTarget ? (instruction) => {
+          setContentModifySignal({
+            sectionId: contentModifyTarget.sectionId,
+            instruction,
+            nonce: Date.now(),
+          });
+          setContentModifyTarget(null);
+        } : undefined}
+        inputRef={promptInputRef}
         inConversation={view === "conversation"}
         onSubmit={() => {
           // Scroll the home view back to the top on submit so the beam runs
@@ -698,6 +759,13 @@ export default function HomePage() {
             onGenerate={handleGenerate}
             loading={narrativePanelLoading}
             generatedKinds={currentArtefacts.map((a) => a.kind)}
+            skeletonId={narrativeSkeletonForCurrent}
+            extraCountryApplied={extraCountryApplied}
+            addedVisuals={addedVisuals}
+            onRemoveVisual={(id) => setAddedVisuals((prev) => prev.filter((v) => v.id !== id))}
+            onAddVisual={(v) => setAddedVisuals((prev) => [...prev, v])}
+            onModifyContent={(target) => setContentModifyTarget(target)}
+            contentModifySignal={contentModifySignal}
             width={rightPaneWidth}
             onResize={(w, dragging) => {
               setRightPaneWidth(w);
@@ -736,6 +804,7 @@ export default function HomePage() {
             onProceed={(id) => handleProceedFromPreview(id)}
             onMakeChanges={(id) => handleMakeChangesFromPreview(id)}
             refinementTurns={refinementTurns}
+            extraCountryApplied={extraCountryApplied}
           />
         </>
       )}
@@ -781,9 +850,7 @@ export default function HomePage() {
           refinementTurns={refinementTurns}
           onRefinedProceed={handleProceedFromRefined}
           onRefinedMakeChanges={handleMakeChangesFromRefined}
-          interactiveElements={interactiveElements}
-          onToggleInteractiveElement={handleToggleInteractiveElement}
-          onProceedFromInteractive={handleProceedFromInteractive}
+          extraCountryApplied={extraCountryApplied}
           narrativeDirect={
             currentConversationId != null &&
             narrativeDirectConversations.has(currentConversationId)
@@ -838,8 +905,15 @@ export default function HomePage() {
 
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
         <SearchHero
-          onPillClick={setPromptValue}
-          onCreateNarrative={handleArmCreateNarrative}
+          onPillClick={(prompt) => {
+            setPromptValue(prompt);
+            // Focus the input so the suggestions dropdown opens immediately.
+            setTimeout(() => promptInputRef.current?.focus(), 0);
+          }}
+          onCreateNarrative={() => {
+            setPromptValue("Create a narrative ");
+            handleArmCreateNarrative();
+          }}
         />
 
         {/* Ticker hidden for now — keep import/state intact for a quick re-enable.

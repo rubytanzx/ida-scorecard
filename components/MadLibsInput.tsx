@@ -6,7 +6,7 @@ import { IconChevronDown, IconCheck, IconX, IconPlus, IconArrowUp, IconMicrophon
 
 // ─── Param definitions ───────────────────────────────────────────────────────
 
-export type ParamId = "financingInstitution" | "geography" | "sector";
+export type ParamId = "financingInstitution" | "geography" | "sector" | "outcomeArea";
 
 interface ParamDef {
   id: ParamId;
@@ -78,6 +78,33 @@ const PARAMS: Record<ParamId, ParamDef> = {
     ],
     placeholder: "pick a sector…",
   },
+  outcomeArea: {
+    id: "outcomeArea",
+    label: "Outcome Area",
+    kind: "dropdown",
+    bg: "#F0EBFF",
+    fg: "#5B21B6",
+    border: "#C4B5FD",
+    nudgeBg: "rgba(240,235,255,0.5)",
+    options: [
+      "Protection for the Poorest",
+      "No Learning Poverty",
+      "Healthier Lives",
+      "Effective Macroeconomic and Fiscal Management",
+      "Green and Blue Planet and Resilient Populations",
+      "Inclusive and Equitable Water and Sanitation Services",
+      "Sustainable Food Systems",
+      "Connected Communities",
+      "Affordable, Reliable and Sustainable Energy for All",
+      "Digital Connectivity",
+      "Digital Services",
+      "Gender Equality",
+      "Better Lives for People in Fragility, Conflict, and Violence",
+      "More and Better Jobs",
+      "More Private Investment",
+    ],
+    placeholder: "pick an outcome area…",
+  },
 };
 
 const PARAM_ORDER: ParamId[] = ["financingInstitution", "geography", "sector"];
@@ -107,11 +134,20 @@ interface Props {
   onDismiss: () => void;
   /** Fires (with the built prompt) when the nudge row empties. */
   onAllPlaced?: (prompt: string) => void;
+  /** Placeholder shown in the trailing free-text input before the user
+   *  types or places any pills. Falls back to the default Q&A prompt. */
+  placeholder?: string;
+  /** When true, adds the "Outcome Area" pill (used in Create Narrative flow). */
+  includeOutcomeArea?: boolean;
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, onAllPlaced }: Props) {
+export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, onAllPlaced, placeholder, includeOutcomeArea = false }: Props) {
+  const paramOrder: ParamId[] = includeOutcomeArea
+    ? ["financingInstitution", "geography", "sector", "outcomeArea"]
+    : PARAM_ORDER;
+
   const [segments, setSegments] = useState<Segment[]>(() => [
     { kind: "text", id: "init", value: initialText },
   ]);
@@ -122,7 +158,7 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
   const placedParamIds = segments
     .filter((s): s is PillSegment => s.kind === "pill")
     .map(s => s.paramId);
-  const unplaced = PARAM_ORDER.filter(p => !placedParamIds.includes(p));
+  const unplaced = paramOrder.filter(p => !placedParamIds.includes(p));
   const allPlaced = unplaced.length === 0;
 
   // Build the prompt by walking segments in order. Pill values inline with
@@ -259,7 +295,7 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
                   }}
                   placeholder={
                     isTrailing && showInitialPlaceholder
-                      ? "What do you want to learn about IDA results?"
+                      ? placeholder ?? "What do you want to learn about IDA results?"
                       : ""
                   }
                   className={
@@ -390,6 +426,7 @@ function EditorPill({
 
         {p.kind === "dropdown" ? (
           <button
+            type="button"
             onClick={onToggle}
             className="flex items-center gap-0.5 font-semibold hover:opacity-75 transition-opacity"
             style={{ color: placedFg }}
@@ -424,6 +461,7 @@ function EditorPill({
         )}
 
         <button
+          type="button"
           onClick={onRemove}
           className="opacity-40 hover:opacity-80 transition-opacity ml-0.5"
           aria-label={`Remove ${p.label}`}
@@ -488,6 +526,7 @@ function NudgePill({ paramId, onAdd }: { paramId: ParamId; onAdd: () => void }) 
   const p = PARAMS[paramId];
   return (
     <motion.button
+      type="button"
       layoutId={`param-${paramId}`}
       onClick={onAdd}
       initial={{ opacity: 0, scale: 0.9 }}

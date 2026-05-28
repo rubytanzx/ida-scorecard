@@ -99,6 +99,36 @@ button {
   100% { background-position: 200% 50%; }
 }
 
+/* Skeleton shimmer — horizontal gradient sweep for AI-loading placeholders. */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0%,
+    #e9ebee 38%,
+    #f9fafb 55%,
+    #f3f4f6 100%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Violet variant — used when AI is rewriting a specific text passage. */
+.skeleton-shimmer-violet {
+  background: linear-gradient(
+    90deg,
+    #ede9fe 0%,
+    #c4b5fd 38%,
+    #f5f3ff 55%,
+    #ede9fe 100%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
 /* Recharts tweaks */
 .recharts-tooltip-wrapper {
   outline: none !important;

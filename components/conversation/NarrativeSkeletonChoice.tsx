@@ -185,8 +185,7 @@ function SkeletonCard({
   focal: boolean;
   onClick: () => void;
 }) {
-  const { title, challengeText, interventionText, countryExamples, sourceCounts } =
-    skeleton;
+  const { title, outcomeArea, countryExamples, sourceCounts } = skeleton;
 
   return (
     <div
@@ -215,10 +214,13 @@ function SkeletonCard({
               " hover:bg-violet-50")
       }
     >
-      {/* Header — title + caption + expand icon */}
+      {/* Header — outcome-area tag + title + caption + expand icon */}
       <div className="shrink-0 flex items-start gap-2 px-4 pt-4">
         <div className="flex-1 min-w-0">
-          <h4 className="text-[15px] font-semibold text-gray-900 leading-snug">
+          <span className="inline-flex items-center max-w-full text-[10.5px] font-medium px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700">
+            <span className="truncate">{outcomeArea.label}</span>
+          </span>
+          <h4 className="mt-2 text-[15px] font-semibold text-gray-900 leading-snug">
             {title}
           </h4>
           <p className="mt-0.5 text-[11.5px] text-gray-500 leading-relaxed">
@@ -240,38 +242,16 @@ function SkeletonCard({
 
       <div className="shrink-0 mx-4 mt-3 h-px bg-gray-200/70" />
 
-      {/* The Challenge — clamped to 4 lines so every card has the same
-          header+challenge height regardless of source length. */}
-      <div className="shrink-0 px-4 pt-3 pb-3">
-        <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
-          The Challenge
-        </span>
-        <p
-          className="mt-2 text-[12.5px] text-gray-800 leading-relaxed"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 4,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {challengeText}
-        </p>
-      </div>
-
-      <div className="shrink-0 mx-4 h-px bg-gray-200/70" />
-
-      {/* Interventions — fills the remaining card height with a bottom
-          fade overlay; cards keep a uniform total height. */}
+      {/* Summary — fills the remaining card height with a bottom fade.
+          Uses the punchy pathways.challenge + wbgApproach pair so the
+          card reads as a self-contained brief, not a long-form excerpt. */}
       <div className="relative flex-1 min-h-0 px-4 pt-3 overflow-hidden">
         <span className="block text-[10.5px] font-semibold uppercase tracking-wider text-gray-500">
-          Interventions
+          Summary
         </span>
         <p className="mt-2 text-[12.5px] text-gray-800 leading-relaxed">
-          {interventionText}
+          {skeleton.pathways.challenge}{" "}{skeleton.pathways.wbgApproach}
         </p>
-        {/* Bottom fade — matches the card background so the text dissolves
-            smoothly into whichever state the card is in. */}
         <div
           aria-hidden
           className={
