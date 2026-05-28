@@ -185,7 +185,7 @@ function SkeletonCard({
   focal: boolean;
   onClick: () => void;
 }) {
-  const { title, challengeText, interventionText, countryExamples, countryFlags, sourceCounts } =
+  const { title, challengeText, interventionText, countryExamples, sourceCounts } =
     skeleton;
 
   return (
@@ -291,15 +291,15 @@ function SkeletonCard({
           Country examples
         </span>
         <div className="mt-2 flex items-center gap-2 flex-wrap">
-          {countryExamples.map((name, i) => (
+          {countryExamples.map((c) => (
             <span
-              key={name}
+              key={c.name}
               className="inline-flex items-center gap-1.5 text-[12.5px] text-gray-800"
             >
               <span className="text-[14px] leading-none" aria-hidden>
-                {countryFlags[i]}
+                {c.flag}
               </span>
-              {name}
+              {c.name}
             </span>
           ))}
         </div>

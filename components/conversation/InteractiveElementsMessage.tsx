@@ -67,11 +67,11 @@ export default function InteractiveElementsMessage({
               </span>
               {" "}across{" "}
               <span className="font-medium text-gray-900">
-                {skeleton.countryFlags[0]} {skeleton.countryExamples[0]}
+                {skeleton.countryExamples[0].flag} {skeleton.countryExamples[0].name}
               </span>{" "}
               and{" "}
               <span className="font-medium text-gray-900">
-                {skeleton.countryFlags[1]} {skeleton.countryExamples[1]}
+                {skeleton.countryExamples[1].flag} {skeleton.countryExamples[1].name}
               </span>
               {" "}({skeleton.sourceCounts.icrs} ICRs over multiple project cycles),
               I&apos;d surface an{" "}

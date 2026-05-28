@@ -95,7 +95,6 @@ function RefinedWidget({
     challengeText,
     interventionText,
     countryExamples,
-    countryFlags,
     pathwaysText,
     lessonsText,
     sourceCounts,
@@ -122,16 +121,19 @@ function RefinedWidget({
 
       <div className="px-5 pt-3 pb-3">
         <SectionLabel>Country examples</SectionLabel>
-        <div className="mt-2 flex flex-col gap-1.5">
-          {countryExamples.map((name, i) => (
-            <div key={name} className="flex items-center gap-2 text-[12.5px] text-gray-800">
-              <span className="text-[14px] leading-none" aria-hidden>
-                {countryFlags[i]}
+        <ul className="mt-2 flex flex-col gap-2.5">
+          {countryExamples.map((c) => (
+            <li key={c.name} className="flex items-start gap-2.5">
+              <span className="text-[16px] leading-none mt-0.5 shrink-0" aria-hidden>
+                {c.flag}
               </span>
-              <span className="font-medium">{name}</span>
-            </div>
+              <p className="text-[12.5px] text-gray-800 leading-relaxed">
+                <span className="font-semibold text-gray-900">{c.name}:</span>{" "}
+                {c.description}
+              </p>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       <div className="mx-5 h-px bg-gray-200/70" />

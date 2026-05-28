@@ -222,7 +222,6 @@ function PreviewBody({
     challengeText,
     interventionText,
     countryExamples,
-    countryFlags,
     pathwaysText,
     lessonsText,
     sourceCounts,
@@ -255,19 +254,24 @@ function PreviewBody({
       <Section label="The Challenge" body={challengeText} />
       <Section label="Interventions" body={interventionText} />
 
-      {/* Country Examples — title + flag chips with brief context */}
+      {/* Country Examples — each country has a project-style description
+          (real WB project ID + intervention) so the preview reads like the
+          WBG narrative country-stories block. */}
       <div>
         <SectionLabel>Country Examples</SectionLabel>
-        <div className="mt-2 flex flex-col gap-1.5">
-          {countryExamples.map((name, i) => (
-            <div key={name} className="flex items-center gap-2 text-[13px] text-gray-800">
-              <span className="text-[16px] leading-none" aria-hidden>
-                {countryFlags[i]}
+        <ul className="mt-2 flex flex-col gap-2.5">
+          {countryExamples.map((c) => (
+            <li key={c.name} className="flex items-start gap-2.5">
+              <span className="text-[18px] leading-none mt-0.5 shrink-0" aria-hidden>
+                {c.flag}
               </span>
-              <span className="font-medium">{name}</span>
-            </div>
+              <p className="text-[13px] text-gray-800 leading-relaxed">
+                <span className="font-semibold text-gray-900">{c.name}:</span>{" "}
+                {c.description}
+              </p>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       <Section label="Pathways to Outcomes" body={pathwaysText} />
