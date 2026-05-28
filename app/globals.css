@@ -82,6 +82,53 @@ button {
   background: #94a3b8;
 }
 
+/* Fully hidden scrollbar — used by paginated carousels where the dots
+   communicate position, so the native scrollbar would be redundant. */
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animated gradient sweep used by the landing-page "Create a narrative"
+   pill to give its border a subtle gleam. Pair with background-size
+   200% / animation gleam Ns linear infinite on the gradient layer. */
+@keyframes gleam {
+  0%   { background-position:   0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Skeleton shimmer — horizontal gradient sweep for AI-loading placeholders. */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0%,
+    #e9ebee 38%,
+    #f9fafb 55%,
+    #f3f4f6 100%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Violet variant — used when AI is rewriting a specific text passage. */
+.skeleton-shimmer-violet {
+  background: linear-gradient(
+    90deg,
+    #ede9fe 0%,
+    #c4b5fd 38%,
+    #f5f3ff 55%,
+    #ede9fe 100%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
 /* Recharts tweaks */
 .recharts-tooltip-wrapper {
   outline: none !important;

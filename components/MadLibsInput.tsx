@@ -6,7 +6,7 @@ import { IconChevronDown, IconCheck, IconX, IconPlus, IconArrowUp, IconMicrophon
 
 // ─── Param definitions ───────────────────────────────────────────────────────
 
-export type ParamId = "goal" | "geography" | "sector" | "audience";
+export type ParamId = "financingInstitution" | "geography" | "sector" | "outcomeArea";
 
 interface ParamDef {
   id: ParamId;
@@ -17,19 +17,27 @@ interface ParamDef {
   border: string;
   nudgeBg: string;
   options?: string[];
+  disabledOptions?: string[];
   placeholder: string;
 }
 
+// Placed pills share the "intent blue" palette regardless of paramId.
+const PLACED_BG = "#E6F1FB";
+const PLACED_FG = "#0C447C";
+const PLACED_BORDER = "#B5D4F4";
+
 const PARAMS: Record<ParamId, ParamDef> = {
-  goal: {
-    id: "goal",
-    label: "Goal",
-    kind: "freetext",
-    bg: "#E6F1FB",
-    fg: "#0C447C",
-    border: "#B5D4F4",
+  financingInstitution: {
+    id: "financingInstitution",
+    label: "Financing Institution",
+    kind: "dropdown",
+    bg: PLACED_BG,
+    fg: PLACED_FG,
+    border: PLACED_BORDER,
     nudgeBg: "rgba(230,241,251,0.5)",
-    placeholder: "describe your goal…",
+    options: ["World Bank", "IBRD", "IDA", "IFC", "MIGA"],
+    disabledOptions: ["World Bank", "IBRD", "IFC", "MIGA"],
+    placeholder: "pick an institution…",
   },
   geography: {
     id: "geography",
@@ -70,19 +78,36 @@ const PARAMS: Record<ParamId, ParamDef> = {
     ],
     placeholder: "pick a sector…",
   },
-  audience: {
-    id: "audience",
-    label: "Audience",
-    kind: "freetext",
-    bg: "#EEEDFE",
-    fg: "#3C3489",
-    border: "#CECBF6",
-    nudgeBg: "rgba(238,237,254,0.5)",
-    placeholder: "who will read this…",
+  outcomeArea: {
+    id: "outcomeArea",
+    label: "Outcome Area",
+    kind: "dropdown",
+    bg: "#F0EBFF",
+    fg: "#5B21B6",
+    border: "#C4B5FD",
+    nudgeBg: "rgba(240,235,255,0.5)",
+    options: [
+      "Protection for the Poorest",
+      "No Learning Poverty",
+      "Healthier Lives",
+      "Effective Macroeconomic and Fiscal Management",
+      "Green and Blue Planet and Resilient Populations",
+      "Inclusive and Equitable Water and Sanitation Services",
+      "Sustainable Food Systems",
+      "Connected Communities",
+      "Affordable, Reliable and Sustainable Energy for All",
+      "Digital Connectivity",
+      "Digital Services",
+      "Gender Equality",
+      "Better Lives for People in Fragility, Conflict, and Violence",
+      "More and Better Jobs",
+      "More Private Investment",
+    ],
+    placeholder: "pick an outcome area…",
   },
 };
 
-const PARAM_ORDER: ParamId[] = ["geography", "sector", "audience", "goal"];
+const PARAM_ORDER: ParamId[] = ["financingInstitution", "geography", "sector"];
 
 // ─── Segment model ───────────────────────────────────────────────────────────
 // The input row is a sequence of inline segments. Pills are inserted at the
@@ -109,11 +134,20 @@ interface Props {
   onDismiss: () => void;
   /** Fires (with the built prompt) when the nudge row empties. */
   onAllPlaced?: (prompt: string) => void;
+  /** Placeholder shown in the trailing free-text input before the user
+   *  types or places any pills. Falls back to the default Q&A prompt. */
+  placeholder?: string;
+  /** When true, adds the "Outcome Area" pill (used in Create Narrative flow). */
+  includeOutcomeArea?: boolean;
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, onAllPlaced }: Props) {
+export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, onAllPlaced, placeholder, includeOutcomeArea = false }: Props) {
+  const paramOrder: ParamId[] = includeOutcomeArea
+    ? ["financingInstitution", "geography", "sector", "outcomeArea"]
+    : PARAM_ORDER;
+
   const [segments, setSegments] = useState<Segment[]>(() => [
     { kind: "text", id: "init", value: initialText },
   ]);
@@ -124,7 +158,7 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
   const placedParamIds = segments
     .filter((s): s is PillSegment => s.kind === "pill")
     .map(s => s.paramId);
-  const unplaced = PARAM_ORDER.filter(p => !placedParamIds.includes(p));
+  const unplaced = paramOrder.filter(p => !placedParamIds.includes(p));
   const allPlaced = unplaced.length === 0;
 
   // Build the prompt by walking segments in order. Pill values inline with
@@ -261,7 +295,7 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
                   }}
                   placeholder={
                     isTrailing && showInitialPlaceholder
-                      ? "What do you want to learn about IDA results?"
+                      ? placeholder ?? "What do you want to learn about IDA results?"
                       : ""
                   }
                   className={
@@ -378,10 +412,10 @@ function EditorPill({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Once a pill is placed in the bar, all params use the Goal blue palette.
-  const placedBg = PARAMS.goal.bg;
-  const placedFg = PARAMS.goal.fg;
-  const placedBorder = PARAMS.goal.border;
+  // Once a pill is placed in the bar, all params share the intent-blue palette.
+  const placedBg = PLACED_BG;
+  const placedFg = PLACED_FG;
+  const placedBorder = PLACED_BORDER;
 
   return (
     <div className="relative inline-flex">
@@ -392,6 +426,7 @@ function EditorPill({
 
         {p.kind === "dropdown" ? (
           <button
+            type="button"
             onClick={onToggle}
             className="flex items-center gap-0.5 font-semibold hover:opacity-75 transition-opacity"
             style={{ color: placedFg }}
@@ -426,6 +461,7 @@ function EditorPill({
         )}
 
         <button
+          type="button"
           onClick={onRemove}
           className="opacity-40 hover:opacity-80 transition-opacity ml-0.5"
           aria-label={`Remove ${p.label}`}
@@ -444,20 +480,39 @@ function EditorPill({
             transition={{ duration: 0.12 }}
             className="absolute top-[calc(100%+5px)] left-0 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-[60] min-w-[200px]"
           >
-            {p.options!.map(opt => (
-              <button
-                key={opt}
-                onClick={() => { onValueChange(opt); onToggle(); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-left transition-colors hover:bg-gray-50"
-                style={{ color: value === opt ? placedFg : "#374151" }}
-              >
-                {value === opt
-                  ? <IconCheck size={12} style={{ color: placedFg }} />
-                  : <span className="w-3 inline-block" />
-                }
-                {opt}
-              </button>
-            ))}
+            {p.options!.map(opt => {
+              const disabled = p.disabledOptions?.includes(opt) ?? false;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    if (disabled) return;
+                    onValueChange(opt);
+                    onToggle();
+                  }}
+                  disabled={disabled}
+                  aria-disabled={disabled}
+                  className={
+                    "w-full flex items-center gap-2 px-3 py-2 text-[12.5px] text-left transition-colors " +
+                    (disabled
+                      ? "cursor-not-allowed text-gray-300"
+                      : "hover:bg-gray-50")
+                  }
+                  style={
+                    disabled
+                      ? undefined
+                      : { color: value === opt ? placedFg : "#374151" }
+                  }
+                >
+                  {value === opt && !disabled
+                    ? <IconCheck size={12} style={{ color: placedFg }} />
+                    : <span className="w-3 inline-block" />
+                  }
+                  {opt}
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
@@ -471,6 +526,7 @@ function NudgePill({ paramId, onAdd }: { paramId: ParamId; onAdd: () => void }) 
   const p = PARAMS[paramId];
   return (
     <motion.button
+      type="button"
       layoutId={`param-${paramId}`}
       onClick={onAdd}
       initial={{ opacity: 0, scale: 0.9 }}
