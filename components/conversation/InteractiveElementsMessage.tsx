@@ -172,43 +172,72 @@ export default function InteractiveElementsMessage({
 // achievement) except when active, where everything tints violet.
 
 function MapThumb({ active }: { active: boolean }) {
-  // Mirrors WorldMap — abstract continent outlines + two coloured regions
-  // standing in for the highlighted WB regions in the live map.
-  const baseFill = active ? "rgba(124,58,237,0.10)" : "rgba(148,163,184,0.18)";
+  // Recognisable world-map silhouette with stylised continent paths plus
+  // two coloured country pins. When active everything tints violet.
+  const baseFill = active ? "rgba(124,58,237,0.18)" : "rgba(148,163,184,0.22)";
   const baseStroke = active ? "#7c3aed" : "#94a3b8";
-  const goodFill = active ? "#a78bfa" : "#2E8B57";
-  const warnFill = active ? "#7c3aed" : "#D04040";
+  const pin = active ? "#7c3aed" : "#D04040";
   return (
     <svg viewBox="0 0 120 64" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-      {/* Africa-ish blob */}
+      {/* North America */}
       <path
-        d="M50 22 Q56 18 62 22 L66 28 Q70 34 66 42 L62 50 Q56 54 50 50 L46 42 Q42 32 46 26 Z"
-        fill={warnFill}
-        stroke={baseStroke}
-        strokeWidth="0.6"
-        opacity={active ? 0.85 : 1}
-      />
-      {/* South-Asia blob */}
-      <path
-        d="M80 26 Q86 22 92 28 L94 36 Q92 42 86 44 L80 42 Q76 36 78 30 Z"
-        fill={goodFill}
-        stroke={baseStroke}
-        strokeWidth="0.6"
-        opacity={active ? 0.85 : 1}
-      />
-      {/* Other continents (Americas + Asia outline) */}
-      <path
-        d="M10 22 Q18 18 24 24 L26 32 Q22 40 16 42 L10 38 Z"
+        d="M6 14 L14 10 L22 12 L28 16 L30 22 L26 24 L24 28 L20 32 L16 30 L12 26 L8 20 Z"
         fill={baseFill}
         stroke={baseStroke}
-        strokeWidth="0.6"
+        strokeWidth="0.5"
+        strokeLinejoin="round"
       />
+      {/* South America */}
       <path
-        d="M100 18 Q108 18 112 24 L114 30 Q110 32 104 30 L100 24 Z"
+        d="M22 34 L26 36 L30 42 L28 50 L24 52 L22 46 L20 40 Z"
         fill={baseFill}
         stroke={baseStroke}
-        strokeWidth="0.6"
+        strokeWidth="0.5"
+        strokeLinejoin="round"
       />
+      {/* Europe */}
+      <path
+        d="M50 14 L62 12 L64 16 L60 18 L56 20 L52 18 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Africa */}
+      <path
+        d="M52 22 L62 22 L66 26 L66 34 L62 42 L56 46 L52 44 L50 40 L48 32 L48 24 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Asia */}
+      <path
+        d="M64 10 L78 8 L92 10 L106 12 L112 16 L110 22 L102 26 L96 24 L90 26 L82 24 L74 22 L66 20 L64 14 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Southeast Asia / Indonesia archipelago */}
+      <path
+        d="M94 30 L102 30 L108 32 L104 36 L98 34 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Australia */}
+      <path
+        d="M96 44 L108 44 L114 48 L110 54 L102 54 L96 50 Z"
+        fill={baseFill}
+        stroke={baseStroke}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Country pins — one in Africa, one in South / SE Asia */}
+      <circle cx="58" cy="34" r="2.4" fill={pin} />
+      <circle cx="84" cy="22" r="2.4" fill={pin} />
     </svg>
   );
 }
