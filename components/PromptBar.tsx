@@ -647,7 +647,7 @@ export default function PromptBar({
                       ? "Describe the changes you want to make…"
                       : isBottom
                       ? "Ask a follow-up question"
-                      : "What do you want to learn about IDA results?"
+                      : "What do you want to learn about the Scorecard results?"
                   }
                   className="flex-1 bg-transparent text-[14px] text-gray-700 placeholder:text-gray-400 outline-none"
                   aria-label="Search the scorecard"

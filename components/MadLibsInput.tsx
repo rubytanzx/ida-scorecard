@@ -295,7 +295,7 @@ export default function MadLibsInput({ initialText = "", onSubmit, onDismiss, on
                   }}
                   placeholder={
                     isTrailing && showInitialPlaceholder
-                      ? placeholder ?? "What do you want to learn about IDA results?"
+                      ? placeholder ?? "What do you want to learn about the Scorecard results?"
                       : ""
                   }
                   className={
